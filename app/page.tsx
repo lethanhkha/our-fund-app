@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { BalanceCard } from '@/components/ui/BalanceCard';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { BalanceCard } from '../components/ui/BalanceCard';
+import { BottomNav } from '../components/ui/BottomNav';
 
 export default function DashboardPage() {
   const [showBalance, setShowBalance] = useState(false);

@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { TransactionItem } from '@/components/ui/TransactionItem';
+import { BottomNav } from '../../components/ui/BottomNav';
+import { TransactionItem } from '../../components/ui/TransactionItem';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();

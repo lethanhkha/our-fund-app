@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Keypad } from '@/components/ui/Keypad';
+import { Keypad } from '../../components/ui/Keypad';
 
 export default function AddExpensePage() {
     const router = useRouter();

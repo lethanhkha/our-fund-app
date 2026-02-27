@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { WalletSelector } from '@/components/ui/WalletSelector';
-import { useFinanceStore } from '@/store/useFinanceStore';
+import { BottomNav } from '../../components/ui/BottomNav';
+import { BottomSheet } from '../../components/ui/BottomSheet';
+import { WalletSelector } from '../../components/ui/WalletSelector';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function TipsManagerPage() {
     const router = useRouter();

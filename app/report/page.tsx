@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { TransactionItem } from '@/components/ui/TransactionItem';
+import { BottomNav } from '../../components/ui/BottomNav';
+import { TransactionItem } from '../../components/ui/TransactionItem';
 
 export default function ReportPage() {
     const router = useRouter();
