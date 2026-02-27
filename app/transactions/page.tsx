@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '../../components/ui/BottomNav';
 import { TransactionItem } from '../../components/ui/TransactionItem';
+import { BottomSheet } from '../../components/ui/BottomSheet';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
     const [filter, setFilter] = useState('all');
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -132,13 +134,30 @@ export default function TransactionHistoryPage() {
 
             {/* FLOATING ACTION BUTTON */}
             <div className="fixed bottom-24 right-6 z-50">
-                <button className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center active:scale-90 transition-transform">
+                <button
+                    onClick={() => setIsSheetOpen(true)}
+                    className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center active:scale-90 transition-transform">
                     <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                 </button>
             </div>
 
             {/* BOTTOM NAV */}
             <BottomNav />
+
+            {/* ADD TRANSACTION BOTTOM SHEET */}
+            <BottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
+                <div className="flex flex-col gap-4 p-4 pb-8">
+                    <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Thêm giao dịch mới</h3>
+                    <Link href="/add-income" className="w-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                        <span className="text-2xl">💰</span>
+                        Thêm Thu Nhập
+                    </Link>
+                    <Link href="/add-expense" className="w-full bg-pink-50 text-[#F43F5E] border border-pink-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                        <span className="text-2xl">🛍️</span>
+                        Thêm Chi Tiêu
+                    </Link>
+                </div>
+            </BottomSheet>
         </div>
     );
 }

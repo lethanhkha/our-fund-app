@@ -34,7 +34,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                     <p className="text-[#94A3B8] text-xs mt-0.5">{subtitle}</p>
                 </div>
             </div>
-            <div className={`font-bold text-lg ${isIncome ? 'text-emerald-500' : 'text-slate-800'}`}>
+            <div className={`font-bold text-lg ${isIncome ? 'text-emerald-500' : 'text-[#F43F5E]'}`}>
                 {isIncome ? '+' : '-'}{cleanAmount}
             </div>
         </div>
