@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Override Tailwind's default colors with the new design tokens */
+  --color-primary: #EC4899;
+  /* brand-pink */
+  --color-primary-light: #FDF2F8;
+  /* bg-pink-light */
+  --color-secondary: #FCE7F3;
+  /* bg-pink-card */
+  --color-brandDark: #1E293B;
+  /* text-main */
+  --color-muted: #94A3B8;
+  /* text-muted */
+  --color-urgent: #F43F5E;
+  /* brand-red */
+  --color-borderUrgent: #fee2e2;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: 'Spline Sans', sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-full: 9999px;
+  --radius-custom: 24px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-primary-light);
+  color: var(--color-brandDark);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Base Utility Classes used across components */
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-shadow {
+    box-shadow: 0 10px 30px -10px rgba(238, 43, 91, 0.1);
+  }
+
+  .scroll-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bg-soft-gradient {
+    background: linear-gradient(180deg, #fffcfd 0%, #FDF2F8 100%);
+  }
 }
