@@ -19,7 +19,7 @@ export default function TransactionHistoryPage() {
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <div>
-                        <h1 className="text-xl font-extrabold text-[#1E293B]">Chi tiêu 🌸</h1>
+                        <h1 className="text-xl font-extrabold text-[#1E293B]">Lịch sử giao dịch 📝</h1>
                         <p className="text-xs text-[#EC4899] font-bold mt-0.5">Lịch sử giao dịch chi tiết</p>
                     </div>
                 </div>
@@ -32,7 +32,7 @@ export default function TransactionHistoryPage() {
                     <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                     <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
 
-                    <p className="text-white/80 text-sm font-medium mb-1 relative z-10">Tổng chi tiêu (Tháng này)</p>
+                    <p className="text-white/80 text-sm font-medium mb-1 relative z-10">Tổng giao dịch tháng này</p>
                     <div className="flex items-baseline relative z-10">
                         <span className="text-4xl font-extrabold tracking-tight">12.450.000</span>
                         <span className="text-xl font-bold ml-1 opacity-80">đ</span>
@@ -71,6 +71,15 @@ export default function TransactionHistoryPage() {
                 <section className="mb-6">
                     <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">Hôm nay</h3>
                     <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
+                        <TransactionItem
+                            icon={<span className="text-xl">💰</span>}
+                            iconBgColor="bg-emerald-50"
+                            title="Lương tháng"
+                            subtitle="15:00"
+                            amount="15.000.000 đ"
+                            type="income"
+                        />
+                        <div className="w-full h-px bg-gray-50 my-1"></div>
                         <TransactionItem
                             icon={<span className="text-xl">🍔</span>}
                             iconBgColor="bg-yellow-50"

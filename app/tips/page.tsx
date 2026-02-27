@@ -21,6 +21,13 @@ export default function TipsManagerPage() {
         setIsSheetOpen(true);
     };
 
+    const groupedTips = receivedTips.reduce((acc, tip) => {
+        const group = tip.dateGroup || 'KHÁC';
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(tip);
+        return acc;
+    }, {} as Record<string, typeof receivedTips>);
+
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
 
@@ -105,21 +112,28 @@ export default function TipsManagerPage() {
                 {/* GẦN ĐÂY SECTION */}
                 <section className="mb-4">
                     <h2 className="text-lg font-bold text-[#1E293B] mb-4">Gần đây</h2>
-                    <div className="flex flex-col gap-3">
-                        {receivedTips.map(tip => (
-                            <div key={tip.id} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-500">
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-[#1E293B] text-sm">{tip.customerName}</h3>
-                                        <p className="text-xs text-[#94A3B8] font-medium">{tip.time}</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                    <span className="text-lg font-black text-[#1E293B]">+ {tip.amount.toLocaleString('vi-VN')}đ</span>
-                                    <span className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold">Đã nhận</span>
+                    <div className="flex flex-col gap-6">
+                        {Object.entries(groupedTips).map(([dateGroup, tipsList]) => (
+                            <div key={dateGroup}>
+                                <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">{dateGroup}</h3>
+                                <div className="flex flex-col gap-3">
+                                    {tipsList.map(tip => (
+                                        <div key={tip.id} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-500">
+                                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-[#1E293B] text-sm">{tip.customerName}</h3>
+                                                    <p className="text-xs text-[#94A3B8] font-medium">{tip.time}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="text-lg font-black text-[#1E293B]">+ {tip.amount.toLocaleString('vi-VN')}đ</span>
+                                                <span className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold">Đã nhận</span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         ))}

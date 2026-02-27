@@ -6,6 +6,7 @@ interface Tip {
     amount: number;
     description: string;
     time: string;
+    dateGroup?: string;
     status: 'pending' | 'received';
     type: string; // e.g., 'nail', 'hair'
 }
@@ -36,7 +37,8 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             customerName: 'Chị Lan VIP',
             amount: 200000,
             description: 'Làm Nail combo',
-            time: 'Hôm qua',
+            time: '09:00',
+            dateGroup: 'HÔM QUA',
             status: 'pending',
             type: 'nail'
         },
@@ -45,7 +47,8 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             customerName: 'Anh Tuấn',
             amount: 250000,
             description: 'Gội đầu',
-            time: '2 ngày trước',
+            time: '14:30',
+            dateGroup: '2 NGÀY TRƯỚC',
             status: 'pending',
             type: 'hair'
         },
@@ -54,7 +57,8 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             customerName: 'Khách lẻ',
             amount: 50000,
             description: '',
-            time: '10:45 Hôm nay',
+            time: '10:45',
+            dateGroup: 'HÔM NAY',
             status: 'received',
             type: 'other'
         },
@@ -63,9 +67,20 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             customerName: 'Chị Ngọc',
             amount: 100000,
             description: '',
-            time: '15:20 Hôm qua',
+            time: '15:20',
+            dateGroup: 'HÔM QUA',
             status: 'received',
             type: 'other'
+        },
+        {
+            id: 't5',
+            customerName: 'Khách làm tóc',
+            amount: 150000,
+            description: 'Tip gội sấy',
+            time: '11:15',
+            dateGroup: 'HÔM QUA',
+            status: 'received',
+            type: 'hair'
         }
     ],
     receiveTip: (tipId, walletId) => set((state) => {

@@ -39,12 +39,12 @@ export default function DashboardPage() {
 
         {/* QUICK ACTIONS */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-            <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-teal-100 shadow-sm group-hover:shadow-md transition-shadow">
-              <svg className="h-7 w-7 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+          <Link href="/add-income" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
+            <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-emerald-100 shadow-sm group-hover:shadow-md transition-shadow">
+              <svg className="h-7 w-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
             </div>
             <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Thu Nhập</span>
-          </div>
+          </Link>
 
           <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
             <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-pink-100 shadow-sm group-hover:shadow-md transition-shadow">
