@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function GoalsPage() {
     const router = useRouter();
@@ -61,10 +62,10 @@ export default function GoalsPage() {
                         <p className="text-xs font-bold text-right text-[#94A3B8]">Đã gom: 15.000.000 đ</p>
                     </div>
 
-                    <button className="w-full bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] hover:opacity-90 text-white font-bold py-4 rounded-[1.5rem] mt-2 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-pink-200">
+                    <Link href="/add-goal" className="w-full bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] hover:opacity-90 text-white font-bold py-4 rounded-[1.5rem] mt-2 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-pink-200">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                         Thêm mục tiêu
-                    </button>
+                    </Link>
                 </section>
             </main>
 

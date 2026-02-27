@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function WalletsPage() {
     const router = useRouter();
@@ -68,10 +69,10 @@ export default function WalletsPage() {
                         </div>
                     </div>
 
-                    <button className="w-full bg-white border-2 border-dashed border-pink-200 text-[#EC4899] hover:bg-pink-50/50 font-bold py-4 rounded-[1.5rem] mt-2 transition-colors flex items-center justify-center gap-2">
+                    <Link href="/add-wallet" className="w-full bg-white border-2 border-dashed border-pink-200 text-[#EC4899] hover:bg-pink-50/50 font-bold py-4 rounded-[1.5rem] mt-2 transition-colors flex items-center justify-center gap-2">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                         Thêm ví mới
-                    </button>
+                    </Link>
                 </section>
             </main>
 
