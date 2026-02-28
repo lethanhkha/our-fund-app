@@ -9,6 +9,7 @@ interface Tip {
     dateGroup?: string;
     status: 'pending' | 'received';
     type: string; // e.g., 'nail', 'hair'
+    walletId?: string; // To track which wallet received it for undo
 }
 
 interface Wallet {
@@ -21,7 +22,8 @@ interface FinanceState {
     balance: number;
     wallets: Wallet[];
     tips: Tip[];
-    receiveTip: (tipId: string, walletId: string) => void;
+    receiveTips: (tipIds: string[], walletId: string) => void;
+    undoReceiveTip: (tipId: string) => void;
 }
 
 export const useFinanceStore = create<FinanceState>((set) => ({
@@ -83,29 +85,50 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             type: 'hair'
         }
     ],
-    receiveTip: (tipId, walletId) => set((state) => {
+    receiveTips: (tipIds, walletId) => set((state) => {
+        let totalAmount = 0;
+        const updatedTips = state.tips.map(tip => {
+            if (tipIds.includes(tip.id) && tip.status === 'pending') {
+                totalAmount += tip.amount;
+                return { ...tip, status: 'received' as const, walletId };
+            }
+            return tip;
+        });
+
+        if (totalAmount === 0) return state;
+
+        const updatedWallets = state.wallets.map(wallet =>
+            wallet.id === walletId
+                ? { ...wallet, balance: wallet.balance + totalAmount }
+                : wallet
+        );
+
+        return {
+            tips: updatedTips,
+            wallets: updatedWallets,
+            balance: state.balance + totalAmount
+        };
+    }),
+    undoReceiveTip: (tipId) => set((state) => {
         const tipIndex = state.tips.findIndex(t => t.id === tipId);
         if (tipIndex === -1) return state;
 
         const tip = state.tips[tipIndex];
-        if (tip.status === 'received') return state; // Already received
+        if (tip.status === 'pending' || !tip.walletId) return state;
 
-        // 1. Update tip status
         const updatedTips = [...state.tips];
-        updatedTips[tipIndex] = { ...tip, status: 'received' };
+        updatedTips[tipIndex] = { ...tip, status: 'pending' as const, walletId: undefined };
 
-        // 2. Add amount to selected wallet
         const updatedWallets = state.wallets.map(wallet =>
-            wallet.id === walletId
-                ? { ...wallet, balance: wallet.balance + tip.amount }
+            wallet.id === tip.walletId
+                ? { ...wallet, balance: wallet.balance - tip.amount }
                 : wallet
         );
 
-        // 3. Update total balance
         return {
             tips: updatedTips,
             wallets: updatedWallets,
-            balance: state.balance + tip.amount
+            balance: state.balance - tip.amount
         };
     })
 }));

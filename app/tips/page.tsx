@@ -10,23 +10,20 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 export default function TipsManagerPage() {
     const router = useRouter();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const [selectedTipId, setSelectedTipId] = useState<string | null>(null);
-    const { tips } = useFinanceStore();
+    const [selectedTipIds, setSelectedTipIds] = useState<string[]>([]);
+    const { tips, undoReceiveTip } = useFinanceStore();
 
-    const pendingTips = tips.filter(tip => tip.status === 'pending');
-    const receivedTips = tips.filter(tip => tip.status === 'received');
-
-    const handleOpenSheet = (id: string) => {
-        setSelectedTipId(id);
+    const handleOpenSheet = (ids: string[]) => {
+        setSelectedTipIds(ids);
         setIsSheetOpen(true);
     };
 
-    const groupedTips = receivedTips.reduce((acc, tip) => {
+    const groupedTips = tips.reduce((acc, tip) => {
         const group = tip.dateGroup || 'KHÁC';
         if (!acc[group]) acc[group] = [];
         acc[group].push(tip);
         return acc;
-    }, {} as Record<string, typeof receivedTips>);
+    }, {} as Record<string, typeof tips>);
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -74,69 +71,63 @@ export default function TipsManagerPage() {
                     </div>
                 </section>
 
-                {/* CẦN THU GẤP SECTION */}
-                <section className="mb-8 relative z-10">
-                    <h2 className="text-lg font-bold text-[#1E293B] mb-4 flex items-center gap-2">
-                        Cần thu gấp
-                        <span className="bg-[#fee2e2] text-[#F43F5E] px-2 py-0.5 rounded-full text-xs font-bold">{pendingTips.length}</span>
-                    </h2>
-
-                    <div className="flex flex-col gap-4">
-                        {pendingTips.map(tip => (
-                            <div key={tip.id} className="bg-white rounded-[2rem] p-5 shadow-sm border-2 border-[#fee2e2]">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
-                                            {tip.customerName.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-[#1E293B] text-base">{tip.customerName}</h3>
-                                            <p className="text-xs text-[#94A3B8] font-medium">{tip.time} {tip.description && `• ${tip.description}`}</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-xl font-black text-[#F43F5E]">{tip.amount.toLocaleString('vi-VN')}đ</span>
-                                </div>
-                                <button
-                                    onClick={() => handleOpenSheet(tip.id)}
-                                    className="w-full bg-[#F43F5E]/10 hover:bg-[#F43F5E]/20 text-[#F43F5E] flex items-center justify-center gap-2 py-3.5 rounded-full font-bold transition-colors">
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                                    Đã nhận
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-
-
-                {/* GẦN ĐÂY SECTION */}
+                {/* DANH SÁCH SECTION */}
                 <section className="mb-4">
-                    <h2 className="text-lg font-bold text-[#1E293B] mb-4">Gần đây</h2>
                     <div className="flex flex-col gap-6">
-                        {Object.entries(groupedTips).map(([dateGroup, tipsList]) => (
-                            <div key={dateGroup}>
-                                <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">{dateGroup}</h3>
-                                <div className="flex flex-col gap-3">
-                                    {tipsList.map(tip => (
-                                        <div key={tip.id} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-500">
-                                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                        {Object.entries(groupedTips).map(([dateGroup, tipsList]) => {
+                            const pendingTips = tipsList.filter(t => t.status === 'pending');
+                            return (
+                                <div key={dateGroup}>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">{dateGroup}</h3>
+                                        {pendingTips.length > 0 && (
+                                            <button
+                                                onClick={() => handleOpenSheet(pendingTips.map(t => t.id))}
+                                                className="text-[#F43F5E] text-xs font-bold hover:underline"
+                                            >
+                                                Nhận tất cả 💸
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        {tipsList.map(tip => (
+                                            <div key={tip.id} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
+                                                        {tip.customerName.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-bold text-[#1E293B] text-sm">{tip.customerName}</h3>
+                                                        <p className="text-xs text-[#94A3B8] font-medium">{tip.time} {tip.description && `• ${tip.description}`}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h3 className="font-bold text-[#1E293B] text-sm">{tip.customerName}</h3>
-                                                    <p className="text-xs text-[#94A3B8] font-medium">{tip.time}</p>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <span className={`text-lg font-black ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
+                                                        + {tip.amount.toLocaleString('vi-VN')}đ
+                                                    </span>
+                                                    {tip.status === 'received' ? (
+                                                        <button
+                                                            onClick={() => undoReceiveTip(tip.id)}
+                                                            title="Hoàn tác"
+                                                            className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
+                                                        >
+                                                            Đã nhận
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleOpenSheet([tip.id])}
+                                                            className="bg-[#F43F5E] hover:bg-[#E11D48] text-white px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
+                                                        >
+                                                            Đã nhận
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end gap-1">
-                                                <span className="text-lg font-black text-[#1E293B]">+ {tip.amount.toLocaleString('vi-VN')}đ</span>
-                                                <span className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold">Đã nhận</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </section>
 
@@ -154,7 +145,7 @@ export default function TipsManagerPage() {
 
             {/* WALLET SELECTOR BOTTOM SHEET */}
             <BottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
-                <WalletSelector tipId={selectedTipId} onConfirm={() => setIsSheetOpen(false)} />
+                <WalletSelector tipIds={selectedTipIds} onConfirm={() => setIsSheetOpen(false)} />
             </BottomSheet>
         </div>
     );

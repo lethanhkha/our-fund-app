@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import { useFinanceStore } from '@/store/useFinanceStore';
 
 interface WalletSelectorProps {
-    tipId: string | null;
+    tipIds: string[];
     onConfirm: () => void;
 }
 
-export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipId, onConfirm }) => {
+export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipIds, onConfirm }) => {
     const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
-    const { receiveTip } = useFinanceStore();
+    const { receiveTips } = useFinanceStore();
 
     const wallets = [
         { id: 'cash', icon: <span className="text-2xl">💵</span>, label: 'Tiền mặt', color: 'bg-green-50 text-green-500' },
@@ -50,8 +50,8 @@ export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipId, onConfirm
 
             <button
                 onClick={() => {
-                    if (selectedWallet && tipId) {
-                        receiveTip(tipId, selectedWallet);
+                    if (selectedWallet && tipIds.length > 0) {
+                        receiveTips(tipIds, selectedWallet);
                     }
                     onConfirm();
                 }}

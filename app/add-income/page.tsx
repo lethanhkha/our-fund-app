@@ -31,7 +31,7 @@ export default function AddIncomePage() {
             alert('Vui lòng chọn nguồn thu nhập');
             return;
         }
-        console.log({ amount, selectedCategory, note });
+        console.log({ amount: parseInt(amount) * 1000, selectedCategory, note });
         router.back();
     };
 
@@ -64,7 +64,7 @@ export default function AddIncomePage() {
                     </div>
                     <div className="flex items-baseline mt-4">
                         <span className="text-5xl font-black text-emerald-500 tracking-tight">
-                            {parseInt(amount).toLocaleString('vi-VN')}
+                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
                         </span>
                         <span className="text-xl font-bold text-emerald-500 ml-1">đ</span>
                     </div>

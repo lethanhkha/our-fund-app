@@ -26,7 +26,7 @@ export default function AddTipsPage() {
             alert('Vui lòng nhập số tiền');
             return;
         }
-        console.log({ amount, note });
+        console.log({ amount: parseInt(amount) * 1000, note });
         router.back();
     };
 
@@ -57,7 +57,7 @@ export default function AddTipsPage() {
                     </div>
                     <div className="flex items-baseline mt-4">
                         <span className="text-5xl font-black text-[#F43F5E] tracking-tight">
-                            {parseInt(amount).toLocaleString('vi-VN')}
+                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
                         </span>
                         <span className="text-xl font-bold text-[#F43F5E] ml-1">đ</span>
                     </div>
