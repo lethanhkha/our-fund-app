@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export default function AddGoalPage() {
     const router = useRouter();
@@ -9,12 +10,25 @@ export default function AddGoalPage() {
     const [targetDate, setTargetDate] = useState('');
 
     const handleSave = () => {
+        const amount = parseInt(targetAmount.replace(/\D/g, '') || '0', 10);
+
+        if (!name.trim()) {
+            toast.error("Vui lòng nhập tên mục tiêu!");
+            return;
+        }
+
+        if (amount <= 0) {
+            toast.error("Sao lại không có số tiền cần đạt được nè? 🥺");
+            return;
+        }
+
         const data = {
             name,
-            targetAmount: parseInt(targetAmount.replace(/\D/g, '') || '0', 10),
+            targetAmount: amount,
             targetDate
         };
         console.log('Saved Goal:', data);
+        toast.success("Tạo mục tiêu thành công! 🎯");
         router.back();
     };
 

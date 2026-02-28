@@ -1,5 +1,7 @@
 'use client';
 import React, { useState } from 'react';
+import confetti from 'canvas-confetti';
+import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
 import { useFinanceStore } from '../../store/useFinanceStore';
@@ -23,18 +25,26 @@ export default function AddTipsPage() {
         }
     };
 
-    const handleConfirm = () => {
-        if (amount === '0') {
-            alert('Vui lòng nhập số tiền');
+    const handleConfirm = async () => {
+        if (parseInt(amount) <= 0) {
+            toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
 
-        addTip({
+        await addTip({
             amount: parseInt(amount) * 1000,
             description: note,
             customerName: 'Khách hàng', // Defaulting since we don't have an input for this yet
             type: 'other' // Defaulting
         });
+
+        confetti({
+            particleCount: 150,
+            spread: 90,
+            origin: { y: 0.6 },
+            colors: ['#F43F5E', '#10B981', '#3B82F6', '#F59E0B']
+        });
+        toast.success('Đã nhận tips! 💖');
 
         router.back();
     };

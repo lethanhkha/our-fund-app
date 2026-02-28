@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { toast } from 'react-hot-toast';
 import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function AddExpensePage() {
@@ -39,27 +40,36 @@ export default function AddExpensePage() {
     };
 
     const handleConfirm = () => {
-        if (amount === '0') {
-            alert('Vui lòng nhập số tiền');
+        const parsedAmount = parseInt(amount);
+
+        if (parsedAmount <= 0) {
+            toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
         if (!selectedCategory) {
-            alert('Vui lòng chọn danh mục');
+            toast.error('Chọn danh mục chi tiêu đã nè! 🏷️');
             return;
         }
         if (!selectedWalletId) {
-            alert('Vui lòng chọn ví!');
+            toast.error('Nhớ chọn ví nha em! 💳');
+            return;
+        }
+
+        const activeWallet = wallets.find(w => w.id === selectedWalletId);
+        if (activeWallet && (parsedAmount * 1000) > activeWallet.balance) { // Compare actual amount with balance
+            toast.error("Oops! Ví này hông đủ tiền rồi! 💸");
             return;
         }
 
         addTransaction({
             type: 'expense',
             categoryId: selectedCategory,
-            amount: parseInt(amount) * 1000,
+            amount: parsedAmount * 1000, // Keep original amount calculation
             note: note,
             walletId: selectedWalletId // Use selected wallet
         });
 
+        toast.success('Thêm giao dịch thành công! 🎉');
         router.back();
     };
 

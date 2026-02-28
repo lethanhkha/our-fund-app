@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { toast } from 'react-hot-toast';
 
 const ICONS = [
     { id: 'cash', label: 'Tiền mặt', emoji: '💵' },
@@ -36,13 +37,24 @@ export default function AddWalletPage() {
     };
 
     const handleSave = () => {
+        const parsedAmount = parseInt(amount, 10);
+        if (!name.trim()) {
+            toast.error("Vui lòng nhập tên ví!");
+            return;
+        }
+        if (parsedAmount <= 0) {
+            toast.error("Ví mới nên có chút tiền chứ ta! 🥺");
+            return;
+        }
+
         const data = {
-            name,
-            amount: parseInt(amount, 10),
+            name: name.trim(),
+            amount: parsedAmount,
             icon: selectedIcon,
             color: selectedColor
         };
         console.log('Saved Wallet:', data);
+        toast.success("Thêm ví thành công! 💳");
         router.back();
     };
 

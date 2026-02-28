@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'react-hot-toast';
 
 export interface Transaction {
     id: string;
@@ -173,6 +174,7 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Lỗi khi thêm danh mục:", error?.message || JSON.stringify(error));
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
                 }
             },
 
@@ -186,6 +188,7 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Lỗi khi xóa danh mục:", error?.message || JSON.stringify(error));
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
                 }
             },
 
@@ -193,9 +196,13 @@ export const useFinanceStore = create<FinanceState>()(
                 try {
                     const state = get();
                     const wallet = state.wallets.find(w => w.id === transactionData.walletId);
-                    if (!wallet) throw new Error("Không tìm thấy ví!");
+                    if (!wallet) {
+                        toast.error("Không tìm thấy ví!");
+                        throw new Error("Không tìm thấy ví!");
+                    }
 
                     if (transactionData.type === 'expense' && transactionData.amount > wallet.balance) {
+                        toast.error('Số dư ví không đủ!');
                         throw new Error('Số dư ví không đủ!');
                     }
                     // 1. Insert into transactions table
@@ -281,9 +288,9 @@ export const useFinanceStore = create<FinanceState>()(
                         });
                     }
 
-                    // 3. Refresh data
                     await get().fetchInitialData();
                 } catch (error: any) {
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
                 }
             },

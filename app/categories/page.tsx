@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import EmojiPicker from 'emoji-picker-react';
+import { toast } from 'react-hot-toast';
 
 export default function CategoriesManagementPage() {
     const router = useRouter();
@@ -19,7 +20,7 @@ export default function CategoriesManagementPage() {
 
     const handleAdd = async () => {
         if (!newName.trim()) {
-            alert("Vui lòng nhập tên danh mục");
+            toast.error("Vui lòng nhập tên danh mục");
             return;
         }
         await addCategory({
@@ -30,12 +31,34 @@ export default function CategoriesManagementPage() {
         setNewName('');
         setNewIcon('✨');
         setIsAdding(false);
+        toast.success('Thêm danh mục thành công! ✨');
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (confirm(`Bạn có chắc muốn xóa danh mục "${name}"? Các giao dịch cũ có thể mất icon tương ứng.`)) {
-            await deleteCategory(id);
-        }
+        toast((t) => (
+            <div className="flex flex-col gap-2">
+                <span className="font-bold">Xóa "{name}"?</span>
+                <span className="text-sm">Giao dịch cũ có thể mất icon.</span>
+                <div className="flex gap-2 mt-2">
+                    <button
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            await deleteCategory(id);
+                            toast.success('Đã xóa danh mục!');
+                        }}
+                    >
+                        Xóa
+                    </button>
+                    <button
+                        className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full"
+                        onClick={() => toast.dismiss(t.id)}
+                    >
+                        Thôi
+                    </button>
+                </div>
+            </div>
+        ), { duration: 5000 });
     };
 
     return (

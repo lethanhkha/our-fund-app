@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { toast } from 'react-hot-toast'; // Added import for toast
 import { useFinanceStore } from '../../store/useFinanceStore';
 import confetti from 'canvas-confetti';
 
@@ -40,26 +41,30 @@ export default function AddIncomePage() {
     };
 
     const handleConfirm = () => {
-        if (amount === '0') {
-            alert('Vui lòng nhập số tiền');
+        const numericAmount = parseFloat(amount); // Convert amount to number for validation
+
+        if (numericAmount <= 0) { // Changed condition and alert to toast
+            toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
-        if (!selectedCategory) {
-            alert('Vui lòng chọn nguồn thu nhập');
+        if (!selectedCategory) { // Changed alert to toast
+            toast.error('Chọn danh mục thu nhập đã nè! 🏷️');
             return;
         }
-        if (!selectedWalletId) {
-            alert('Vui lòng chọn ví!');
+        if (!selectedWalletId) { // Changed alert to toast
+            toast.error('Nhớ chọn ví nha em! 💳');
             return;
         }
 
         addTransaction({
             type: 'income',
             categoryId: selectedCategory,
-            amount: parseInt(amount) * 1000,
+            amount: numericAmount * 1000, // Keep original amount calculation logic
             note: note,
             walletId: selectedWalletId // Use selected wallet
         });
+
+        toast.success('Thêm giao dịch thành công! 🎉'); // Added success toast
 
         // Trigger confetti celebration
         confetti({
