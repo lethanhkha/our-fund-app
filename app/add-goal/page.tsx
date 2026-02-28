@@ -2,14 +2,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function AddGoalPage() {
     const router = useRouter();
+    const { addGoal } = useFinanceStore();
     const [name, setName] = useState('');
     const [targetAmount, setTargetAmount] = useState('');
     const [targetDate, setTargetDate] = useState('');
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const amount = parseInt(targetAmount.replace(/\D/g, '') || '0', 10);
 
         if (!name.trim()) {
@@ -22,14 +24,17 @@ export default function AddGoalPage() {
             return;
         }
 
-        const data = {
-            name,
-            targetAmount: amount,
-            targetDate
-        };
-        console.log('Saved Goal:', data);
-        toast.success("Tạo mục tiêu thành công! 🎯");
-        router.back();
+        try {
+            await addGoal({
+                name,
+                targetAmount: amount,
+                deadline: targetDate
+            });
+            toast.success("Tạo mục tiêu thành công! 🎯");
+            router.back();
+        } catch (error) {
+            // Lỗi đã được xử lý bằng toast ở store
+        }
     };
 
     // Simple formatting for currency input

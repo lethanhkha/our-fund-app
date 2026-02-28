@@ -71,6 +71,7 @@ interface FinanceState {
     receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
     undoReceiveTip: (tipId: string) => Promise<void>;
     deleteTip: (tipId: string) => Promise<void>;
+    addGoal: (goal: Pick<Goal, 'name' | 'targetAmount' | 'deadline'>) => Promise<void>;
 }
 
 // Utility to categorize dates for tips
@@ -200,6 +201,7 @@ export const useFinanceStore = create<FinanceState>()(
                         .delete()
                         .eq('id', categoryId);
                     if (error) throw error;
+                    toast.success('Xóa danh mục thành công! 🗑️');
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Lỗi khi xóa danh mục:", error?.message || JSON.stringify(error));
@@ -477,6 +479,26 @@ export const useFinanceStore = create<FinanceState>()(
                 } catch (error: any) {
                     toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
                     console.error("Lỗi khi xóa Tip:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            addGoal: async (goalData) => {
+                try {
+                    const { error } = await supabase
+                        .from('goals')
+                        .insert({
+                            name: goalData.name,
+                            target_amount: goalData.targetAmount,
+                            current_amount: 0,
+                            target_date: goalData.deadline || null
+                        });
+
+                    if (error) throw error;
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi khi thêm mục tiêu:", error?.message || JSON.stringify(error));
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    throw error;
                 }
             }
         }),
