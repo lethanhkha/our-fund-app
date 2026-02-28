@@ -9,7 +9,8 @@ export default function AddExpensePage() {
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('eat');
     const [note, setNote] = useState('');
-    const { addTransaction } = useFinanceStore();
+    const [selectedWalletId, setSelectedWalletId] = useState('cash');
+    const { wallets, addTransaction } = useFinanceStore();
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -39,7 +40,7 @@ export default function AddExpensePage() {
             categoryId: selectedCategory,
             amount: parseInt(amount) * 1000,
             note: note,
-            walletId: 'cash' // Default wallet for now
+            walletId: selectedWalletId // Use selected wallet
         });
 
         router.back();
@@ -66,7 +67,29 @@ export default function AddExpensePage() {
                 </div>
             </header>
 
-            <main className="px-6 mt-4 flex-grow flex flex-col">
+            <main className="px-6 py-6 flex-grow flex flex-col">
+                {/* WALLET SELECTOR */}
+                <div className="mb-6">
+                    <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Chọn ví chi tiêu</p>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        {wallets.map(w => (
+                            <button
+                                key={w.id}
+                                onClick={() => setSelectedWalletId(w.id)}
+                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${selectedWalletId === w.id
+                                        ? 'bg-[#F43F5E] text-white shadow-md'
+                                        : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {w.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-3">Danh mục</p>
+                </div>
 
                 {/* AMOUNT INPUT SECTION */}
                 <div className="flex flex-col items-center justify-center py-6 mb-6 relative">

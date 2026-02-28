@@ -1,13 +1,30 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BalanceCard } from '../components/ui/BalanceCard';
 import { BottomNav } from '../components/ui/BottomNav';
 import { useFinanceStore } from '../store/useFinanceStore';
 
+const LOVE_NOTES = [
+  'Hôm nay Embee làm việc vất vả rồi! 🌸',
+  'Cuối tuần anh dẫn đi ăn đồ nướng nhé! 🥩',
+  'Nhớ uống nhiều nước nha công chúa! 🧋',
+  'Hôm nay em thu được nhiều tips không? 💅',
+  'Yêu em bé nhất trên đời! ❤️',
+  'Nhớ nghỉ ngơi sớm dưỡng nhan siêu cấp nha! ✨',
+  'Làm ít thôi, anh nuôi cũng được! 🥰'
+];
+
 export default function DashboardPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
   const { wallets, tips, getTotalBalance } = useFinanceStore();
+  const [greeting, setGreeting] = useState('Chào công chúa của anh! 🌸');
+
+  useEffect(() => {
+    setIsMounted(true);
+    setGreeting(LOVE_NOTES[Math.floor(Math.random() * LOVE_NOTES.length)]);
+  }, []);
 
   const getWalletIcon = (id: string) => {
     switch (id) {
@@ -20,6 +37,8 @@ export default function DashboardPage() {
 
   const recentTips = tips.slice(0, 3); // Get 3 most recent tips
 
+  if (!isMounted) return null; // Prevent hydration mismatch
+
   return (
     <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
 
@@ -27,7 +46,7 @@ export default function DashboardPage() {
       <header className="px-6 pt-10 pb-2 flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <p className="text-[#EC4899] font-bold text-sm">Honey Money 🍯</p>
-          <h1 className="text-2xl font-extrabold text-[#1E293B]">Chào công chúa của anh! 🌸</h1>
+          <h1 className="text-2xl font-extrabold text-[#1E293B] max-w-[280px] leading-tight">{greeting}</h1>
         </div>
         <button
           onClick={() => setShowBalance(!showBalance)}

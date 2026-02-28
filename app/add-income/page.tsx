@@ -9,7 +9,8 @@ export default function AddIncomePage() {
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('salary');
     const [note, setNote] = useState('');
-    const { addTransaction } = useFinanceStore();
+    const [selectedWalletId, setSelectedWalletId] = useState('cash');
+    const { wallets, addTransaction } = useFinanceStore();
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -39,7 +40,7 @@ export default function AddIncomePage() {
             categoryId: selectedCategory,
             amount: parseInt(amount) * 1000,
             note: note,
-            walletId: 'cash' // Default wallet for now
+            walletId: selectedWalletId // Use selected wallet
         });
 
         router.back();
@@ -65,7 +66,25 @@ export default function AddIncomePage() {
                 </div>
             </header>
 
-            <main className="px-6 mt-4 flex-grow flex flex-col">
+            <main className="px-6 py-6 flex-grow flex flex-col">
+                {/* WALLET SELECTOR */}
+                <div className="mb-6">
+                    <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Nhận vào ví</p>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        {wallets.map(w => (
+                            <button
+                                key={w.id}
+                                onClick={() => setSelectedWalletId(w.id)}
+                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${selectedWalletId === w.id
+                                    ? 'bg-emerald-500 text-white shadow-md'
+                                    : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {w.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 {/* AMOUNT INPUT SECTION */}
                 <div className="flex flex-col items-center justify-center py-6 mb-6 relative">
@@ -74,9 +93,9 @@ export default function AddIncomePage() {
                     </div>
                     <div className="flex items-baseline mt-4">
                         <span className="text-5xl font-black text-emerald-500 tracking-tight">
-                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
+                            {amount === '0' || amount === '' ? '0' : (parseInt(amount)).toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-xl font-bold text-emerald-500 ml-1">đ</span>
+                        <span className="text-xl font-bold text-emerald-500 ml-1">.000 đ</span>
                     </div>
                 </div>
 
@@ -90,8 +109,8 @@ export default function AddIncomePage() {
                                 className="flex flex-col items-center gap-2 cursor-pointer"
                             >
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all ${selectedCategory === cat.id
-                                    ? 'bg-emerald-500 shadow-md transform scale-105'
-                                    : 'bg-gray-50 border border-gray-100 grayscale-[0.3]'
+                                        ? 'bg-emerald-500 shadow-md transform scale-105'
+                                        : 'bg-gray-50 border border-gray-100 grayscale-[0.3]'
                                     }`}>
                                     {cat.icon}
                                 </div>
@@ -117,7 +136,6 @@ export default function AddIncomePage() {
                         />
                     </div>
                 </div>
-
             </main>
 
             {/* FIXED BOTTOM SECTION (KEYPAD + BUTTON) */}
@@ -130,7 +148,6 @@ export default function AddIncomePage() {
                     Xác nhận
                 </button>
             </div>
-
         </div>
     );
 }
