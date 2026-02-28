@@ -93,9 +93,9 @@ export default function AddIncomePage() {
                     </div>
                     <div className="flex items-baseline mt-4">
                         <span className="text-5xl font-black text-emerald-500 tracking-tight">
-                            {amount === '0' || amount === '' ? '0' : (parseInt(amount)).toLocaleString('vi-VN')}
+                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-xl font-bold text-emerald-500 ml-1">.000 đ</span>
+                        <span className="text-xl font-bold text-emerald-500 ml-1">đ</span>
                     </div>
                 </div>
 
@@ -109,8 +109,8 @@ export default function AddIncomePage() {
                                 className="flex flex-col items-center gap-2 cursor-pointer"
                             >
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all ${selectedCategory === cat.id
-                                        ? 'bg-emerald-500 shadow-md transform scale-105'
-                                        : 'bg-gray-50 border border-gray-100 grayscale-[0.3]'
+                                    ? 'bg-emerald-500 shadow-md transform scale-105'
+                                    : 'bg-gray-50 border border-gray-100 grayscale-[0.3]'
                                     }`}>
                                     {cat.icon}
                                 </div>

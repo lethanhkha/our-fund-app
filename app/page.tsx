@@ -97,7 +97,9 @@ export default function DashboardPage() {
         <section className="mb-8 overflow-hidden -mx-6 px-6">
           <div className="flex justify-between items-end mb-4 pr-2">
             <h2 className="text-lg font-bold text-[#1E293B]">Ví của em</h2>
-            <button className="text-[#F43F5E] text-sm font-bold">Xem tất cả</button>
+            <Link href="/wallets" className="text-[#F43F5E] text-sm font-bold hover:opacity-80 transition-opacity">
+              Xem tất cả
+            </Link>
           </div>
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
