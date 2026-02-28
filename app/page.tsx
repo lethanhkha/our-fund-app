@@ -6,13 +6,13 @@ import { BottomNav } from '../components/ui/BottomNav';
 import { useFinanceStore } from '../store/useFinanceStore';
 
 const LOVE_NOTES = [
-  'Hôm nay Embee làm việc vất vả rồi! 🌸',
-  'Cuối tuần anh dẫn đi ăn đồ nướng nhé! 🥩',
-  'Nhớ uống nhiều nước nha công chúa! 🧋',
-  'Hôm nay em thu được nhiều tips không? 💅',
-  'Yêu em bé nhất trên đời! ❤️',
-  'Nhớ nghỉ ngơi sớm dưỡng nhan siêu cấp nha! ✨',
-  'Làm ít thôi, anh nuôi cũng được! 🥰'
+  'Hôm nay embee làm việc vất vả òiii! 🌸',
+  'Cuối tuần anh dẫn đi ăn đồ nứnnn nhé! 🥩',
+  'Nhớ uống nhiều nước nha công chúaaa! 🧋',
+  'Hôm nay embe làm được nhìu tips hongg? 💅',
+  'Yêu embee nhất trên đời! ❤️',
+  'Nhớ nghỉ ngơi sớm dưỡng nhan siêu cấp nhaaaa! ✨',
+  'Làm ít hoyy, anh nuôi cũn đượcccc! 🥰'
 ];
 
 export default function DashboardPage() {
