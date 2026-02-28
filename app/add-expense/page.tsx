@@ -47,6 +47,10 @@ export default function AddExpensePage() {
             alert('Vui lòng chọn danh mục');
             return;
         }
+        if (!selectedWalletId) {
+            alert('Vui lòng chọn ví!');
+            return;
+        }
 
         addTransaction({
             type: 'expense',

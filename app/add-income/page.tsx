@@ -48,6 +48,10 @@ export default function AddIncomePage() {
             alert('Vui lòng chọn nguồn thu nhập');
             return;
         }
+        if (!selectedWalletId) {
+            alert('Vui lòng chọn ví!');
+            return;
+        }
 
         addTransaction({
             type: 'income',

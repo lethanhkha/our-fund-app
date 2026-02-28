@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import EmojiPicker from 'emoji-picker-react';
 
 export default function CategoriesManagementPage() {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function CategoriesManagementPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [newName, setNewName] = useState('');
     const [newIcon, setNewIcon] = useState('✨');
+    const [showPicker, setShowPicker] = useState(false);
 
     const displayedCategories = categories.filter(c => c.type === activeTab);
 
@@ -91,14 +93,32 @@ export default function CategoriesManagementPage() {
                     {isAdding ? (
                         <div className="mt-4 p-4 border border-dashed border-pink-200 bg-pink-50/30 rounded-2xl flex flex-col gap-3">
                             <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder="Icon (VD: 🍔)"
-                                    value={newIcon}
-                                    onChange={e => setNewIcon(e.target.value)}
-                                    className="w-16 px-3 py-2 text-center rounded-xl border border-pink-100 bg-white shadow-sm outline-none focus:border-[#F43F5E]"
-                                    maxLength={2}
-                                />
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPicker(!showPicker)}
+                                        className="w-16 h-[42px] px-3 py-2 text-center rounded-xl border border-pink-100 bg-white shadow-sm flex items-center justify-center text-xl hover:bg-gray-50 transition-colors"
+                                    >
+                                        {newIcon}
+                                    </button>
+                                    {showPicker && (
+                                        <div className="absolute top-12 left-0 z-50">
+                                            <div className="fixed inset-0" onClick={() => setShowPicker(false)}></div>
+                                            <div className="relative z-50 shadow-xl rounded-xl overflow-hidden" style={{ minWidth: '280px' }}>
+                                                <EmojiPicker
+                                                    onEmojiClick={(emojiData) => {
+                                                        setNewIcon(emojiData.emoji);
+                                                        setShowPicker(false);
+                                                    }}
+                                                    width={280}
+                                                    height={360}
+                                                    searchDisabled
+                                                    skinTonesDisabled
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 <input
                                     type="text"
                                     placeholder="Tên danh mục mới"
