@@ -168,7 +168,7 @@ export default function TransactionHistoryPage() {
                         onClick={() => {
                             setIsActionSheetOpen(false);
                             if (selectedTransactionId) {
-                                router.push(`/edit-transaction/${selectedTransactionId}`);
+                                router.push(`/edit-transaction?id=${selectedTransactionId}`);
                             }
                         }}
                         className="w-full bg-blue-50 text-blue-600 border border-blue-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"

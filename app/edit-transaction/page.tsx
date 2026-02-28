@@ -1,14 +1,14 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Keypad } from '../../../components/ui/Keypad';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Keypad } from '../../components/ui/Keypad';
 import { toast } from 'react-hot-toast';
-import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
-export default function EditTransactionPage() {
+function EditTransactionForm() {
     const router = useRouter();
-    const params = useParams();
-    const id = params.id as string;
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id') as string;
 
     const { transactions, wallets, categories, updateTransaction } = useFinanceStore();
 
@@ -196,5 +196,13 @@ export default function EditTransactionPage() {
             </div>
 
         </div>
+    );
+}
+
+export default function EditTransactionPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-[#64748B]">Đang tải...</div>}>
+            <EditTransactionForm />
+        </Suspense>
     );
 }
