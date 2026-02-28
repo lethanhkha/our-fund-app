@@ -9,8 +9,14 @@ export default function AddIncomePage() {
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('salary');
     const [note, setNote] = useState('');
-    const [selectedWalletId, setSelectedWalletId] = useState('cash');
+    const [selectedWalletId, setSelectedWalletId] = useState('');
     const { wallets, addTransaction } = useFinanceStore();
+
+    React.useEffect(() => {
+        if (wallets && wallets.length > 0 && !selectedWalletId) {
+            setSelectedWalletId(wallets[0].id);
+        }
+    }, [wallets, selectedWalletId]);
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {

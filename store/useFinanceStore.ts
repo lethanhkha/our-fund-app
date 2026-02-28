@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 
 export interface Transaction {
     id: string;
@@ -8,7 +9,7 @@ export interface Transaction {
     amount: number;
     note: string;
     time: string;
-    date: string; // ISO format or string representing date
+    date: string;
     walletId: string;
 }
 
@@ -20,7 +21,7 @@ export interface Goal {
     deadline: string;
 }
 
-interface Tip {
+export interface Tip {
     id: string;
     customerName: string;
     amount: number;
@@ -28,14 +29,16 @@ interface Tip {
     time: string;
     dateGroup?: string;
     status: 'pending' | 'received';
-    type: string; // e.g., 'nail', 'hair'
-    walletId?: string; // To track which wallet received it for undo
+    type: string;
+    walletId?: string;
 }
 
-interface Wallet {
+export interface Wallet {
     id: string;
     name: string;
     balance: number;
+    icon?: string;
+    color?: string;
 }
 
 interface FinanceState {
@@ -48,193 +51,224 @@ interface FinanceState {
     getTotalBalance: () => number;
 
     // Actions
-    addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => void;
-    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => void;
-    receiveTips: (tipIds: string[], walletId: string) => void;
-    undoReceiveTip: (tipId: string) => void;
+    fetchInitialData: () => Promise<void>;
+    addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
+    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => Promise<void>;
+    receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
+    undoReceiveTip: (tipId: string) => Promise<void>;
 }
+
+// Utility to categorize dates for tips
+const getDateGroup = (dateStr: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const itemDate = dateStr.split('T')[0];
+
+    if (itemDate === today) return 'HÔM NAY';
+    if (itemDate === yesterday) return 'HÔM QUA';
+    return itemDate; // Fallback
+};
 
 export const useFinanceStore = create<FinanceState>()(
     persist(
         (set, get) => ({
-            wallets: [
-                { id: 'cash', name: 'Tiền mặt', balance: 2500000 },
-                { id: 'tcb', name: 'Techcombank', balance: 9000000 },
-                { id: 'momo', name: 'MoMo', balance: 1000000 },
-            ],
-            tips: [
-                {
-                    id: 't1',
-                    customerName: 'Chị Lan VIP',
-                    amount: 200000,
-                    description: 'Làm Nail combo',
-                    time: '09:00',
-                    dateGroup: 'HÔM QUA',
-                    status: 'pending',
-                    type: 'nail'
-                },
-                {
-                    id: 't2',
-                    customerName: 'Anh Tuấn',
-                    amount: 250000,
-                    description: 'Gội đầu',
-                    time: '14:30',
-                    dateGroup: '2 NGÀY TRƯỚC',
-                    status: 'pending',
-                    type: 'hair'
-                },
-                {
-                    id: 't3',
-                    customerName: 'Khách lẻ',
-                    amount: 50000,
-                    description: '',
-                    time: '10:45',
-                    dateGroup: 'HÔM NAY',
-                    status: 'received',
-                    type: 'other'
-                },
-                {
-                    id: 't4',
-                    customerName: 'Chị Ngọc',
-                    amount: 100000,
-                    description: '',
-                    time: '15:20',
-                    dateGroup: 'HÔM QUA',
-                    status: 'received',
-                    type: 'other'
-                },
-                {
-                    id: 't5',
-                    customerName: 'Khách làm tóc',
-                    amount: 150000,
-                    description: 'Tip gội sấy',
-                    time: '11:15',
-                    dateGroup: 'HÔM QUA',
-                    status: 'received',
-                    type: 'hair'
-                }
-            ],
-            transactions: [
-                {
-                    id: 'tr1',
-                    type: 'income',
-                    categoryId: 'salary',
-                    amount: 15000000,
-                    note: 'Lương tháng',
-                    time: '15:00',
-                    date: new Date().toISOString().split('T')[0],
-                    walletId: 'tcb'
-                },
-                {
-                    id: 'tr2',
-                    type: 'expense',
-                    categoryId: 'eat',
-                    amount: 85000,
-                    note: 'Highlands Coffee',
-                    time: '10:30',
-                    date: new Date().toISOString().split('T')[0],
-                    walletId: 'momo'
-                },
-                {
-                    id: 'tr3',
-                    type: 'expense',
-                    categoryId: 'taxi',
-                    amount: 45000,
-                    note: 'Tiền Grab',
-                    time: '08:15',
-                    date: new Date().toISOString().split('T')[0],
-                    walletId: 'cash'
-                }
-            ],
+            wallets: [],
+            tips: [],
+            transactions: [],
             goals: [],
 
             getTotalBalance: () => {
                 const { wallets } = get();
-                return wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+                return wallets.reduce((sum, wallet) => sum + Number(wallet.balance), 0);
             },
 
-            addTransaction: (transactionData) => set((state) => {
-                const now = new Date();
-                const newTransaction: Transaction = {
-                    ...transactionData,
-                    id: 'tr_' + Date.now(),
-                    time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                    date: now.toISOString().split('T')[0]
-                };
+            fetchInitialData: async () => {
+                try {
+                    // Fetch wallets
+                    const { data: walletsData } = await supabase.from('wallets').select('*').order('created_at', { ascending: true });
 
-                const updatedWallets = state.wallets.map(wallet => {
-                    if (wallet.id === transactionData.walletId) {
+                    // Fetch transactions
+                    const { data: txData } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+
+                    // Fetch tips
+                    const { data: tipsData } = await supabase.from('tips').select('*').order('created_at', { ascending: false });
+
+                    // Fetch goals
+                    const { data: goalsData } = await supabase.from('goals').select('*').order('created_at', { ascending: true });
+
+                    set({
+                        wallets: (walletsData || []).map(w => ({
+                            id: w.id,
+                            name: w.name,
+                            balance: Number(w.balance),
+                            icon: w.icon,
+                            color: w.color
+                        })),
+                        transactions: (txData || []).map(tx => {
+                            const dateObj = new Date(tx.created_at);
+                            return {
+                                id: tx.id,
+                                walletId: tx.wallet_id,
+                                type: tx.type,
+                                amount: Number(tx.amount),
+                                categoryId: tx.category,
+                                note: tx.note || '',
+                                date: tx.created_at.split('T')[0],
+                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                            };
+                        }),
+                        tips: (tipsData || []).map(t => {
+                            const dateObj = new Date(t.created_at);
+                            return {
+                                id: t.id,
+                                customerName: t.customer,
+                                amount: Number(t.amount),
+                                description: t.service || '',
+                                status: t.status,
+                                walletId: t.wallet_id || undefined,
+                                type: 'other', // Defaulted or mapped
+                                dateGroup: getDateGroup(t.created_at),
+                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                            };
+                        }),
+                        goals: (goalsData || []).map(g => ({
+                            id: g.id,
+                            name: g.name,
+                            targetAmount: Number(g.target_amount),
+                            currentAmount: Number(g.current_amount),
+                            deadline: g.target_date || ''
+                        }))
+                    });
+                } catch (error: any) {
+                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            addTransaction: async (transactionData) => {
+                try {
+                    // 1. Insert into transactions table
+                    const dbTransaction = {
+                        wallet_id: transactionData.walletId,
+                        type: transactionData.type,
+                        amount: transactionData.amount,
+                        category: transactionData.categoryId,
+                        note: transactionData.note
+                    };
+                    const { data: newTx, error: txError } = await supabase
+                        .from('transactions')
+                        .insert(dbTransaction)
+                        .select()
+                        .single();
+
+                    if (txError) throw txError;
+
+                    // 2. Update wallet balance
+                    const state = get();
+                    const wallet = state.wallets.find(w => w.id === transactionData.walletId);
+                    if (wallet) {
                         const modifier = transactionData.type === 'income' ? 1 : -1;
-                        return { ...wallet, balance: wallet.balance + (transactionData.amount * modifier) };
+                        const newBalance = wallet.balance + (transactionData.amount * modifier);
+
+                        const { error: walletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: newBalance })
+                            .eq('id', wallet.id);
+
+                        if (walletError) throw walletError;
                     }
-                    return wallet;
-                });
 
-                return {
-                    transactions: [newTransaction, ...state.transactions],
-                    wallets: updatedWallets
-                };
-            }),
+                    // 3. Refresh data from cloud
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
 
-            addTip: (tipData) => set((state) => {
-                const now = new Date();
-                const newTip: Tip = {
-                    ...tipData,
-                    id: 'tip_' + Date.now(),
-                    time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                    dateGroup: 'HÔM NAY', // Default for now, can be computed based on real dates
-                    status: 'pending'
-                };
+            addTip: async (tipData) => {
+                try {
+                    const { error } = await supabase
+                        .from('tips')
+                        .insert({
+                            amount: tipData.amount,
+                            customer: tipData.customerName,
+                            service: tipData.description,
+                            status: 'pending'
+                        });
 
-                return {
-                    tips: [newTip, ...state.tips]
-                };
-            }),
+                    if (error) throw error;
 
-            receiveTips: (tipIds, walletId) => set((state) => {
-                let totalAmount = 0;
-                const updatedTips = state.tips.map(tip => {
-                    if (tipIds.includes(tip.id) && tip.status === 'pending') {
-                        totalAmount += tip.amount;
-                        return { ...tip, status: 'received' as const, walletId };
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            receiveTips: async (tipIds, walletId) => {
+                try {
+                    const state = get();
+                    const tipsToReceive = state.tips.filter(t => tipIds.includes(t.id) && t.status === 'pending');
+                    if (tipsToReceive.length === 0) return;
+
+                    const totalAmount = tipsToReceive.reduce((sum, tip) => sum + tip.amount, 0);
+
+                    // 1. Update all tips
+                    const { error: tipsError } = await supabase
+                        .from('tips')
+                        .update({ status: 'received', wallet_id: walletId })
+                        .in('id', tipIds);
+
+                    if (tipsError) throw tipsError;
+
+                    // 2. Update wallet balance
+                    const wallet = state.wallets.find(w => w.id === walletId);
+                    if (wallet) {
+                        const { error: walletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: wallet.balance + totalAmount })
+                            .eq('id', walletId);
+
+                        if (walletError) throw walletError;
                     }
-                    return tip;
-                });
 
-                if (totalAmount === 0) return state;
+                    // 3. Refresh data
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
 
-                const updatedWallets = state.wallets.map(wallet =>
-                    wallet.id === walletId
-                        ? { ...wallet, balance: wallet.balance + totalAmount }
-                        : wallet
-                );
+            undoReceiveTip: async (tipId) => {
+                try {
+                    const state = get();
+                    const tip = state.tips.find(t => t.id === tipId);
 
-                return {
-                    tips: updatedTips,
-                    wallets: updatedWallets
-                };
-            }),
-            undoReceiveTip: (tipId) => set((state) => {
-                const tipIndex = state.tips.findIndex(t => t.id === tipId);
-                if (tipIndex === -1) return state;
+                    if (!tip || tip.status === 'pending' || !tip.walletId) return;
 
-                const tip = state.tips[tipIndex];
-                if (tip.status === 'pending' || !tip.walletId) return state;
+                    // 1. Revert tip status
+                    const { error: tipError } = await supabase
+                        .from('tips')
+                        .update({ status: 'pending', wallet_id: null })
+                        .eq('id', tipId);
 
-                const updatedTips = [...state.tips];
-                updatedTips[tipIndex] = { ...tip, status: 'pending' as const, walletId: undefined };
+                    if (tipError) throw tipError;
 
-                const updatedWallets = state.wallets.map(wallet =>
-                    wallet.id === tip.walletId
-                        ? { ...wallet, balance: wallet.balance - tip.amount }
-                        : wallet
-                );
+                    // 2. Revert wallet balance
+                    const wallet = state.wallets.find(w => w.id === tip.walletId);
+                    if (wallet) {
+                        const { error: walletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: wallet.balance - tip.amount })
+                            .eq('id', wallet.id);
 
-                return {
-                    tips: updatedTips,
-                    wallets: updatedWallets
-                };
-            })
+                        if (walletError) throw walletError;
+                    }
+
+                    // 3. Refresh data
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            }
         }),
         {
             name: 'honey-money-storage',

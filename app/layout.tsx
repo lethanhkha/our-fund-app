@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
+import SupabaseProvider from "@/components/providers/SupabaseProvider";
 
 const quicksand = Quicksand({
   variable: "--font-quicksand",
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body
         className={`${quicksand.variable} antialiased`}
       >
-        {children}
+        <SupabaseProvider>
+          {children}
+        </SupabaseProvider>
       </body>
     </html>
   );

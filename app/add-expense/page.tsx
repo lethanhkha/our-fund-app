@@ -9,8 +9,14 @@ export default function AddExpensePage() {
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('eat');
     const [note, setNote] = useState('');
-    const [selectedWalletId, setSelectedWalletId] = useState('cash');
+    const [selectedWalletId, setSelectedWalletId] = useState('');
     const { wallets, addTransaction } = useFinanceStore();
+
+    React.useEffect(() => {
+        if (wallets && wallets.length > 0 && !selectedWalletId) {
+            setSelectedWalletId(wallets[0].id);
+        }
+    }, [wallets, selectedWalletId]);
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -77,8 +83,8 @@ export default function AddExpensePage() {
                                 key={w.id}
                                 onClick={() => setSelectedWalletId(w.id)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${selectedWalletId === w.id
-                                        ? 'bg-[#F43F5E] text-white shadow-md'
-                                        : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
+                                    ? 'bg-[#F43F5E] text-white shadow-md'
+                                    : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
                                     }`}
                             >
                                 {w.name}

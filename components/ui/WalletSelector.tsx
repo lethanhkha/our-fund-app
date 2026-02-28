@@ -10,13 +10,22 @@ interface WalletSelectorProps {
 
 export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipIds, onConfirm }) => {
     const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
-    const { receiveTips } = useFinanceStore();
+    const { receiveTips, wallets } = useFinanceStore();
 
-    const wallets = [
-        { id: 'cash', icon: <span className="text-2xl">💵</span>, label: 'Tiền mặt', color: 'bg-green-50 text-green-500' },
-        { id: 'tcb', icon: <span className="text-sm font-black text-red-600">TCB</span>, label: 'Techcombank', color: 'bg-red-50 text-red-500' },
-        { id: 'momo', icon: <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center text-white text-[10px] font-black">MoMo</div>, label: 'MoMo', color: 'bg-pink-50 text-pink-500' },
-    ];
+    // Helper to map icons based on name (if empty in DB)
+    const getWalletIcon = (name: string) => {
+        if (name.includes('Tiền mặt')) return <span className="text-2xl">💵</span>;
+        if (name.includes('Techcombank')) return <span className="text-sm font-black text-red-600">TCB</span>;
+        if (name.includes('MoMo')) return <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center text-white text-[10px] font-black">MoMo</div>;
+        return <span className="text-2xl">💳</span>;
+    };
+
+    const getWalletColor = (name: string) => {
+        if (name.includes('Tiền mặt')) return 'bg-green-50 text-green-500';
+        if (name.includes('Techcombank')) return 'bg-red-50 text-red-500';
+        if (name.includes('MoMo')) return 'bg-pink-50 text-pink-500';
+        return 'bg-blue-50 text-blue-500';
+    };
 
     return (
         <div className="flex flex-col gap-5 w-full">
@@ -32,11 +41,11 @@ export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipIds, onConfir
                             : 'border-transparent bg-gray-50 hover:bg-gray-100'
                             }`}
                     >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${wallet.color} mr-4`}>
-                            {wallet.icon}
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${getWalletColor(wallet.name)} mr-4`}>
+                            {getWalletIcon(wallet.name)}
                         </div>
                         <span className={`text-base font-bold ${selectedWallet === wallet.id ? 'text-[#F43F5E]' : 'text-[#1E293B]'}`}>
-                            {wallet.label}
+                            {wallet.name}
                         </span>
 
                         {selectedWallet === wallet.id && (
