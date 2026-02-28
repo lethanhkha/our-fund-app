@@ -12,30 +12,27 @@ export default function TransactionHistoryPage() {
     const [filter, setFilter] = useState('all');
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-    const { transactions } = useFinanceStore();
+    const { transactions, categories } = useFinanceStore();
 
-    // Lọc theo tháng (Giả lập lấy hết) và tính tổng
-    const totalMonth = transactions.reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
+    // Calculate this month's totals
+    const currentMonthStr = new Date().toISOString().substring(0, 7);
+    const thisMonthTransactions = transactions.filter(t => t.date.startsWith(currentMonthStr));
+    const totalIncome = thisMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = thisMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const netTotal = totalIncome - totalExpense;
 
-    // Group giao dịch theo ngày
-    const groupedTransactions = transactions.reduce((acc, current) => {
+    // Filter transactions based on active category
+    const filteredTransactions = filter === 'all' ? transactions : transactions.filter(t => t.categoryId === filter);
+
+    // Group giao dịch theo ngày từ danh sách đã lọc
+    const groupedTransactions = filteredTransactions.reduce((acc, current) => {
         const dateStr = current.date;
         if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(current);
         return acc;
     }, {} as Record<string, typeof transactions>);
 
-    // Helper cho icon danh mục
-    const getCategoryDetails = (categoryId: string) => {
-        switch (categoryId) {
-            case 'salary': return { icon: '💰', color: 'bg-emerald-50', title: 'Lương' };
-            case 'eat': return { icon: '🍔', color: 'bg-yellow-50', title: 'Ăn uống' };
-            case 'taxi': return { icon: '🚕', color: 'bg-blue-50', title: 'Di chuyển' };
-            case 'massage': return { icon: '💆‍♀️', color: 'bg-pink-50', title: 'Massage' };
-            case 'shop': return { icon: '🛍️', color: 'bg-purple-50', title: 'Mua sắm' };
-            default: return { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
-        }
-    };
+
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -60,10 +57,20 @@ export default function TransactionHistoryPage() {
                     <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                     <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
 
-                    <p className="text-white/80 text-sm font-medium mb-1 relative z-10">Tổng thu chi ròng</p>
-                    <div className="flex items-baseline relative z-10">
-                        <span className="text-4xl font-extrabold tracking-tight">{totalMonth.toLocaleString('vi-VN')}</span>
-                        <span className="text-xl font-bold ml-1 opacity-80">đ</span>
+                    <div className="relative z-10 flex flex-col gap-3">
+                        <div className="flex justify-between items-center text-white/90">
+                            <span className="text-sm font-medium">Tổng Thu (Tháng này)</span>
+                            <span className="font-bold text-green-100">+{totalIncome.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                        <div className="flex justify-between items-center text-white/90">
+                            <span className="text-sm font-medium">Tổng Chi (Tháng này)</span>
+                            <span className="font-bold text-red-100">-{totalExpense.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                        <div className="w-full h-px bg-white/30 my-1"></div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-white/90">Thu Chi Ròng</span>
+                            <span className="text-2xl font-extrabold">{netTotal.toLocaleString('vi-VN')} đ</span>
+                        </div>
                     </div>
                 </div>
 
@@ -75,24 +82,15 @@ export default function TransactionHistoryPage() {
                     >
                         Tất cả
                     </button>
-                    <button
-                        onClick={() => setFilter('food')}
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === 'food' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
-                    >
-                        Đồ ăn 🍔
-                    </button>
-                    <button
-                        onClick={() => setFilter('beauty')}
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === 'beauty' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
-                    >
-                        Làm đẹp 💅
-                    </button>
-                    <button
-                        onClick={() => setFilter('shop')}
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === 'shop' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
-                    >
-                        Mua sắm 🛍️
-                    </button>
+                    {categories.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setFilter(cat.id)}
+                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === cat.id ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                        >
+                            {cat.name} {cat.icon}
+                        </button>
+                    ))}
                 </div>
 
                 {/* DYNAMIC LIST */}
@@ -104,7 +102,9 @@ export default function TransactionHistoryPage() {
                             </h3>
                             <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
                                 {items.map((item, index) => {
-                                    const details = getCategoryDetails(item.categoryId);
+                                    const category = categories.find(c => c.id === item.categoryId);
+                                    const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
+
                                     return (
                                         <React.Fragment key={item.id}>
                                             <TransactionItem

@@ -33,6 +33,14 @@ export interface Tip {
     walletId?: string;
 }
 
+export interface Category {
+    id: string;
+    name: string;
+    icon: string;
+    type: 'income' | 'expense';
+    created_at?: string;
+}
+
 export interface Wallet {
     id: string;
     name: string;
@@ -43,6 +51,7 @@ export interface Wallet {
 
 interface FinanceState {
     wallets: Wallet[];
+    categories: Category[];
     tips: Tip[];
     transactions: Transaction[];
     goals: Goal[];
@@ -73,6 +82,7 @@ export const useFinanceStore = create<FinanceState>()(
     persist(
         (set, get) => ({
             wallets: [],
+            categories: [],
             tips: [],
             transactions: [],
             goals: [],
@@ -84,6 +94,9 @@ export const useFinanceStore = create<FinanceState>()(
 
             fetchInitialData: async () => {
                 try {
+                    // Fetch categories
+                    const { data: categoriesData } = await supabase.from('categories').select('*').order('created_at', { ascending: true });
+
                     // Fetch wallets
                     const { data: walletsData } = await supabase.from('wallets').select('*').order('created_at', { ascending: true });
 
@@ -97,6 +110,7 @@ export const useFinanceStore = create<FinanceState>()(
                     const { data: goalsData } = await supabase.from('goals').select('*').order('created_at', { ascending: true });
 
                     set({
+                        categories: categoriesData || [],
                         wallets: (walletsData || []).map(w => ({
                             id: w.id,
                             name: w.name,
@@ -146,6 +160,13 @@ export const useFinanceStore = create<FinanceState>()(
 
             addTransaction: async (transactionData) => {
                 try {
+                    const state = get();
+                    const wallet = state.wallets.find(w => w.id === transactionData.walletId);
+                    if (!wallet) throw new Error("Không tìm thấy ví!");
+
+                    if (transactionData.type === 'expense' && transactionData.amount > wallet.balance) {
+                        throw new Error('Số dư ví không đủ!');
+                    }
                     // 1. Insert into transactions table
                     const dbTransaction = {
                         wallet_id: transactionData.walletId,
@@ -163,8 +184,6 @@ export const useFinanceStore = create<FinanceState>()(
                     if (txError) throw txError;
 
                     // 2. Update wallet balance
-                    const state = get();
-                    const wallet = state.wallets.find(w => w.id === transactionData.walletId);
                     if (wallet) {
                         const modifier = transactionData.type === 'income' ? 1 : -1;
                         const newBalance = wallet.balance + (transactionData.amount * modifier);
@@ -219,15 +238,16 @@ export const useFinanceStore = create<FinanceState>()(
 
                     if (tipsError) throw tipsError;
 
-                    // 2. Update wallet balance
-                    const wallet = state.wallets.find(w => w.id === walletId);
-                    if (wallet) {
-                        const { error: walletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: wallet.balance + totalAmount })
-                            .eq('id', walletId);
-
-                        if (walletError) throw walletError;
+                    // 2. Auto sync tips to transactions
+                    const tipsCategory = get().categories.find(c => c.name === 'Tiền Tips');
+                    for (const tip of tipsToReceive) {
+                        await get().addTransaction({
+                            type: 'income',
+                            categoryId: tipsCategory?.id || '',
+                            amount: tip.amount,
+                            note: tip.description ? `Tiền tips: ${tip.description}` : `Tiền tips khách hàng`,
+                            walletId: walletId
+                        });
                     }
 
                     // 3. Refresh data

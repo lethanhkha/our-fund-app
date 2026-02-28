@@ -18,7 +18,7 @@ const LOVE_NOTES = [
 export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const { wallets, tips, getTotalBalance } = useFinanceStore();
+  const { wallets, tips, transactions, getTotalBalance } = useFinanceStore();
   const [greeting, setGreeting] = useState('Chào công chúa của anh! 🌸');
 
   useEffect(() => {
@@ -36,6 +36,31 @@ export default function DashboardPage() {
   };
 
   const recentTips = tips.slice(0, 3); // Get 3 most recent tips
+
+  const calculateTrend = () => {
+    const now = new Date();
+    const currentMonthPrefix = now.toISOString().substring(0, 7);
+
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthPrefix = lastMonth.toISOString().substring(0, 7);
+
+    const getNetForMonth = (prefix: string) => {
+      const monthTxs = transactions.filter(t => t.date.startsWith(prefix));
+      const inc = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const exp = monthTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      return inc - exp;
+    };
+
+    const currentNet = getNetForMonth(currentMonthPrefix);
+    const lastNet = getNetForMonth(lastMonthPrefix);
+
+    if (lastNet === 0) return currentNet > 0 ? 100 : 0;
+
+    const percentage = ((currentNet - lastNet) / Math.abs(lastNet)) * 100;
+    return Number(percentage.toFixed(1));
+  };
+
+  const trend = calculateTrend();
 
   if (!isMounted) return null; // Prevent hydration mismatch
 
@@ -67,6 +92,7 @@ export default function DashboardPage() {
           label="Tổng tài sản hiện có"
           totalBalance={showBalance ? getTotalBalance().toLocaleString('vi-VN') : "***"}
           currency={showBalance ? "đ" : ""}
+          trend={showBalance ? trend : undefined}
         />
 
         {/* QUICK ACTIONS */}

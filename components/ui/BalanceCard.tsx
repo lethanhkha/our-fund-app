@@ -5,9 +5,10 @@ interface BalanceCardProps {
     totalBalance: string;
     currency?: string;
     label?: string;
+    trend?: number;
 }
 
-export const BalanceCard: React.FC<BalanceCardProps> = ({ totalBalance, currency = 'đ', label = 'Tổng số dư hiện có' }) => {
+export const BalanceCard: React.FC<BalanceCardProps> = ({ totalBalance, currency = 'đ', label = 'Tổng số dư hiện có', trend }) => {
     return (
         <div className="bg-[linear-gradient(to_right,#FF9A9E,#FAD0C4)] rounded-[2rem] p-6 text-white shadow-lg shadow-[rgba(250,208,196,0.5)] relative overflow-hidden my-6">
             {/* Decorative elements */}
@@ -28,13 +29,19 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({ totalBalance, currency
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 relative z-10 mt-2">
-                <div className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                    <span className="text-xs font-bold">+2.5%</span>
+            {trend !== undefined && (
+                <div className="flex items-center gap-2 relative z-10 mt-2">
+                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-sm shadow-sm ${trend >= 0 ? 'bg-emerald-400/30 text-emerald-50' : 'bg-red-400/30 text-rose-50'}`}>
+                        {trend >= 0 ? (
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                        ) : (
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" /></svg>
+                        )}
+                        <span className="text-xs font-bold">{trend > 0 ? '+' : ''}{trend}%</span>
+                    </div>
+                    <span className="text-xs text-white/90 font-medium">So với tháng trước</span>
                 </div>
-                <span className="text-xs text-white/80 font-medium">So với tháng trước</span>
-            </div>
+            )}
         </div>
     );
 };

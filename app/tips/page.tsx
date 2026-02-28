@@ -14,12 +14,43 @@ export default function TipsManagerPage() {
     const [selectedTipIds, setSelectedTipIds] = useState<string[]>([]);
     const { tips, undoReceiveTip } = useFinanceStore();
 
+    const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
+
     const handleOpenSheet = (ids: string[]) => {
         setSelectedTipIds(ids);
         setIsSheetOpen(true);
     };
 
-    const groupedTips = tips.reduce((acc, tip) => {
+    const parseTipDate = (dateGroup?: string) => {
+        if (!dateGroup || dateGroup === 'KHÁC') return new Date(0);
+        const localNow = new Date();
+        if (dateGroup === 'HÔM NAY') return localNow;
+        if (dateGroup === 'HÔM QUA') {
+            const d = new Date(localNow);
+            d.setDate(d.getDate() - 1);
+            return d;
+        }
+        return new Date(dateGroup + 'T00:00:00');
+    };
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const filteredTips = tips.filter(t => {
+        if (timeFilter === 'all') return true;
+        const tipDate = parseTipDate(t.dateGroup);
+        if (timeFilter === 'week') return tipDate >= startOfWeek;
+        if (timeFilter === 'month') return tipDate >= startOfMonth;
+        return true;
+    });
+
+    const totalReceived = filteredTips.filter(t => t.status === 'received').reduce((sum, t) => sum + t.amount, 0);
+    const totalPending = filteredTips.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+
+    const groupedTips = filteredTips.reduce((acc, tip) => {
         const group = tip.dateGroup || 'KHÁC';
         if (!acc[group]) acc[group] = [];
         acc[group].push(tip);
@@ -48,10 +79,16 @@ export default function TipsManagerPage() {
                 <section className="mb-8">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-lg font-bold text-[#1E293B]">Hiệu suất</h2>
-                        <div className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                            Tuần này
-                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                        </div>
+                        <select
+                            value={timeFilter}
+                            onChange={(e) => setTimeFilter(e.target.value as any)}
+                            className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold outline-none cursor-pointer appearance-none text-center pr-6 relative shadow-sm"
+                            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23b45309%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                        >
+                            <option value="week">Tuần này</option>
+                            <option value="month">Tháng này</option>
+                            <option value="all">Tất cả</option>
+                        </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -60,14 +97,14 @@ export default function TipsManagerPage() {
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </div>
                             <p className="text-[#94A3B8] text-xs font-medium mb-1">Đã nhận</p>
-                            <p className="text-xl font-black text-[#1E293B]">1.250k</p>
+                            <p className="text-xl font-black text-[#1E293B]">{totalReceived.toLocaleString('vi-VN')} đ</p>
                         </div>
                         <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
                             <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-[#F43F5E] mb-3">
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </div>
                             <p className="text-[#94A3B8] text-xs font-medium mb-1">Đang chờ</p>
-                            <p className="text-xl font-black text-[#1E293B]">450k</p>
+                            <p className="text-xl font-black text-[#1E293B]">{totalPending.toLocaleString('vi-VN')} đ</p>
                         </div>
                     </div>
                 </section>
@@ -104,7 +141,7 @@ export default function TipsManagerPage() {
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1">
                                                     <span className={`text-lg font-black ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
-                                                        + {tip.amount.toLocaleString('vi-VN')}đ
+                                                        + {tip.amount.toLocaleString('vi-VN')} đ
                                                     </span>
                                                     {tip.status === 'received' ? (
                                                         <button
