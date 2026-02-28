@@ -61,6 +61,8 @@ interface FinanceState {
 
     // Actions
     fetchInitialData: () => Promise<void>;
+    addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
+    deleteCategory: (categoryId: string) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
     addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => Promise<void>;
     receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
@@ -155,6 +157,35 @@ export const useFinanceStore = create<FinanceState>()(
                     });
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            addCategory: async (categoryData) => {
+                try {
+                    const { error } = await supabase
+                        .from('categories')
+                        .insert({
+                            name: categoryData.name,
+                            icon: categoryData.icon,
+                            type: categoryData.type
+                        });
+                    if (error) throw error;
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi khi thêm danh mục:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            deleteCategory: async (categoryId) => {
+                try {
+                    const { error } = await supabase
+                        .from('categories')
+                        .delete()
+                        .eq('id', categoryId);
+                    if (error) throw error;
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi khi xóa danh mục:", error?.message || JSON.stringify(error));
                 }
             },
 

@@ -7,10 +7,17 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 export default function AddExpensePage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
-    const [selectedCategory, setSelectedCategory] = useState<string | null>('eat');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [note, setNote] = useState('');
     const [selectedWalletId, setSelectedWalletId] = useState('');
-    const { wallets, addTransaction } = useFinanceStore();
+    const { wallets, categories, addTransaction } = useFinanceStore();
+    const expenseCategories = categories.filter(c => c.type === 'expense');
+
+    React.useEffect(() => {
+        if (expenseCategories.length > 0 && !selectedCategory) {
+            setSelectedCategory(expenseCategories[0].id);
+        }
+    }, [expenseCategories, selectedCategory]);
 
     React.useEffect(() => {
         if (wallets && wallets.length > 0 && !selectedWalletId) {
@@ -52,13 +59,7 @@ export default function AddExpensePage() {
         router.back();
     };
 
-    const categories = [
-        { id: 'eat', icon: '🍜', label: 'Ăn uống' },
-        { id: 'massage', icon: '💆‍♀️', label: 'Massage' },
-        { id: 'shop', icon: '🛍️', label: 'Mua sắm' },
-        { id: 'coffee', icon: '☕', label: 'Cà phê' },
-        { id: 'taxi', icon: '🚕', label: 'Di chuyển' },
-    ];
+
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-white flex flex-col relative overflow-x-hidden">
@@ -113,7 +114,7 @@ export default function AddExpensePage() {
                 {/* CATEGORIES HORIZONTAL LIST */}
                 <div className="mb-8 -mx-6 px-6 overflow-x-auto no-scrollbar">
                     <div className="flex gap-4 pb-2">
-                        {categories.map((cat) => (
+                        {expenseCategories.map((cat) => (
                             <div
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
@@ -127,7 +128,7 @@ export default function AddExpensePage() {
                                 </div>
                                 <span className={`text-xs font-bold ${selectedCategory === cat.id ? 'text-[#EC4899]' : 'text-[#94A3B8]'
                                     }`}>
-                                    {cat.label}
+                                    {cat.name}
                                 </span>
                             </div>
                         ))}

@@ -8,10 +8,17 @@ import confetti from 'canvas-confetti';
 export default function AddIncomePage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
-    const [selectedCategory, setSelectedCategory] = useState<string | null>('salary');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [note, setNote] = useState('');
     const [selectedWalletId, setSelectedWalletId] = useState('');
-    const { wallets, addTransaction } = useFinanceStore();
+    const { wallets, categories, addTransaction } = useFinanceStore();
+    const incomeCategories = categories.filter(c => c.type === 'income');
+
+    React.useEffect(() => {
+        if (incomeCategories.length > 0 && !selectedCategory) {
+            setSelectedCategory(incomeCategories[0].id);
+        }
+    }, [incomeCategories, selectedCategory]);
 
     React.useEffect(() => {
         if (wallets && wallets.length > 0 && !selectedWalletId) {
@@ -63,12 +70,7 @@ export default function AddIncomePage() {
         }, 800);
     };
 
-    const categories = [
-        { id: 'salary', icon: '💰', label: 'Lương' },
-        { id: 'bonus', icon: '🎁', label: 'Thưởng' },
-        { id: 'sales', icon: '📈', label: 'Bán hàng' },
-        { id: 'other', icon: '✨', label: 'Khác' },
-    ];
+
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-white flex flex-col relative overflow-x-hidden">
@@ -119,7 +121,7 @@ export default function AddIncomePage() {
                 {/* CATEGORIES HORIZONTAL LIST */}
                 <div className="mb-8 -mx-6 px-6 overflow-x-auto no-scrollbar">
                     <div className="flex gap-4 pb-2">
-                        {categories.map((cat) => (
+                        {incomeCategories.map((cat) => (
                             <div
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
@@ -133,7 +135,7 @@ export default function AddIncomePage() {
                                 </div>
                                 <span className={`text-xs font-bold ${selectedCategory === cat.id ? 'text-emerald-500' : 'text-[#94A3B8]'
                                     }`}>
-                                    {cat.label}
+                                    {cat.name}
                                 </span>
                             </div>
                         ))}
