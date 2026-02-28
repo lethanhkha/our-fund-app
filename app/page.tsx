@@ -3,9 +3,22 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { BalanceCard } from '../components/ui/BalanceCard';
 import { BottomNav } from '../components/ui/BottomNav';
+import { useFinanceStore } from '../store/useFinanceStore';
 
 export default function DashboardPage() {
   const [showBalance, setShowBalance] = useState(false);
+  const { wallets, tips, getTotalBalance } = useFinanceStore();
+
+  const getWalletIcon = (id: string) => {
+    switch (id) {
+      case 'cash': return { icon: '💵', color: 'bg-teal-50 text-teal-500', isText: false };
+      case 'tcb': return { icon: 'TCB', color: 'bg-red-50 text-red-500 text-xs uppercase', isText: true };
+      case 'momo': return { icon: 'M', color: 'bg-pink-50 text-[#EC4899] text-xs', isText: true };
+      default: return { icon: '💳', color: 'bg-blue-50 text-blue-500', isText: false };
+    }
+  };
+
+  const recentTips = tips.slice(0, 3); // Get 3 most recent tips
 
   return (
     <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -33,7 +46,7 @@ export default function DashboardPage() {
         {/* BALANCE CARD */}
         <BalanceCard
           label="Tổng tài sản hiện có"
-          totalBalance={showBalance ? "18.520.000" : "***"}
+          totalBalance={showBalance ? getTotalBalance().toLocaleString('vi-VN') : "***"}
           currency={showBalance ? "đ" : ""}
         />
 
@@ -69,29 +82,20 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-            <div className="min-w-[160px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3">
-              <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-500 text-lg">💵</div>
-              <div>
-                <h3 className="font-bold text-sm text-[#1E293B]">Tiền mặt</h3>
-                <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? '2.000.000 đ' : '***'}</p>
-              </div>
-            </div>
-
-            <div className="min-w-[170px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-red-500 font-bold text-xs uppercase">TCB</div>
-              <div>
-                <h3 className="font-bold text-sm text-[#1E293B]">Techcombank</h3>
-                <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? '15.520.000 đ' : '***'}</p>
-              </div>
-            </div>
-
-            <div className="min-w-[160px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3">
-              <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-[#EC4899] font-bold text-xs">M</div>
-              <div>
-                <h3 className="font-bold text-sm text-[#1E293B]">Momo</h3>
-                <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? '1.000.000 đ' : '***'}</p>
-              </div>
-            </div>
+            {wallets.map(wallet => {
+              const iconData = getWalletIcon(wallet.id);
+              return (
+                <div key={wallet.id} className="min-w-[160px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${iconData.color}`}>
+                    {iconData.isText ? iconData.icon : <span className="text-lg">{iconData.icon}</span>}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-[#1E293B]">{wallet.name}</h3>
+                    <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? `${wallet.balance.toLocaleString('vi-VN')} đ` : '***'}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -99,23 +103,15 @@ export default function DashboardPage() {
         <section className="mb-4 overflow-hidden -mx-6 px-6">
           <h2 className="text-lg font-bold text-[#1E293B] mb-4">Tips gần đây 💅</h2>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-            <div className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-              <div className="text-xs text-[#94A3B8] mb-1 font-medium">10:45 • Hôm nay</div>
-              <div className="text-[1.35rem] font-black text-[#F43F5E] mb-2">+ 50k</div>
-              <div className="text-sm font-bold text-[#1E293B]">Khách làm Nail</div>
-            </div>
-
-            <div className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-              <div className="text-xs text-[#94A3B8] mb-1 font-medium">15:20 • Hôm qua</div>
-              <div className="text-[1.35rem] font-black text-[#F43F5E] mb-2">+ 100k</div>
-              <div className="text-sm font-bold text-[#1E293B]">Khách Gội Đầu</div>
-            </div>
-
-            <div className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-              <div className="text-xs text-[#94A3B8] mb-1 font-medium">09:10 • Hôm qua</div>
-              <div className="text-[1.35rem] font-black text-[#F43F5E] mb-2">+ 200k</div>
-              <div className="text-sm font-bold text-[#1E293B]">Khách VIP bill</div>
-            </div>
+            {recentTips.map(tip => (
+              <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
+                <div className="text-xs text-[#94A3B8] mb-1 font-medium">{tip.time} • {tip.dateGroup}</div>
+                <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
+                  + {(tip.amount / 1000).toLocaleString('vi-VN')}k
+                </div>
+                <div className="text-sm font-bold text-[#1E293B] truncate">{tip.customerName}</div>
+              </div>
+            ))}
           </div>
         </section>
 

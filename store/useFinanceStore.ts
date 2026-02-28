@@ -1,5 +1,24 @@
 import { create } from 'zustand';
 
+export interface Transaction {
+    id: string;
+    type: 'income' | 'expense';
+    categoryId: string;
+    amount: number;
+    note: string;
+    time: string;
+    date: string; // ISO format or string representing date
+    walletId: string;
+}
+
+export interface Goal {
+    id: string;
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    deadline: string;
+}
+
 interface Tip {
     id: string;
     customerName: string;
@@ -19,15 +38,22 @@ interface Wallet {
 }
 
 interface FinanceState {
-    balance: number;
     wallets: Wallet[];
     tips: Tip[];
+    transactions: Transaction[];
+    goals: Goal[];
+
+    // Getters
+    getTotalBalance: () => number;
+
+    // Actions
+    addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => void;
+    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => void;
     receiveTips: (tipIds: string[], walletId: string) => void;
     undoReceiveTip: (tipId: string) => void;
 }
 
-export const useFinanceStore = create<FinanceState>((set) => ({
-    balance: 12500000,
+export const useFinanceStore = create<FinanceState>((set, get) => ({
     wallets: [
         { id: 'cash', name: 'Tiền mặt', balance: 2500000 },
         { id: 'tcb', name: 'Techcombank', balance: 9000000 },
@@ -85,6 +111,83 @@ export const useFinanceStore = create<FinanceState>((set) => ({
             type: 'hair'
         }
     ],
+    transactions: [
+        {
+            id: 'tr1',
+            type: 'income',
+            categoryId: 'salary',
+            amount: 15000000,
+            note: 'Lương tháng',
+            time: '15:00',
+            date: new Date().toISOString().split('T')[0],
+            walletId: 'tcb'
+        },
+        {
+            id: 'tr2',
+            type: 'expense',
+            categoryId: 'eat',
+            amount: 85000,
+            note: 'Highlands Coffee',
+            time: '10:30',
+            date: new Date().toISOString().split('T')[0],
+            walletId: 'momo'
+        },
+        {
+            id: 'tr3',
+            type: 'expense',
+            categoryId: 'taxi',
+            amount: 45000,
+            note: 'Tiền Grab',
+            time: '08:15',
+            date: new Date().toISOString().split('T')[0],
+            walletId: 'cash'
+        }
+    ],
+    goals: [],
+
+    getTotalBalance: () => {
+        const { wallets } = get();
+        return wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+    },
+
+    addTransaction: (transactionData) => set((state) => {
+        const now = new Date();
+        const newTransaction: Transaction = {
+            ...transactionData,
+            id: 'tr_' + Date.now(),
+            time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+            date: now.toISOString().split('T')[0]
+        };
+
+        const updatedWallets = state.wallets.map(wallet => {
+            if (wallet.id === transactionData.walletId) {
+                const modifier = transactionData.type === 'income' ? 1 : -1;
+                return { ...wallet, balance: wallet.balance + (transactionData.amount * modifier) };
+            }
+            return wallet;
+        });
+
+        return {
+            transactions: [newTransaction, ...state.transactions],
+            wallets: updatedWallets
+        };
+    }),
+
+    addTip: (tipData) => set((state) => {
+        const now = new Date();
+        const newTip: Tip = {
+            ...tipData,
+            id: 'tip_' + Date.now(),
+            time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+            dateGroup: 'HÔM NAY', // Default for now, can be computed based on real dates
+            status: 'pending'
+        };
+
+        return {
+            tips: [newTip, ...state.tips]
+        };
+    }),
+
     receiveTips: (tipIds, walletId) => set((state) => {
         let totalAmount = 0;
         const updatedTips = state.tips.map(tip => {
@@ -105,8 +208,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
 
         return {
             tips: updatedTips,
-            wallets: updatedWallets,
-            balance: state.balance + totalAmount
+            wallets: updatedWallets
         };
     }),
     undoReceiveTip: (tipId) => set((state) => {
@@ -127,8 +229,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
 
         return {
             tips: updatedTips,
-            wallets: updatedWallets,
-            balance: state.balance - tip.amount
+            wallets: updatedWallets
         };
     })
 }));

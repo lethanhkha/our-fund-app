@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function AddExpensePage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('eat');
     const [note, setNote] = useState('');
+    const { addTransaction } = useFinanceStore();
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -31,7 +33,15 @@ export default function AddExpensePage() {
             alert('Vui lòng chọn danh mục');
             return;
         }
-        console.log({ amount: parseInt(amount) * 1000, selectedCategory, note });
+
+        addTransaction({
+            type: 'expense',
+            categoryId: selectedCategory,
+            amount: parseInt(amount) * 1000,
+            note: note,
+            walletId: 'cash' // Default wallet for now
+        });
+
         router.back();
     };
 

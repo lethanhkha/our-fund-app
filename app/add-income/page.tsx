@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function AddIncomePage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
     const [selectedCategory, setSelectedCategory] = useState<string | null>('salary');
     const [note, setNote] = useState('');
+    const { addTransaction } = useFinanceStore();
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -31,7 +33,15 @@ export default function AddIncomePage() {
             alert('Vui lòng chọn nguồn thu nhập');
             return;
         }
-        console.log({ amount: parseInt(amount) * 1000, selectedCategory, note });
+
+        addTransaction({
+            type: 'income',
+            categoryId: selectedCategory,
+            amount: parseInt(amount) * 1000,
+            note: note,
+            walletId: 'cash' // Default wallet for now
+        });
+
         router.back();
     };
 

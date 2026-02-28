@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function AddTipsPage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
     const [note, setNote] = useState('');
+    const { addTip } = useFinanceStore();
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -26,7 +28,14 @@ export default function AddTipsPage() {
             alert('Vui lòng nhập số tiền');
             return;
         }
-        console.log({ amount: parseInt(amount) * 1000, note });
+
+        addTip({
+            amount: parseInt(amount) * 1000,
+            description: note,
+            customerName: 'Khách hàng', // Defaulting since we don't have an input for this yet
+            type: 'other' // Defaulting
+        });
+
         router.back();
     };
 

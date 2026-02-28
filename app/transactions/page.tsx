@@ -5,11 +5,37 @@ import { useRouter } from 'next/navigation';
 import { BottomNav } from '../../components/ui/BottomNav';
 import { TransactionItem } from '../../components/ui/TransactionItem';
 import { BottomSheet } from '../../components/ui/BottomSheet';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
     const [filter, setFilter] = useState('all');
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+    const { transactions } = useFinanceStore();
+
+    // Lọc theo tháng (Giả lập lấy hết) và tính tổng
+    const totalMonth = transactions.reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
+
+    // Group giao dịch theo ngày
+    const groupedTransactions = transactions.reduce((acc, current) => {
+        const dateStr = current.date;
+        if (!acc[dateStr]) acc[dateStr] = [];
+        acc[dateStr].push(current);
+        return acc;
+    }, {} as Record<string, typeof transactions>);
+
+    // Helper cho icon danh mục
+    const getCategoryDetails = (categoryId: string) => {
+        switch (categoryId) {
+            case 'salary': return { icon: '💰', color: 'bg-emerald-50', title: 'Lương' };
+            case 'eat': return { icon: '🍔', color: 'bg-yellow-50', title: 'Ăn uống' };
+            case 'taxi': return { icon: '🚕', color: 'bg-blue-50', title: 'Di chuyển' };
+            case 'massage': return { icon: '💆‍♀️', color: 'bg-pink-50', title: 'Massage' };
+            case 'shop': return { icon: '🛍️', color: 'bg-purple-50', title: 'Mua sắm' };
+            default: return { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
+        }
+    };
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -34,9 +60,9 @@ export default function TransactionHistoryPage() {
                     <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                     <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
 
-                    <p className="text-white/80 text-sm font-medium mb-1 relative z-10">Tổng giao dịch tháng này</p>
+                    <p className="text-white/80 text-sm font-medium mb-1 relative z-10">Tổng thu chi ròng</p>
                     <div className="flex items-baseline relative z-10">
-                        <span className="text-4xl font-extrabold tracking-tight">12.450.000</span>
+                        <span className="text-4xl font-extrabold tracking-tight">{totalMonth.toLocaleString('vi-VN')}</span>
                         <span className="text-xl font-bold ml-1 opacity-80">đ</span>
                     </div>
                 </div>
@@ -69,66 +95,34 @@ export default function TransactionHistoryPage() {
                     </button>
                 </div>
 
-                {/* DAILY LIST: HÔM NAY */}
-                <section className="mb-6">
-                    <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">Hôm nay</h3>
-                    <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
-                        <TransactionItem
-                            icon={<span className="text-xl">💰</span>}
-                            iconBgColor="bg-emerald-50"
-                            title="Lương tháng"
-                            subtitle="15:00"
-                            amount="15.000.000 đ"
-                            type="income"
-                        />
-                        <div className="w-full h-px bg-gray-50 my-1"></div>
-                        <TransactionItem
-                            icon={<span className="text-xl">🍔</span>}
-                            iconBgColor="bg-yellow-50"
-                            title="Highlands Coffee"
-                            subtitle="10:30"
-                            amount="-85.000 đ"
-                        />
-                        <div className="w-full h-px bg-gray-50 my-1"></div>
-                        <TransactionItem
-                            icon={<span className="text-xl">🚕</span>}
-                            iconBgColor="bg-blue-50"
-                            title="Tiền Grab"
-                            subtitle="08:15"
-                            amount="-45.000 đ"
-                        />
-                    </div>
-                </section>
-
-                {/* DAILY LIST: HÔM QUA */}
-                <section className="mb-6">
-                    <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">Hôm qua</h3>
-                    <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
-                        <TransactionItem
-                            icon={<span className="text-xl">💅</span>}
-                            iconBgColor="bg-pink-50"
-                            title="Gội đầu Dưỡng sinh"
-                            subtitle="19:00"
-                            amount="-250.000 đ"
-                        />
-                        <div className="w-full h-px bg-gray-50 my-1"></div>
-                        <TransactionItem
-                            icon={<span className="text-xl">🛍️</span>}
-                            iconBgColor="bg-purple-50"
-                            title="Shopee"
-                            subtitle="15:20"
-                            amount="-1.200.000 đ"
-                        />
-                        <div className="w-full h-px bg-gray-50 my-1"></div>
-                        <TransactionItem
-                            icon={<span className="text-xl">🛒</span>}
-                            iconBgColor="bg-green-50"
-                            title="Winmart"
-                            subtitle="11:10"
-                            amount="-340.000 đ"
-                        />
-                    </div>
-                </section>
+                {/* DYNAMIC LIST */}
+                <div className="flex flex-col gap-6">
+                    {Object.entries(groupedTransactions).map(([dateStr, items]) => (
+                        <section key={dateStr}>
+                            <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">
+                                {dateStr === new Date().toISOString().split('T')[0] ? 'Hôm nay' : dateStr}
+                            </h3>
+                            <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
+                                {items.map((item, index) => {
+                                    const details = getCategoryDetails(item.categoryId);
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            <TransactionItem
+                                                icon={<span className="text-xl">{details.icon}</span>}
+                                                iconBgColor={details.color}
+                                                title={item.note || details.title}
+                                                subtitle={item.time}
+                                                amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
+                                                type={item.type}
+                                            />
+                                            {index < items.length - 1 && <div className="w-full h-px bg-gray-50 my-1"></div>}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    ))}
+                </div>
 
             </main>
 
