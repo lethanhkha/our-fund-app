@@ -6,6 +6,7 @@ import { BottomNav } from '../../components/ui/BottomNav';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { WalletSelector } from '../../components/ui/WalletSelector';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import confetti from 'canvas-confetti';
 
 export default function TipsManagerPage() {
     const router = useRouter();
@@ -145,7 +146,15 @@ export default function TipsManagerPage() {
 
             {/* WALLET SELECTOR BOTTOM SHEET */}
             <BottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
-                <WalletSelector tipIds={selectedTipIds} onConfirm={() => setIsSheetOpen(false)} />
+                <WalletSelector tipIds={selectedTipIds} onConfirm={() => {
+                    setIsSheetOpen(false);
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#F43F5E', '#10B981', '#FBBF24']
+                    });
+                }} />
             </BottomSheet>
         </div>
     );

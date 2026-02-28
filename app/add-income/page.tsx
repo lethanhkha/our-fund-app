@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import confetti from 'canvas-confetti';
 
 export default function AddIncomePage() {
     const router = useRouter();
@@ -49,7 +50,17 @@ export default function AddIncomePage() {
             walletId: selectedWalletId // Use selected wallet
         });
 
-        router.back();
+        // Trigger confetti celebration
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#F43F5E', '#10B981', '#FBBF24']
+        });
+
+        setTimeout(() => {
+            router.back();
+        }, 800);
     };
 
     const categories = [
