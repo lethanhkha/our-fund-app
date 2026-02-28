@@ -118,7 +118,7 @@ export default function EditTransactionPage() {
                                 key={w.id}
                                 onClick={() => setSelectedWalletId(w.id)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${selectedWalletId === w.id
-                                    ? \`\${primaryBgClass} text-white shadow-md\`
+                                    ? primaryBgClass + ' text-white shadow-md'
                                     : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
                                     }`}
                             >
@@ -132,16 +132,16 @@ export default function EditTransactionPage() {
                     <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-3">Danh mục</p>
                 </div>
 
-                {/* AMOUNT INPUT SECTION */ }
+                {/* AMOUNT INPUT SECTION */}
                 <div className="flex flex-col items-center justify-center py-6 mb-6 relative">
-                    <div className={\`absolute top-0 right-0 \${isExpense ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'} font-bold px-3 py-1 rounded-full text-xs\`}>
+                    <div className={`absolute top-0 right-0 ${isExpense ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'} font-bold px-3 py-1 rounded-full text-xs`}>
                         {isExpense ? 'Chi tiêu' : 'Thu nhập'}
                     </div>
                     <div className="flex items-baseline mt-4">
-                        <span className={\`text-5xl font-black \${primaryTextClass} tracking-tight\`}>
+                        <span className={`text-5xl font-black ${primaryTextClass} tracking-tight`}>
                             {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
                         </span>
-                        <span className={\`text-xl font-bold \${primaryTextClass} ml-1\`}>đ</span>
+                        <span className={`text-xl font-bold ${primaryTextClass} ml-1`}>đ</span>
                     </div>
                 </div>
 
@@ -154,15 +154,14 @@ export default function EditTransactionPage() {
                                 onClick={() => setSelectedCategory(cat.id)}
                                 className="flex flex-col items-center gap-2 cursor-pointer"
                             >
-                                <div className={\`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all \${selectedCategory === cat.id
-                                    ? \`\${activeIconClass} text-white shadow-md transform scale-105\`
+                                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all ${selectedCategory === cat.id
+                                    ? `${activeIconClass} text-white shadow-md transform scale-105`
                                     : 'bg-gray-50 border border-gray-100 grayscale-[0.3]'
-                                    }\`}>
+                                    }`}>
                                     {cat.icon}
                                 </div>
-                                <span className={\`text-xs font-bold \${selectedCategory === cat.id ? primaryTextClass : 'text-[#94A3B8]'
-                                    }\`}>
-                                    {cat.name}
+                                <span className={`text-xs font-bold ${selectedCategory === cat.id ? primaryTextClass : 'text-[#94A3B8]'
+                                    }`}>   {cat.name}
                                 </span>
                             </div>
                         ))}
@@ -183,14 +182,14 @@ export default function EditTransactionPage() {
                     </div>
                 </div>
 
-            </main>
+            </main >
 
             {/* FIXED BOTTOM SECTION (KEYPAD + BUTTON) */}
-            <div className="px-6 pb-8 bg-white pt-4 border-t border-gray-50">
+            < div className="px-6 pb-8 bg-white pt-4 border-t border-gray-50" >
                 <Keypad onKeyPress={handleKeyPress} />
                 <button
                     onClick={handleConfirm}
-                    className={\`w-full \${primaryBgClass} hover:opacity-90 text-white font-bold py-4 rounded-full mt-6 shadow-lg shadow-pink-200 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2\`}>
+                    className={`w-full ${primaryBgClass} hover:opacity-90 text-white font-bold py-4 rounded-full mt-6 shadow-lg shadow-pink-200 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2`}>
                     <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
                     Lưu thay đổi
                 </button>

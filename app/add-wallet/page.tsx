@@ -3,11 +3,27 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keypad } from '../../components/ui/Keypad';
 import { toast } from 'react-hot-toast';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
-const ICONS = [
-    { id: 'cash', label: 'Tiền mặt', emoji: '💵' },
-    { id: 'bank', label: 'Bank', emoji: '🏦' },
-    { id: 'momo', label: 'Momo', emoji: '📱' },
+// --- NEW PRESETS ---
+const BANKS = [
+    { id: 'vcb', name: 'Vietcombank', type: 'bank', color: 'green', icon: '🏦' },
+    { id: 'tcb', name: 'Techcombank', type: 'bank', color: 'red', icon: '🏦' },
+    { id: 'mb', name: 'MB Bank', type: 'bank', color: 'blue', icon: '🏦' },
+    { id: 'tpb', name: 'TPBank', type: 'bank', color: 'purple', icon: '🏦' },
+    { id: 'bidv', name: 'BIDV', type: 'bank', color: 'teal', icon: '🏦' },
+    { id: 'vietin', name: 'VietinBank', type: 'bank', color: 'blue', icon: '🏦' },
+    { id: 'vpbank', name: 'VPBank', type: 'bank', color: 'green', icon: '🏦' },
+    { id: 'acb', name: 'ACB', type: 'bank', color: 'blue', icon: '🏦' },
+    { id: 'sacombank', name: 'Sacombank', type: 'bank', color: 'blue', icon: '🏦' },
+];
+
+const EWALLETS = [
+    { id: 'momo', name: 'MoMo', type: 'ewallet', color: 'pink', icon: '📱' },
+    { id: 'zalo', name: 'ZaloPay', type: 'ewallet', color: 'green', icon: '📱' },
+    { id: 'vnpay', name: 'VNPay', type: 'ewallet', color: 'blue', icon: '📱' },
+    { id: 'viettel', name: 'Viettel Money', type: 'ewallet', color: 'red', icon: '📱' },
+    { id: 'shopee', name: 'ShopeePay', type: 'ewallet', color: 'orange', icon: '📱' },
 ];
 
 const COLORS = [
@@ -21,8 +37,13 @@ const COLORS = [
 
 export default function AddWalletPage() {
     const router = useRouter();
+    const { addWallet } = useFinanceStore();
+
     const [amount, setAmount] = useState('0');
-    const [name, setName] = useState('');
+    const [name, setName] = useState('Tiền mặt');
+
+    // Default to Cash
+    const [selectedTab, setSelectedTab] = useState<'cash' | 'bank' | 'ewallet'>('cash');
     const [selectedIcon, setSelectedIcon] = useState('cash');
     const [selectedColor, setSelectedColor] = useState('teal');
 
@@ -33,6 +54,24 @@ export default function AddWalletPage() {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
         } else {
             setAmount(prev => prev === '0' ? key : prev + key);
+        }
+    };
+
+    // Auto-fill logic when selecting a preset
+    const handleSelectPreset = (preset: typeof BANKS[0]) => {
+        setName(preset.name);
+        setSelectedIcon(preset.icon || preset.type);
+        setSelectedColor(preset.color);
+    };
+
+    const handleTabChange = (tab: 'cash' | 'bank' | 'ewallet') => {
+        setSelectedTab(tab);
+        if (tab === 'cash') {
+            setName('Tiền mặt');
+            setSelectedIcon('cash');
+            setSelectedColor('teal');
+        } else {
+            setName('');
         }
     };
 
@@ -47,15 +86,16 @@ export default function AddWalletPage() {
             return;
         }
 
-        const data = {
+        const newWallet = {
+            id: crypto.randomUUID(),
             name: name.trim(),
-            amount: parsedAmount,
+            balance: parsedAmount,
             icon: selectedIcon,
             color: selectedColor
         };
-        console.log('Saved Wallet:', data);
+        addWallet(newWallet);
         toast.success("Thêm ví thành công! 💳");
-        router.back();
+        router.push('/wallets');
     };
 
     return (
@@ -91,27 +131,64 @@ export default function AddWalletPage() {
                         />
                     </div>
 
-                    {/* SELECT ICON */}
+                    {/* TABS FOR WALLET TYPE */}
                     <div className="mb-6">
-                        <label className="block text-sm font-bold text-[#1E293B] mb-3">Loại ví</label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {ICONS.map(icon => (
-                                <button
-                                    key={icon.id}
-                                    onClick={() => setSelectedIcon(icon.id)}
-                                    className={`py-3 px-2 rounded-2xl flex flex-col items-center gap-1 border-2 transition-colors ${selectedIcon === icon.id
-                                        ? 'border-[#F43F5E] bg-pink-50'
-                                        : 'border-transparent bg-gray-50 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    <span className="text-2xl">{icon.emoji}</span>
-                                    <span className={`text-xs font-bold ${selectedIcon === icon.id ? 'text-[#F43F5E]' : 'text-[#64748B]'}`}>
-                                        {icon.label}
-                                    </span>
-                                </button>
-                            ))}
+                        <div className="flex bg-gray-50 p-1.5 rounded-[1rem]">
+                            <button
+                                onClick={() => handleTabChange('cash')}
+                                className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${selectedTab === 'cash' ? 'bg-white text-[#F43F5E] shadow-sm' : 'text-[#64748B] hover:text-[#1E293B]'}`}
+                            >
+                                Tiền mặt
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('bank')}
+                                className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${selectedTab === 'bank' ? 'bg-white text-[#F43F5E] shadow-sm' : 'text-[#64748B] hover:text-[#1E293B]'}`}
+                            >
+                                Ngân hàng
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('ewallet')}
+                                className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${selectedTab === 'ewallet' ? 'bg-white text-[#F43F5E] shadow-sm' : 'text-[#64748B] hover:text-[#1E293B]'}`}
+                            >
+                                Ví điện tử
+                            </button>
                         </div>
                     </div>
+
+                    {/* DYNAMIC LISTS FOR PRESETS */}
+                    {selectedTab === 'bank' && (
+                        <div className="mb-6">
+                            <label className="block text-sm font-bold text-[#1E293B] mb-3">Chọn ngân hàng phổ biến</label>
+                            <div className="flex flex-wrap gap-2">
+                                {BANKS.map(bank => (
+                                    <button
+                                        key={bank.id}
+                                        onClick={() => handleSelectPreset(bank)}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === bank.name ? 'border-[#F43F5E] bg-pink-50 text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
+                                    >
+                                        {bank.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedTab === 'ewallet' && (
+                        <div className="mb-6">
+                            <label className="block text-sm font-bold text-[#1E293B] mb-3">Chọn ví điện tử</label>
+                            <div className="flex flex-wrap gap-2">
+                                {EWALLETS.map(ewallet => (
+                                    <button
+                                        key={ewallet.id}
+                                        onClick={() => handleSelectPreset(ewallet)}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === ewallet.name ? 'border-[#F43F5E] bg-pink-50 text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
+                                    >
+                                        {ewallet.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* SELECT COLOR */}
                     <div className="mb-6 flex-grow">

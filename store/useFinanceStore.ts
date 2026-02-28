@@ -62,6 +62,7 @@ interface FinanceState {
 
     // Actions
     fetchInitialData: () => Promise<void>;
+    addWallet: (wallet: Wallet) => Promise<void>;
     addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
     deleteCategory: (categoryId: string) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
@@ -160,8 +161,33 @@ export const useFinanceStore = create<FinanceState>()(
                             deadline: g.target_date || ''
                         }))
                     });
+                } catch (error) {
+                    console.error('Lỗi khi tải dữ liệu bắt đầu:', error);
+                }
+            },
+
+            addWallet: async (walletData: Wallet) => {
+                try {
+                    const { error } = await supabase.from('wallets').insert([{
+                        id: walletData.id,
+                        name: walletData.name,
+                        balance: walletData.balance,
+                        icon: walletData.icon,
+                        color: walletData.color
+                    }]);
+
+                    if (error) {
+                        toast.error('Lỗi khi thêm ví! ❌');
+                        console.error('Supabase error inserting wallet:', error);
+                        return;
+                    }
+
+                    set((state) => ({
+                        wallets: [...state.wallets, walletData],
+                    }));
                 } catch (error: any) {
-                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                    console.error('Lỗi thêm ví:', error);
+                    toast.error('Lỗi thêm ví! ❌');
                 }
             },
 
