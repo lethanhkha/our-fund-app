@@ -65,9 +65,12 @@ interface FinanceState {
     addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
     deleteCategory: (categoryId: string) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
+    deleteTransaction: (transactionId: string) => Promise<void>;
+    updateTransaction: (transactionId: string, updatedData: Partial<Transaction>) => Promise<void>;
     addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => Promise<void>;
     receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
     undoReceiveTip: (tipId: string) => Promise<void>;
+    deleteTip: (tipId: string) => Promise<void>;
 }
 
 // Utility to categorize dates for tips
@@ -180,6 +183,18 @@ export const useFinanceStore = create<FinanceState>()(
 
             deleteCategory: async (categoryId) => {
                 try {
+                    const { count, error: countError } = await supabase
+                        .from('transactions')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('category', categoryId);
+
+                    if (countError) throw countError;
+
+                    if (count && count > 0) {
+                        toast.error('Không thể xóa! Đang có giao dịch sử dụng danh mục này 🛑');
+                        return;
+                    }
+
                     const { error } = await supabase
                         .from('categories')
                         .delete()
@@ -238,6 +253,110 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            deleteTransaction: async (transactionId) => {
+                try {
+                    const state = get();
+                    const tx = state.transactions.find(t => t.id === transactionId);
+                    if (!tx) return;
+
+                    const wallet = state.wallets.find(w => w.id === tx.walletId);
+                    if (wallet) {
+                        const modifier = tx.type === 'expense' ? 1 : -1; // Reverse effect
+                        const newBalance = wallet.balance + (tx.amount * modifier);
+
+                        const { error: walletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: newBalance })
+                            .eq('id', wallet.id);
+
+                        if (walletError) throw walletError;
+                    }
+
+                    const { error } = await supabase
+                        .from('transactions')
+                        .delete()
+                        .eq('id', transactionId);
+
+                    if (error) throw error;
+
+                    toast.success('Đã xóa và hoàn tiền về ví! ♻️');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    console.error("Lỗi khi xóa GD:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            updateTransaction: async (transactionId, updatedData) => {
+                try {
+                    const state = get();
+                    const oldTx = state.transactions.find(t => t.id === transactionId);
+                    if (!oldTx) return;
+
+                    // 1. Rollback old transaction
+                    const oldWallet = state.wallets.find(w => w.id === oldTx.walletId);
+                    if (oldWallet) {
+                        const modifier = oldTx.type === 'expense' ? 1 : -1;
+                        const revertedBalance = oldWallet.balance + (oldTx.amount * modifier);
+
+                        const { error: oldWalletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: revertedBalance })
+                            .eq('id', oldWallet.id);
+
+                        if (oldWalletError) throw oldWalletError;
+                    }
+
+                    // Fetch latest state to reflect rollback before applying new
+                    await get().fetchInitialData();
+                    const newState = get();
+
+                    // 2. Apply new transaction balance impact
+                    const newType = updatedData.type || oldTx.type;
+                    const newAmount = updatedData.amount ?? oldTx.amount;
+                    const newWalletId = updatedData.walletId || oldTx.walletId;
+
+                    const newWallet = newState.wallets.find(w => w.id === newWalletId);
+                    if (newWallet) {
+                        const modifier = newType === 'income' ? 1 : -1;
+                        const newBalance = newWallet.balance + (newAmount * modifier);
+
+                        if (newType === 'expense' && newAmount > newWallet.balance) {
+                            toast.error('Số dư ví không đủ để cập nhật!');
+                            throw new Error('Số dư ví không đủ!');
+                        }
+
+                        const { error: newWalletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: newBalance })
+                            .eq('id', newWallet.id);
+
+                        if (newWalletError) throw newWalletError;
+                    }
+
+                    // 3. Update transaction record
+                    const dbUpdate: any = {};
+                    if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
+                    if (updatedData.type !== undefined) dbUpdate['type'] = updatedData.type;
+                    if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
+                    if (updatedData.categoryId !== undefined) dbUpdate['category'] = updatedData.categoryId;
+                    if (updatedData.note !== undefined) dbUpdate['note'] = updatedData.note;
+
+                    const { error: txError } = await supabase
+                        .from('transactions')
+                        .update(dbUpdate)
+                        .eq('id', transactionId);
+
+                    if (txError) throw txError;
+
+                    toast.success('Cập nhật thành công! ✨');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    console.error("Lỗi khi sửa GD:", error?.message || JSON.stringify(error));
                 }
             },
 
@@ -325,6 +444,39 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            deleteTip: async (tipId) => {
+                try {
+                    const state = get();
+                    const tip = state.tips.find(t => t.id === tipId);
+                    if (!tip) return;
+
+                    if (tip.status === 'received' && tip.walletId) {
+                        const wallet = state.wallets.find(w => w.id === tip.walletId);
+                        if (wallet) {
+                            const { error: walletError } = await supabase
+                                .from('wallets')
+                                .update({ balance: wallet.balance - tip.amount })
+                                .eq('id', wallet.id);
+
+                            if (walletError) throw walletError;
+                        }
+                    }
+
+                    const { error } = await supabase
+                        .from('tips')
+                        .delete()
+                        .eq('id', tipId);
+
+                    if (error) throw error;
+
+                    toast.success('Đã xóa Tip! 🗑️');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    console.error("Lỗi khi xóa Tip:", error?.message || JSON.stringify(error));
                 }
             }
         }),

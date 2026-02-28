@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '../../components/ui/BottomNav';
@@ -11,8 +12,10 @@ import confetti from 'canvas-confetti';
 export default function TipsManagerPage() {
     const router = useRouter();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTipIds, setSelectedTipIds] = useState<string[]>([]);
-    const { tips, undoReceiveTip } = useFinanceStore();
+    const [selectedTipActionId, setSelectedTipActionId] = useState<string | null>(null);
+    const { tips, undoReceiveTip, deleteTip } = useFinanceStore();
 
     const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
 
@@ -129,7 +132,14 @@ export default function TipsManagerPage() {
                                     </div>
                                     <div className="flex flex-col gap-3">
                                         {tipsList.map(tip => (
-                                            <div key={tip.id} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start">
+                                            <div
+                                                key={tip.id}
+                                                onClick={() => {
+                                                    setSelectedTipActionId(tip.id);
+                                                    setIsActionSheetOpen(true);
+                                                }}
+                                                className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all"
+                                            >
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
                                                         {tip.customerName.charAt(0)}
@@ -145,7 +155,7 @@ export default function TipsManagerPage() {
                                                     </span>
                                                     {tip.status === 'received' ? (
                                                         <button
-                                                            onClick={() => undoReceiveTip(tip.id)}
+                                                            onClick={(e) => { e.stopPropagation(); undoReceiveTip(tip.id); }}
                                                             title="Hoàn tác"
                                                             className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
                                                         >
@@ -153,7 +163,7 @@ export default function TipsManagerPage() {
                                                         </button>
                                                     ) : (
                                                         <button
-                                                            onClick={() => handleOpenSheet([tip.id])}
+                                                            onClick={(e) => { e.stopPropagation(); handleOpenSheet([tip.id]); }}
                                                             className="bg-[#F43F5E] hover:bg-[#E11D48] text-white px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
                                                         >
                                                             Đã nhận
@@ -192,6 +202,47 @@ export default function TipsManagerPage() {
                         colors: ['#F43F5E', '#10B981', '#FBBF24']
                     });
                 }} />
+            </BottomSheet>
+
+            {/* ACTION BOTTOM SHEET */}
+            <BottomSheet isOpen={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)}>
+                <div className="flex flex-col gap-4 p-4 pb-8">
+                    <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Tùy chọn Tips</h3>
+                    <button
+                        onClick={() => {
+                            setIsActionSheetOpen(false);
+                            if (selectedTipActionId) {
+                                toast((t) => (
+                                    <div className="flex flex-col gap-2">
+                                        <span className="font-bold">Xóa Tip này?</span>
+                                        <span className="text-sm">Nếu đã nhận, số dư ví sẽ được trừ lại.</span>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
+                                                onClick={async () => {
+                                                    toast.dismiss(t.id);
+                                                    await deleteTip(selectedTipActionId);
+                                                }}
+                                            >
+                                                Xóa
+                                            </button>
+                                            <button
+                                                className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
+                                                onClick={() => toast.dismiss(t.id)}
+                                            >
+                                                Thôi
+                                            </button>
+                                        </div>
+                                    </div>
+                                ), { duration: 5000 });
+                            }
+                        }}
+                        className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                    >
+                        <span className="text-2xl">🗑️</span>
+                        Xóa
+                    </button>
+                </div>
             </BottomSheet>
         </div>
     );

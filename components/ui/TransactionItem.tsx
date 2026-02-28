@@ -9,6 +9,7 @@ interface TransactionItemProps {
     subtitle: string;
     amount: string;
     type?: TransactionType;
+    onClick?: () => void;
 }
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({
@@ -17,14 +18,18 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     title,
     subtitle,
     amount,
-    type = 'expense'
+    type = 'expense',
+    onClick
 }) => {
     // Remove any existing minus/plus signs to prevent double signs
     const cleanAmount = amount.replace(/^[+-]\s*/, '');
     const isIncome = type === 'income';
 
     return (
-        <div className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 rounded-2xl px-2 transition-colors">
+        <div
+            onClick={onClick}
+            className={`flex items-center justify-between py-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 rounded-2xl px-2 transition-colors ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+        >
             <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 ${iconBgColor} rounded-2xl flex items-center justify-center text-primary`}>
                     {icon}

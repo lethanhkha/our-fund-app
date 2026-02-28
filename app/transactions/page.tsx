@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '../../components/ui/BottomNav';
@@ -11,8 +12,10 @@ export default function TransactionHistoryPage() {
     const router = useRouter();
     const [filter, setFilter] = useState('all');
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+    const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
-    const { transactions, categories } = useFinanceStore();
+    const { transactions, categories, deleteTransaction } = useFinanceStore();
 
     // Calculate this month's totals
     const currentMonthStr = new Date().toISOString().substring(0, 7);
@@ -114,6 +117,10 @@ export default function TransactionHistoryPage() {
                                                 subtitle={item.time}
                                                 amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
                                                 type={item.type}
+                                                onClick={() => {
+                                                    setSelectedTransactionId(item.id);
+                                                    setIsActionSheetOpen(true);
+                                                }}
                                             />
                                             {index < items.length - 1 && <div className="w-full h-px bg-gray-50 my-1"></div>}
                                         </React.Fragment>
@@ -150,6 +157,59 @@ export default function TransactionHistoryPage() {
                         <span className="text-2xl">🛍️</span>
                         Thêm Chi Tiêu
                     </Link>
+                </div>
+            </BottomSheet>
+
+            {/* ACTION BOTTOM SHEET */}
+            <BottomSheet isOpen={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)}>
+                <div className="flex flex-col gap-4 p-4 pb-8">
+                    <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Tùy chọn giao dịch</h3>
+                    <button
+                        onClick={() => {
+                            setIsActionSheetOpen(false);
+                            if (selectedTransactionId) {
+                                router.push(`/edit-transaction/${selectedTransactionId}`);
+                            }
+                        }}
+                        className="w-full bg-blue-50 text-blue-600 border border-blue-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                    >
+                        <span className="text-2xl">✏️</span>
+                        Chỉnh sửa
+                    </button>
+                    <button
+                        onClick={() => {
+                            setIsActionSheetOpen(false);
+                            if (selectedTransactionId) {
+                                toast((t) => (
+                                    <div className="flex flex-col gap-2">
+                                        <span className="font-bold">Xóa giao dịch này?</span>
+                                        <span className="text-sm">Số dư ví sẽ được hoàn lại.</span>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
+                                                onClick={async () => {
+                                                    toast.dismiss(t.id);
+                                                    await deleteTransaction(selectedTransactionId);
+                                                }}
+                                            >
+                                                Xóa
+                                            </button>
+                                            <button
+                                                className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
+                                                onClick={() => toast.dismiss(t.id)}
+                                            >
+                                                Thôi
+                                            </button>
+                                        </div>
+                                    </div>
+                                ), { duration: 5000 });
+                            }
+                        }}
+                        className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                    >
+                        <span className="text-2xl">🗑️</span>
+                        Xóa
+                    </button>
                 </div>
             </BottomSheet>
         </div>
