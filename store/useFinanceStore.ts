@@ -494,16 +494,18 @@ export const useFinanceStore = create<FinanceState>()(
 
             addTip: async (tipData) => {
                 try {
+                    const dbTip = {
+                        amount: tipData.amount,
+                        customer: tipData.customerName || 'Khách hàng',
+                        service: tipData.description || '',
+                        status: 'pending',
+                        wallet_id: tipData.walletId || null
+                    };
+
                     const { error } = await supabase
                         .from('tips')
-                        .insert({
-                            amount: tipData.amount,
-                            customer: tipData.customerName,
-                            service: tipData.description,
-                            status: 'pending',
-                            wallet_id: tipData.walletId || null, // Added wallet_id
-                            type: tipData.type || 'income' // Added type, assuming default 'income'
-                        });
+                        .insert(dbTip)
+                        .select();
 
                     if (error) throw error;
 
