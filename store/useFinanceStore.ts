@@ -65,7 +65,8 @@ interface FinanceState {
     fetchInitialData: () => Promise<void>;
     addWallet: (wallet: Omit<Wallet, 'is_default'>) => Promise<void>;
     setPrimaryWallet: (walletId: string) => Promise<void>;
-    editWallet: (walletId: string, updatedData: Partial<Wallet>) => Promise<void>;
+    updateWallet: (walletId: string, updatedData: Partial<Wallet>) => Promise<void>;
+    deleteWallet: (walletId: string) => Promise<void>;
     addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
     deleteCategory: (categoryId: string) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
@@ -211,6 +212,13 @@ export const useFinanceStore = create<FinanceState>()(
 
                     if (setError) throw setError;
 
+                    set((state) => ({
+                        wallets: state.wallets.map(w => ({
+                            ...w,
+                            is_default: w.id === walletId
+                        }))
+                    }));
+
                     toast.success('Đã đặt làm ví chính! 👑');
                     await get().fetchInitialData();
                 } catch (error: any) {
@@ -219,7 +227,7 @@ export const useFinanceStore = create<FinanceState>()(
                 }
             },
 
-            editWallet: async (walletId: string, updatedData: Partial<Wallet>) => {
+            updateWallet: async (walletId: string, updatedData: Partial<Wallet>) => {
                 try {
                     const { error } = await supabase
                         .from('wallets')
@@ -232,7 +240,59 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     toast.error('Có lỗi khi sửa thông tin ví ❌');
-                    console.error('Lỗi editWallet:', error);
+                    console.error('Lỗi updateWallet:', error);
+                }
+            },
+
+            deleteWallet: async (walletId: string) => {
+                try {
+                    // Check if it's the default wallet
+                    const walletObj = get().wallets.find(w => w.id === walletId);
+                    if (walletObj?.is_default) {
+                        toast.error('Không thể xóa ví chính! Hãy set ví khác làm ví chính trước. 👑');
+                        return;
+                    }
+
+                    // Query transactions
+                    const { data: txs, error: txError } = await supabase
+                        .from('transactions')
+                        .select('id')
+                        .eq('wallet_id', walletId);
+
+                    if (txError) throw txError;
+
+                    // Query tips
+                    const { data: tips, error: tipsError } = await supabase
+                        .from('tips')
+                        .select('id')
+                        .eq('wallet_id', walletId);
+
+                    if (tipsError) throw tipsError;
+
+                    const totalCount = (txs?.length || 0) + (tips?.length || 0);
+
+                    if (totalCount > 0) {
+                        toast.error('Không thể xóa! Ví này đang chứa giao dịch/tips. Hãy xóa giao dịch trước. 🛑');
+                        return;
+                    }
+
+                    // Delete from Supabase
+                    const { error: deleteError } = await supabase
+                        .from('wallets')
+                        .delete()
+                        .eq('id', walletId);
+
+                    if (deleteError) throw deleteError;
+
+                    // Update state
+                    set((state) => ({
+                        wallets: state.wallets.filter(w => w.id !== walletId)
+                    }));
+
+                    toast.success('Đã xóa ví! 🗑️');
+                } catch (error: any) {
+                    toast.error('Lỗi khi xóa ví! ❌');
+                    console.error('Lỗi deleteWallet:', error);
                 }
             },
 

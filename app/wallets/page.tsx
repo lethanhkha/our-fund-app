@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 
 export default function WalletsPage() {
     const router = useRouter();
-    const { wallets, setPrimaryWallet } = useFinanceStore();
+    const { wallets, setPrimaryWallet, deleteWallet } = useFinanceStore();
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     const getWalletIcon = (iconStr: string | undefined, name: string) => {
@@ -96,12 +96,48 @@ export default function WalletsPage() {
                                     )}
                                     <button
                                         onClick={() => {
-                                            toast('Tính năng sửa ví sắp ra mắt! 🛠️', { icon: '🚧' });
                                             setActionMenuId(null);
+                                            router.push(`/edit-wallet?id=${w.id}`);
                                         }}
                                         className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
                                     >
                                         <span className="text-xl">✏️</span> Sửa thông tin ví
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setActionMenuId(null);
+                                            toast.custom((t) => (
+                                                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white shadow-2xl rounded-[2rem] p-6 border border-pink-100 pointer-events-auto flex flex-col items-center text-center`}>
+                                                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                                                        <span className="text-3xl">🗑️</span>
+                                                    </div>
+                                                    <h3 className="text-xl font-extrabold text-[#1E293B] mb-2">Xóa ví này?</h3>
+                                                    <p className="text-[#64748B] text-sm font-medium mb-6">
+                                                        Em chắc chắn muốn xóa ví <strong>{w.name}</strong> chứ?
+                                                    </p>
+                                                    <div className="flex gap-3 w-full">
+                                                        <button
+                                                            onClick={() => toast.dismiss(t.id)}
+                                                            className="flex-1 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-[#64748B] font-bold rounded-2xl transition-colors"
+                                                        >
+                                                            Hủy bỏ
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                toast.dismiss(t.id);
+                                                                await deleteWallet(w.id);
+                                                            }}
+                                                            className="flex-1 px-4 py-3 bg-[#F43F5E] hover:bg-rose-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition-all active:scale-95"
+                                                        >
+                                                            Xác nhận Xóa
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ), { duration: Infinity });
+                                        }}
+                                        className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors border-t border-gray-50"
+                                    >
+                                        <span className="text-xl">🗑️</span> Xóa ví
                                     </button>
                                 </div>
                             )}
