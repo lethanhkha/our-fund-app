@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '../../components/ui/BottomNav';
 import { BottomSheet } from '../../components/ui/BottomSheet';
+import { getDisplayDate } from '@/lib/utils';
 import { WalletSelector } from '../../components/ui/WalletSelector';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import confetti from 'canvas-confetti';
@@ -24,27 +25,15 @@ export default function TipsManagerPage() {
         setIsSheetOpen(true);
     };
 
-    const parseTipDate = (dateGroup?: string) => {
-        if (!dateGroup || dateGroup === 'KHÁC') return new Date(0);
-        const localNow = new Date();
-        if (dateGroup === 'HÔM NAY') return localNow;
-        if (dateGroup === 'HÔM QUA') {
-            const d = new Date(localNow);
-            d.setDate(d.getDate() - 1);
-            return d;
-        }
-        return new Date(dateGroup + 'T00:00:00');
-    };
-
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+    const adjustedNow = getDisplayDate(new Date());
+    const startOfWeek = new Date(adjustedNow);
+    startOfWeek.setDate(adjustedNow.getDate() - adjustedNow.getDay() + (adjustedNow.getDay() === 0 ? -6 : 1));
     startOfWeek.setHours(0, 0, 0, 0);
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfMonth = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth(), 1);
 
     const filteredTips = tips.filter(t => {
         if (timeFilter === 'all') return true;
-        const tipDate = parseTipDate(t.dateGroup);
+        const tipDate = t.created_at ? getDisplayDate(t.created_at) : new Date(0);
         if (timeFilter === 'week') return tipDate >= startOfWeek;
         if (timeFilter === 'month') return tipDate >= startOfMonth;
         return true;
@@ -53,8 +42,23 @@ export default function TipsManagerPage() {
     const totalReceived = filteredTips.filter(t => t.status === 'received').reduce((sum, t) => sum + t.amount, 0);
     const totalPending = filteredTips.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
 
+    const getAdjustedDateGroup = (createdAt?: string, originalGroup?: string) => {
+        if (!createdAt) return originalGroup || 'KHÁC';
+        const adjustedDate = getDisplayDate(createdAt);
+        const dateStr = adjustedDate.toISOString().split('T')[0];
+        const todayStr = adjustedNow.toISOString().split('T')[0];
+
+        const yesterdayDate = new Date(adjustedNow);
+        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+        if (dateStr === todayStr) return 'HÔM NAY';
+        if (dateStr === yesterdayStr) return 'HÔM QUA';
+        return dateStr;
+    };
+
     const groupedTips = filteredTips.reduce((acc, tip) => {
-        const group = tip.dateGroup || 'KHÁC';
+        const group = getAdjustedDateGroup(tip.created_at, tip.dateGroup);
         if (!acc[group]) acc[group] = [];
         acc[group].push(tip);
         return acc;

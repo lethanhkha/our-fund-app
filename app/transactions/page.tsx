@@ -7,6 +7,7 @@ import { BottomNav } from '../../components/ui/BottomNav';
 import { TransactionItem } from '../../components/ui/TransactionItem';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import { getDisplayDate } from '@/lib/utils';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
@@ -29,7 +30,9 @@ export default function TransactionHistoryPage() {
 
     // Group giao dịch theo ngày từ danh sách đã lọc
     const groupedTransactions = filteredTransactions.reduce((acc, current) => {
-        const dateStr = current.date;
+        const baseDateString = current.created_at || current.date;
+        const adjustedDate = getDisplayDate(baseDateString);
+        const dateStr = adjustedDate.toISOString().split('T')[0];
         if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(current);
         return acc;
@@ -101,7 +104,7 @@ export default function TransactionHistoryPage() {
                     {Object.entries(groupedTransactions).map(([dateStr, items]) => (
                         <section key={dateStr}>
                             <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">
-                                {dateStr === new Date().toISOString().split('T')[0] ? 'Hôm nay' : dateStr}
+                                {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' : dateStr}
                             </h3>
                             <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
                                 {items.map((item, index) => {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BalanceCard } from '../components/ui/BalanceCard';
 import { BottomNav } from '../components/ui/BottomNav';
 import { useFinanceStore } from '../store/useFinanceStore';
+import { getDisplayDate } from '@/lib/utils';
 
 const LOVE_NOTES = [
   'Hôm nay embee làm việc vất vả òiii! 🌸',
@@ -38,14 +39,18 @@ export default function DashboardPage() {
   const recentTips = tips.slice(0, 3); // Get 3 most recent tips
 
   const calculateTrend = () => {
-    const now = new Date();
-    const currentMonthPrefix = now.toISOString().substring(0, 7);
+    const nowLocal = new Date();
+    const adjustedNow = getDisplayDate(nowLocal);
+    const currentMonthPrefix = adjustedNow.toISOString().substring(0, 7);
 
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthPrefix = lastMonth.toISOString().substring(0, 7);
+    const lastMonthRaw = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth() - 1, 1);
+    const lastMonthPrefix = lastMonthRaw.toISOString().substring(0, 7);
 
     const getNetForMonth = (prefix: string) => {
-      const monthTxs = transactions.filter(t => t.date.startsWith(prefix));
+      const monthTxs = transactions.filter(t => {
+        const tDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.date);
+        return tDate.toISOString().startsWith(prefix);
+      });
       const inc = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
       const exp = monthTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
       return inc - exp;

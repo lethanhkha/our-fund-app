@@ -12,6 +12,7 @@ export interface Transaction {
     time: string;
     date: string;
     walletId: string;
+    created_at?: string;
 }
 
 export interface Goal {
@@ -32,6 +33,7 @@ export interface Tip {
     status: 'pending' | 'received';
     type: string;
     walletId?: string;
+    created_at?: string;
 }
 
 export interface Category {
@@ -140,7 +142,8 @@ export const useFinanceStore = create<FinanceState>()(
                                 categoryId: tx.category,
                                 note: tx.note || '',
                                 date: tx.created_at.split('T')[0],
-                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                                created_at: tx.created_at
                             };
                         }),
                         tips: (tipsData || []).map(t => {
@@ -154,7 +157,8 @@ export const useFinanceStore = create<FinanceState>()(
                                 walletId: t.wallet_id || undefined,
                                 type: 'other', // Defaulted or mapped
                                 dateGroup: getDateGroup(t.created_at),
-                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                                created_at: t.created_at
                             };
                         }),
                         goals: (goalsData || []).map(g => ({

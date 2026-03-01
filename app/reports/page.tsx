@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { BottomNav } from '../../components/ui/BottomNav';
+import { getDisplayDate } from '@/lib/utils';
 
 // Feminine tone colors (Pink, Purple, Rose tones)
 const COLORS = ['#F43F5E', '#D946EF', '#FBCFE8', '#E879F9', '#F9A8D4', '#FDA4AF', '#C084FC'];
@@ -16,12 +17,16 @@ export default function ReportsPage() {
     const availableMonths = useMemo(() => {
         const months = new Set<string>();
         transactions.forEach(t => {
-            if (t.date) months.add(t.date.substring(0, 7));
+            const baseDate = t.created_at || t.date;
+            if (baseDate) {
+                const adjustedDate = getDisplayDate(baseDate);
+                months.add(adjustedDate.toISOString().substring(0, 7));
+            }
         });
         const monthArray = Array.from(months).sort((a, b) => b.localeCompare(a));
         // Nếu chưa có giao dịch nào, hiển thị tháng hiện tại
         if (monthArray.length === 0) {
-            monthArray.push(new Date().toISOString().substring(0, 7));
+            monthArray.push(getDisplayDate(new Date()).toISOString().substring(0, 7));
         }
         return monthArray;
     }, [transactions]);
@@ -30,7 +35,11 @@ export default function ReportsPage() {
 
     // Lọc giao dịch theo tháng đã chọn
     const monthTransactions = useMemo(() => {
-        return transactions.filter(t => t.date.startsWith(selectedMonth));
+        return transactions.filter(t => {
+            const baseDate = t.created_at || t.date;
+            const adjustedDate = getDisplayDate(baseDate);
+            return adjustedDate.toISOString().startsWith(selectedMonth);
+        });
     }, [transactions, selectedMonth]);
 
     // Tổng thu & chi
