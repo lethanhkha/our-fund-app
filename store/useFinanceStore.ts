@@ -48,6 +48,7 @@ export interface Wallet {
     balance: number;
     icon?: string;
     color?: string;
+    is_default?: boolean;
 }
 
 interface FinanceState {
@@ -62,13 +63,15 @@ interface FinanceState {
 
     // Actions
     fetchInitialData: () => Promise<void>;
-    addWallet: (wallet: Wallet) => Promise<void>;
+    addWallet: (wallet: Omit<Wallet, 'is_default'>) => Promise<void>;
+    setPrimaryWallet: (walletId: string) => Promise<void>;
+    editWallet: (walletId: string, updatedData: Partial<Wallet>) => Promise<void>;
     addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
     deleteCategory: (categoryId: string) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
     deleteTransaction: (transactionId: string) => Promise<void>;
     updateTransaction: (transactionId: string, updatedData: Partial<Transaction>) => Promise<void>;
-    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status' | 'walletId'>) => Promise<void>;
+    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status'>) => Promise<void>;
     receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
     undoReceiveTip: (tipId: string) => Promise<void>;
     deleteTip: (tipId: string) => Promise<void>;
@@ -166,14 +169,15 @@ export const useFinanceStore = create<FinanceState>()(
                 }
             },
 
-            addWallet: async (walletData: Wallet) => {
+            addWallet: async (walletData: Omit<Wallet, 'is_default'>) => {
                 try {
                     const { error } = await supabase.from('wallets').insert([{
                         id: walletData.id,
                         name: walletData.name,
                         balance: walletData.balance,
                         icon: walletData.icon,
-                        color: walletData.color
+                        color: walletData.color,
+                        is_default: get().wallets.length === 0 ? true : false
                     }]);
 
                     if (error) {
@@ -182,12 +186,53 @@ export const useFinanceStore = create<FinanceState>()(
                         return;
                     }
 
-                    set((state) => ({
-                        wallets: [...state.wallets, walletData],
-                    }));
+                    await get().fetchInitialData();
                 } catch (error: any) {
                     console.error('Lỗi thêm ví:', error);
                     toast.error('Lỗi thêm ví! ❌');
+                }
+            },
+
+            setPrimaryWallet: async (walletId: string) => {
+                try {
+                    // Cập nhật tất cả các ví khác thành false
+                    const { error: resetError } = await supabase
+                        .from('wallets')
+                        .update({ is_default: false })
+                        .neq('id', walletId);
+
+                    if (resetError) throw resetError;
+
+                    // Cập nhật ví được chọn thành true
+                    const { error: setError } = await supabase
+                        .from('wallets')
+                        .update({ is_default: true })
+                        .eq('id', walletId);
+
+                    if (setError) throw setError;
+
+                    toast.success('Đã đặt làm ví chính! 👑');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error('Có lỗi khi cài đặt ví chính ❌');
+                    console.error('Lỗi setPrimaryWallet:', error);
+                }
+            },
+
+            editWallet: async (walletId: string, updatedData: Partial<Wallet>) => {
+                try {
+                    const { error } = await supabase
+                        .from('wallets')
+                        .update(updatedData)
+                        .eq('id', walletId);
+
+                    if (error) throw error;
+
+                    toast.success('Đã làm mới thông tin ví! ✨');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error('Có lỗi khi sửa thông tin ví ❌');
+                    console.error('Lỗi editWallet:', error);
                 }
             },
 
@@ -396,7 +441,10 @@ export const useFinanceStore = create<FinanceState>()(
                             amount: tipData.amount,
                             customer: tipData.customerName,
                             service: tipData.description,
-                            status: 'pending'
+                            status: 'pending',
+                            wallet_id: tipData.walletId || null, // Added wallet_id
+                            type: tipData.type || 'income', // Added type, assuming default 'income'
+                            date: new Date().toISOString() // Added date
                         });
 
                     if (error) throw error;

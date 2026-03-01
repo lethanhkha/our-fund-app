@@ -76,13 +76,9 @@ export default function AddWalletPage() {
     };
 
     const handleSave = () => {
-        const parsedAmount = parseInt(amount, 10);
+        const parsedAmount = parseInt(amount || '0', 10);
         if (!name.trim()) {
             toast.error("Vui lòng nhập tên ví!");
-            return;
-        }
-        if (parsedAmount <= 0) {
-            toast.error("Ví mới nên có chút tiền chứ ta! 🥺");
             return;
         }
 

@@ -1,12 +1,14 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import { toast } from 'react-hot-toast';
 
 export default function WalletsPage() {
     const router = useRouter();
-    const { wallets } = useFinanceStore();
+    const { wallets, setPrimaryWallet } = useFinanceStore();
+    const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     const getWalletIcon = (iconStr: string | undefined, name: string) => {
         if (!iconStr) return name.substring(0, 3).toUpperCase();
@@ -55,19 +57,55 @@ export default function WalletsPage() {
             <main className="px-6 mt-4 flex-grow flex flex-col">
                 <section className="mb-6">
                     {wallets.map(w => (
-                        <div key={w.id} className="bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between">
+                        <div key={w.id} className="bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative">
                             <div className="flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-full ${getWalletColor(w.color)} flex items-center justify-center text-xl font-bold uppercase`}>
                                     {getWalletIcon(w.icon, w.name)}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-[#1E293B] text-base">{w.name}</h3>
-                                    <p className="text-[#94A3B8] text-xs font-medium mt-0.5">Ví phụ</p>
+                                    <h3 className="font-bold text-[#1E293B] text-base">
+                                        {w.name} {w.is_default && '👑'}
+                                    </h3>
+                                    <p className={`text-xs font-bold mt-0.5 ${w.is_default ? 'text-[#EC4899]' : 'text-[#94A3B8]'}`}>
+                                        {w.is_default ? 'Ví chính' : 'Ví phụ'}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right flex items-center gap-3">
                                 <p className="font-bold text-[#1E293B] text-base">{w.balance.toLocaleString('vi-VN')} đ</p>
+                                <button
+                                    onClick={() => setActionMenuId(actionMenuId === w.id ? null : w.id)}
+                                    className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-50 transition-colors">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                                </button>
                             </div>
+
+                            {/* DROPDOWN MENU */}
+                            {actionMenuId === w.id && (
+                                <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-10 py-2 overflow-hidden animate-fade-in">
+                                    {!w.is_default && (
+                                        <button
+                                            onClick={async () => {
+                                                setActionMenuId(null);
+                                                await setPrimaryWallet(w.id);
+                                            }}
+                                            className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                        >
+                                            <span className="text-xl">👑</span> Đặt làm ví chính
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            toast('Tính năng sửa ví sắp ra mắt! 🛠️', { icon: '🚧' });
+                                            setActionMenuId(null);
+                                        }}
+                                        className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
+                                    >
+                                        <span className="text-xl">✏️</span> Sửa thông tin ví
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
                     ))}
 

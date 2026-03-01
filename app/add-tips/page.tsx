@@ -10,7 +10,15 @@ export default function AddTipsPage() {
     const router = useRouter();
     const [amount, setAmount] = useState('0');
     const [note, setNote] = useState('');
-    const { addTip } = useFinanceStore();
+    const [selectedWalletId, setSelectedWalletId] = useState('');
+    const { addTip, wallets } = useFinanceStore();
+
+    React.useEffect(() => {
+        if (wallets && wallets.length > 0 && !selectedWalletId) {
+            const defaultWallet = wallets.find(w => w.is_default);
+            setSelectedWalletId(defaultWallet ? defaultWallet.id : wallets[0].id);
+        }
+    }, [wallets, selectedWalletId]);
 
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
@@ -31,11 +39,17 @@ export default function AddTipsPage() {
             return;
         }
 
+        if (!selectedWalletId) {
+            toast.error('Nhớ chọn ví nha em! 💳');
+            return;
+        }
+
         await addTip({
             amount: parseInt(amount) * 1000,
             description: note,
             customerName: 'Khách hàng', // Defaulting since we don't have an input for this yet
-            type: 'other' // Defaulting
+            type: 'other', // Defaulting
+            walletId: selectedWalletId
         });
 
         confetti({
@@ -65,9 +79,31 @@ export default function AddTipsPage() {
             <main className="px-6 flex-grow flex flex-col">
 
                 {/* MOTIVATIONAL TEXT */}
-                <p className="text-[#F43F5E] text-center font-bold mt-4 text-sm">
+                <p className="text-[#F43F5E] text-center font-bold mt-4 text-sm mb-4">
                     Hôm nay em nhận được bao nhiêu? 💸
                 </p>
+
+                {/* WALLET SELECTOR */}
+                <div className="mb-2">
+                    <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Nhận vào ví</p>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        {wallets.map(w => (
+                            <button
+                                key={w.id}
+                                onClick={() => setSelectedWalletId(w.id)}
+                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors`}
+                                style={{
+                                    backgroundColor: selectedWalletId === w.id ? w.color : 'transparent',
+                                    color: selectedWalletId === w.id ? '#fff' : '#64748B',
+                                    borderColor: w.color,
+                                    borderWidth: selectedWalletId === w.id ? '0px' : '1px'
+                                }}
+                            >
+                                {w.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 {/* AMOUNT INPUT SECTION */}
                 <div className="flex flex-col items-center justify-center py-6 mb-6 relative mt-2">

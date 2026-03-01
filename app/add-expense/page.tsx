@@ -22,7 +22,8 @@ export default function AddExpensePage() {
 
     React.useEffect(() => {
         if (wallets && wallets.length > 0 && !selectedWalletId) {
-            setSelectedWalletId(wallets[0].id);
+            const defaultWallet = wallets.find(w => w.is_default);
+            setSelectedWalletId(defaultWallet ? defaultWallet.id : wallets[0].id);
         }
     }, [wallets, selectedWalletId]);
 
@@ -97,10 +98,13 @@ export default function AddExpensePage() {
                             <button
                                 key={w.id}
                                 onClick={() => setSelectedWalletId(w.id)}
-                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${selectedWalletId === w.id
-                                    ? 'bg-[#F43F5E] text-white shadow-md'
-                                    : 'bg-white text-[#64748B] border border-gray-100 hover:bg-gray-50'
-                                    }`}
+                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors`}
+                                style={{
+                                    backgroundColor: selectedWalletId === w.id ? w.color : 'transparent',
+                                    color: selectedWalletId === w.id ? '#fff' : '#64748B',
+                                    borderColor: w.color,
+                                    borderWidth: selectedWalletId === w.id ? '0px' : '1px'
+                                }}
                             >
                                 {w.name}
                             </button>
