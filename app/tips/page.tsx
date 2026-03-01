@@ -121,10 +121,14 @@ export default function TipsManagerPage() {
                     <div className="flex flex-col gap-6">
                         {Object.entries(groupedTips).map(([dateGroup, tipsList]) => {
                             const pendingTips = tipsList.filter(t => t.status === 'pending');
+                            const dailyTotal = tipsList.reduce((sum, t) => sum + t.amount, 0);
                             return (
                                 <div key={dateGroup}>
                                     <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">{dateGroup}</h3>
+                                        <div className="flex items-baseline gap-2">
+                                            <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">{dateGroup}</h3>
+                                            <span className="text-xs font-bold text-gray-400">Tổng: {dailyTotal.toLocaleString('vi-VN')} đ</span>
+                                        </div>
                                         {pendingTips.length > 0 && (
                                             <button
                                                 onClick={() => handleOpenSheet(pendingTips.map(t => t.id))}
@@ -164,7 +168,7 @@ export default function TipsManagerPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1">
-                                                    <span className={`text-lg font-black ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
+                                                    <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
                                                         + {tip.amount.toLocaleString('vi-VN')} đ
                                                     </span>
                                                     {tip.status === 'received' ? (
