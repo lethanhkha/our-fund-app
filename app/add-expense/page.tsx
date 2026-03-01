@@ -71,7 +71,7 @@ export default function AddExpensePage() {
         });
 
         toast.success('Thêm giao dịch thành công! 🎉');
-        router.back();
+        router.replace('/');
     };
 
 

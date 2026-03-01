@@ -76,7 +76,7 @@ export default function AddIncomePage() {
         });
 
         setTimeout(() => {
-            router.back();
+            router.replace('/');
         }, 800);
     };
 

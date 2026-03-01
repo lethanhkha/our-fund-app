@@ -60,7 +60,7 @@ export default function AddTipsPage() {
         });
         toast.success('Đã nhận tips! 💖');
 
-        router.back();
+        router.replace('/');
     };
 
     return (

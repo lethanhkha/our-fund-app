@@ -220,7 +220,6 @@ export const useFinanceStore = create<FinanceState>()(
                     }));
 
                     toast.success('Đã đặt làm ví chính! 👑');
-                    await get().fetchInitialData();
                 } catch (error: any) {
                     toast.error('Có lỗi khi cài đặt ví chính ❌');
                     console.error('Lỗi setPrimaryWallet:', error);
@@ -503,8 +502,7 @@ export const useFinanceStore = create<FinanceState>()(
                             service: tipData.description,
                             status: 'pending',
                             wallet_id: tipData.walletId || null, // Added wallet_id
-                            type: tipData.type || 'income', // Added type, assuming default 'income'
-                            date: new Date().toISOString() // Added date
+                            type: tipData.type || 'income' // Added type, assuming default 'income'
                         });
 
                     if (error) throw error;

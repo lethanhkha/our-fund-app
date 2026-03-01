@@ -111,7 +111,7 @@ function EditWalletForm() {
             color: selectedColor
         });
 
-        router.push('/wallets');
+        router.replace('/wallets');
     };
 
     if (loading) return null;

@@ -91,7 +91,7 @@ export default function AddWalletPage() {
         };
         addWallet(newWallet);
         toast.success("Thêm ví thành công! 💳");
-        router.push('/wallets');
+        router.replace('/wallets');
     };
 
     return (
