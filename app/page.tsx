@@ -152,7 +152,11 @@ export default function DashboardPage() {
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
             {recentTips.map(tip => (
               <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                <div className="text-xs text-[#94A3B8] mb-1 font-medium">{tip.time} • {tip.dateGroup}</div>
+                <div className="text-xs text-[#94A3B8] mb-1 font-medium flex gap-1 flex-wrap items-center">
+                  <span>{tip.time}</span>
+                  <span>&bull;</span>
+                  <span className="font-semibold text-gray-400">{wallets.find(w => w.id === tip.walletId)?.name || 'Chưa rõ ví'}</span>
+                </div>
                 <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
                   + {(tip.amount / 1000).toLocaleString('vi-VN')}k
                 </div>

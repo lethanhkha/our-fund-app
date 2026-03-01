@@ -6,7 +6,7 @@ interface TransactionItemProps {
     icon: React.ReactNode;
     iconBgColor?: string;
     title: string;
-    subtitle: string;
+    subtitle: React.ReactNode;
     amount: string;
     type?: TransactionType;
     onClick?: () => void;
@@ -36,7 +36,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                 </div>
                 <div>
                     <h4 className="font-bold text-[#1E293B] text-base">{title}</h4>
-                    <p className="text-[#94A3B8] text-xs mt-0.5">{subtitle}</p>
+                    <div className="text-[#94A3B8] text-xs mt-0.5">{subtitle}</div>
                 </div>
             </div>
             <div className={`font-bold text-lg ${isIncome ? 'text-emerald-500' : 'text-[#F43F5E]'}`}>

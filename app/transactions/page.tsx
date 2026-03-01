@@ -15,7 +15,7 @@ export default function TransactionHistoryPage() {
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
-    const { transactions, categories, deleteTransaction } = useFinanceStore();
+    const { transactions, categories, deleteTransaction, wallets } = useFinanceStore();
 
     // Calculate this month's totals
     const currentMonthStr = new Date().toISOString().substring(0, 7);
@@ -106,6 +106,7 @@ export default function TransactionHistoryPage() {
                             <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
                                 {items.map((item, index) => {
                                     const category = categories.find(c => c.id === item.categoryId);
+                                    const wallet = wallets.find(w => w.id === item.walletId);
                                     const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
 
                                     return (
@@ -114,7 +115,11 @@ export default function TransactionHistoryPage() {
                                                 icon={<span className="text-xl">{details.icon}</span>}
                                                 iconBgColor={details.color}
                                                 title={item.note || details.title}
-                                                subtitle={item.time}
+                                                subtitle={
+                                                    <span className="flex items-center gap-1">
+                                                        {item.time} &bull; <span className="font-semibold text-gray-500">{wallet?.name || 'Ví không xác định'}</span>
+                                                    </span>
+                                                }
                                                 amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
                                                 type={item.type}
                                                 onClick={() => {

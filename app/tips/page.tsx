@@ -15,7 +15,7 @@ export default function TipsManagerPage() {
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTipIds, setSelectedTipIds] = useState<string[]>([]);
     const [selectedTipActionId, setSelectedTipActionId] = useState<string | null>(null);
-    const { tips, undoReceiveTip, deleteTip } = useFinanceStore();
+    const { tips, undoReceiveTip, deleteTip, wallets } = useFinanceStore();
 
     const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
 
@@ -146,7 +146,17 @@ export default function TipsManagerPage() {
                                                     </div>
                                                     <div>
                                                         <h3 className={`font-bold text-sm ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</h3>
-                                                        <p className="text-xs text-[#94A3B8] font-medium">{tip.time} {tip.description && `• ${tip.description}`}</p>
+                                                        <div className="text-xs text-[#94A3B8] font-medium mt-0.5 flex flex-wrap items-center gap-1">
+                                                            <span>{tip.time}</span>
+                                                            <span>&bull;</span>
+                                                            <span className="font-semibold text-gray-500">{wallets.find(w => w.id === tip.walletId)?.name || 'Ví không xác định'}</span>
+                                                            {tip.description && (
+                                                                <>
+                                                                    <span>&bull;</span>
+                                                                    <span>{tip.description}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1">
