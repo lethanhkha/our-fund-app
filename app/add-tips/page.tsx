@@ -46,9 +46,9 @@ export default function AddTipsPage() {
 
         await addTip({
             amount: parseInt(amount) * 1000,
-            description: note,
-            customerName: 'Khách hàng', // Defaulting since we don't have an input for this yet
-            type: 'other', // Defaulting
+            description: '',
+            customerName: note, // Map note to customerName
+            type: 'other',
             walletId: selectedWalletId
         });
 
@@ -60,7 +60,7 @@ export default function AddTipsPage() {
         });
         toast.success('Đã nhận tips! 💖');
 
-        router.replace('/');
+        router.back();
     };
 
     return (

@@ -142,10 +142,10 @@ export default function TipsManagerPage() {
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
-                                                        {tip.customerName.charAt(0)}
+                                                        {tip.customerName === 'Khách hàng' ? 'K' : tip.customerName.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <h3 className="font-bold text-[#1E293B] text-sm">{tip.customerName}</h3>
+                                                        <h3 className={`font-bold text-sm ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</h3>
                                                         <p className="text-xs text-[#94A3B8] font-medium">{tip.time} {tip.description && `• ${tip.description}`}</p>
                                                     </div>
                                                 </div>

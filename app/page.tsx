@@ -156,7 +156,7 @@ export default function DashboardPage() {
                 <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
                   + {(tip.amount / 1000).toLocaleString('vi-VN')}k
                 </div>
-                <div className="text-sm font-bold text-[#1E293B] truncate">{tip.customerName}</div>
+                <div className={`text-sm font-bold truncate ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</div>
               </div>
             ))}
           </div>
