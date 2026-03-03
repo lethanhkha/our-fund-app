@@ -7,7 +7,6 @@ import { BottomNav } from '../../components/ui/BottomNav';
 import { TransactionItem } from '../../components/ui/TransactionItem';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { getDisplayDate } from '@/lib/utils';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
@@ -91,7 +90,36 @@ export default function TransactionHistoryPage() {
         return acc;
     }, {} as Record<string, typeof transactions>);
 
+    // Format date string directly for UI, adding +1 day
+    const renderDateHeader = (dateStr: string) => {
+        // dateStr is 'YYYY-MM-DD'. Parsed to UTC midnight, then date offset handled.
+        const displayDate = new Date(dateStr);
+        displayDate.setDate(displayDate.getDate() + 1);
 
+        const dd = String(displayDate.getDate()).padStart(2, '0');
+        const mm = String(displayDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = displayDate.getFullYear();
+        const displayDateFormatted = `${dd}/${mm}/${yyyy}`;
+
+        const today = new Date();
+        today.setDate(today.getDate() + 1); // +1 shift cho 'now'
+
+        const tDd = String(today.getDate()).padStart(2, '0');
+        const tMm = String(today.getMonth() + 1).padStart(2, '0');
+        const tYyyy = today.getFullYear();
+        const todayFormatted = `${tDd}/${tMm}/${tYyyy}`;
+
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yDd = String(yesterday.getDate()).padStart(2, '0');
+        const yMm = String(yesterday.getMonth() + 1).padStart(2, '0');
+        const yYyyy = yesterday.getFullYear();
+        const yesterdayFormatted = `${yDd}/${yMm}/${yYyyy}`;
+
+        if (displayDateFormatted === todayFormatted) return 'Hôm nay';
+        if (displayDateFormatted === yesterdayFormatted) return 'Hôm qua';
+        return displayDateFormatted;
+    };
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
@@ -218,9 +246,7 @@ export default function TransactionHistoryPage() {
                                 <section key={dateStr}>
                                     <div className="flex justify-between items-end mb-3">
                                         <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">
-                                            {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' :
-                                                dateStr === new Date(getDisplayDate(new Date()).setDate(getDisplayDate(new Date()).getDate() - 1)).toISOString().split('T')[0] ? 'Hôm qua' :
-                                                    dateStr.split('-').reverse().join('/')}
+                                            {renderDateHeader(dateStr)}
                                         </h3>
                                         <div className="flex gap-2">
                                             {dailyIncome > 0 && <span className="text-xs font-bold text-emerald-500">+{dailyIncome.toLocaleString('vi-VN')}</span>}

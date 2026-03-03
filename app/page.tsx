@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { BalanceCard } from '../components/ui/BalanceCard';
 import { BottomNav } from '../components/ui/BottomNav';
 import { useFinanceStore } from '../store/useFinanceStore';
-import { getDisplayDate } from '@/lib/utils';
-
 const LOVE_NOTES = [
   'Hôm nay embee làm việc vất vả òiii! 🌸',
   'Cuối tuần anh dẫn đi ăn đồ nứnnn nhé! 🥩',
@@ -40,20 +38,21 @@ export default function DashboardPage() {
 
   const calculateTrend = () => {
     const nowLocal = new Date();
-    const adjustedNow = getDisplayDate(nowLocal);
-    const currentMonthPrefix = adjustedNow.toISOString().substring(0, 7);
+    const currentMonthPrefix = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}`;
 
-    const lastMonthRaw = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth() - 1, 1);
-    const lastMonthPrefix = lastMonthRaw.toISOString().substring(0, 7);
+    const lastMonthRaw = new Date(nowLocal.getFullYear(), nowLocal.getMonth() - 1, 1);
+    const lastMonthPrefix = `${lastMonthRaw.getFullYear()}-${String(lastMonthRaw.getMonth() + 1).padStart(2, '0')}`;
 
     const getNetForMonth = (prefix: string) => {
       const monthTxs = transactions.filter(t => {
-        const tDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.date);
-        return tDate.toISOString().startsWith(prefix);
+        const tDate = t.created_at ? new Date(t.created_at) : new Date(t.date);
+        const pStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+        return pStr === prefix;
       });
       const monthTips = tips.filter(t => {
-        const tDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.time);
-        return tDate.toISOString().startsWith(prefix) && t.status === 'received';
+        const tDate = t.created_at ? new Date(t.created_at) : new Date(t.time);
+        const pStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+        return pStr === prefix && t.status === 'received';
       });
       const inc = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0) + monthTips.reduce((s, t) => s + t.amount, 0);
       const exp = monthTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);

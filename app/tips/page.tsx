@@ -44,19 +44,33 @@ export default function TipsManagerPage() {
 
     const getAdjustedDateGroup = (createdAt?: string, originalGroup?: string) => {
         if (!createdAt) return originalGroup || 'KHÁC';
-        const displayDate = getDisplayDate(createdAt);
-        const dateStr = displayDate.toISOString().split('T')[0];
 
-        const dNow = getDisplayDate(new Date());
-        const todayStr = dNow.toISOString().split('T')[0];
+        const displayDate = new Date(createdAt);
+        displayDate.setDate(displayDate.getDate() + 1);
 
-        const yesterdayDate = new Date(dNow);
-        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-        const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+        const dd = String(displayDate.getDate()).padStart(2, '0');
+        const mm = String(displayDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = displayDate.getFullYear();
+        const displayDateStr = `${dd}/${mm}/${yyyy}`;
 
-        if (dateStr === todayStr) return 'HÔM NAY';
-        if (dateStr === yesterdayStr) return 'HÔM QUA';
-        return dateStr.split('-').reverse().join('/');
+        const today = new Date();
+        today.setDate(today.getDate() + 1); // +1 shift cho 'now'
+
+        const tDd = String(today.getDate()).padStart(2, '0');
+        const tMm = String(today.getMonth() + 1).padStart(2, '0');
+        const tYyyy = today.getFullYear();
+        const todayStr = `${tDd}/${tMm}/${tYyyy}`;
+
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yDd = String(yesterday.getDate()).padStart(2, '0');
+        const yMm = String(yesterday.getMonth() + 1).padStart(2, '0');
+        const yYyyy = yesterday.getFullYear();
+        const yesterdayStr = `${yDd}/${yMm}/${yYyyy}`;
+
+        if (displayDateStr === todayStr) return 'HÔM NAY';
+        if (displayDateStr === yesterdayStr) return 'HÔM QUA';
+        return displayDateStr;
     };
 
     const groupedTips = filteredTips.reduce((acc, tip) => {
