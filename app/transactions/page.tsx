@@ -11,6 +11,11 @@ import { getDisplayDate } from '@/lib/utils';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
+    // Time filter states
+    const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all' | 'custom'>('month');
+    const [customMonthOffset, setCustomMonthOffset] = useState<string>(''); // YYYY-MM
+
+    // Category filter state
     const [filter, setFilter] = useState('all');
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
@@ -18,18 +23,42 @@ export default function TransactionHistoryPage() {
 
     const { transactions, categories, deleteTransaction, wallets } = useFinanceStore();
 
-    // Calculate this month's totals
-    const currentMonthStr = new Date().toISOString().substring(0, 7);
-    const thisMonthTransactions = transactions.filter(t => t.date.startsWith(currentMonthStr));
-    const totalIncome = thisMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const totalExpense = thisMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    // Remove tips that are synced automatically
+    const validTransactions = transactions.filter(t => t.note !== 'Tiền Tips');
+
+    // Time calculations
+    const nowLocal = new Date();
+    const adjustedNow = getDisplayDate(nowLocal);
+
+    const startOfWeek = new Date(adjustedNow);
+    startOfWeek.setDate(adjustedNow.getDate() - adjustedNow.getDay() + (adjustedNow.getDay() === 0 ? -6 : 1));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth(), 1);
+
+    // Apply Time Filter First
+    const timeFilteredTransactions = validTransactions.filter(t => {
+        if (timeFilter === 'all') return true;
+        const tipDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.date);
+
+        if (timeFilter === 'week') return tipDate >= startOfWeek;
+        if (timeFilter === 'month') return tipDate >= startOfMonth;
+        if (timeFilter === 'custom' && customMonthOffset) {
+            return tipDate.toISOString().startsWith(customMonthOffset);
+        }
+        return true;
+    });
+
+    // Calculate this period's totals
+    const totalIncome = timeFilteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = timeFilteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const netTotal = totalIncome - totalExpense;
 
     // Filter transactions based on active category
-    const filteredTransactions = filter === 'all' ? transactions : transactions.filter(t => t.category_id === filter);
+    const filteredTransactions = filter === 'all' ? timeFilteredTransactions : timeFilteredTransactions.filter(t => t.category_id === filter);
 
-    // Get unique categories active in transactions
-    const activeCategoryIds = Array.from(new Set(transactions.map(t => t.category_id)));
+    // Get unique categories active in transactions (based on time filter, not category filter)
+    const activeCategoryIds = Array.from(new Set(timeFilteredTransactions.map(t => t.category_id)));
     const activeCategories = categories.filter(c => activeCategoryIds.includes(c.id));
 
     // Group giao dịch theo ngày từ danh sách đã lọc
@@ -58,6 +87,39 @@ export default function TransactionHistoryPage() {
                         <p className="text-xs text-[#EC4899] font-bold mt-0.5">Lịch sử giao dịch chi tiết</p>
                     </div>
                 </div>
+
+                {/* SMART TIME FILTER */}
+                <div className="mt-4 flex flex-col gap-2">
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        {['week', 'month', 'all', 'custom'].map((opt) => (
+                            <button
+                                key={opt}
+                                onClick={() => {
+                                    setTimeFilter(opt as any);
+                                    if (opt !== 'custom') setCustomMonthOffset('');
+                                }}
+                                className={`px-4 py-2 rounded-xl whitespace-nowrap text-xs font-bold transition-all border ${timeFilter === opt
+                                    ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-sm'
+                                    : 'bg-white text-[#94A3B8] border-pink-100'
+                                    }`}
+                            >
+                                {opt === 'week' ? 'Tuần này' : opt === 'month' ? 'Tháng này' : opt === 'all' ? 'Tất cả' : 'Tùy chọn'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* CUSTOM MONTH PICKER */}
+                    {timeFilter === 'custom' && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                            <input
+                                type="month"
+                                value={customMonthOffset}
+                                onChange={(e) => setCustomMonthOffset(e.target.value)}
+                                className="w-full bg-white border border-pink-100 text-[#1E293B] text-sm rounded-xl px-4 py-3 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                            />
+                        </div>
+                    )}
+                </div>
             </header>
 
             <main className="px-6 flex-grow">
@@ -69,11 +131,11 @@ export default function TransactionHistoryPage() {
 
                     <div className="relative z-10 flex flex-col gap-3">
                         <div className="flex justify-between items-center text-white/90">
-                            <span className="text-sm font-medium">Tổng Thu (Tháng này)</span>
+                            <span className="text-sm font-medium">Tổng Thu</span>
                             <span className="font-bold text-green-100">+{totalIncome.toLocaleString('vi-VN')} đ</span>
                         </div>
                         <div className="flex justify-between items-center text-white/90">
-                            <span className="text-sm font-medium">Tổng Chi (Tháng này)</span>
+                            <span className="text-sm font-medium">Tổng Chi</span>
                             <span className="font-bold text-red-100">-{totalExpense.toLocaleString('vi-VN')} đ</span>
                         </div>
                         <div className="w-full h-px bg-white/30 my-1"></div>
@@ -108,7 +170,9 @@ export default function TransactionHistoryPage() {
                     {Object.entries(groupedTransactions).map(([dateStr, items]) => (
                         <section key={dateStr}>
                             <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">
-                                {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' : dateStr}
+                                {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' :
+                                    dateStr === new Date(getDisplayDate(new Date()).setDate(getDisplayDate(new Date()).getDate() - 1)).toISOString().split('T')[0] ? 'Hôm qua' :
+                                        dateStr.split('-').reverse().join('/')}
                             </h3>
                             <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
                                 {items.map((item, index) => {

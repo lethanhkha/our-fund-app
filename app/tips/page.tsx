@@ -54,7 +54,7 @@ export default function TipsManagerPage() {
 
         if (dateStr === todayStr) return 'HÔM NAY';
         if (dateStr === yesterdayStr) return 'HÔM QUA';
-        return dateStr;
+        return dateStr.split('-').reverse().join('/');
     };
 
     const groupedTips = filteredTips.reduce((acc, tip) => {

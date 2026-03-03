@@ -13,63 +13,18 @@ export default function ReportsPage() {
     const router = useRouter();
     const { transactions, categories } = useFinanceStore();
 
-    // Lấy danh sách các năm đã có giao dịch
-    const availableYears = useMemo(() => {
-        const years = new Set<string>();
-        transactions.forEach(t => {
-            const baseDate = t.created_at || t.date;
-            if (baseDate) {
-                years.add(getDisplayDate(baseDate).getFullYear().toString());
-            }
-        });
-        const yearArray = Array.from(years).sort((a, b) => b.localeCompare(a));
-        if (yearArray.length === 0) {
-            yearArray.push(getDisplayDate(new Date()).getFullYear().toString());
-        }
-        return yearArray;
-    }, [transactions]);
-
-    const [selectedYear, setSelectedYear] = useState<string>(availableYears[0]);
-
-    // Lấy danh sách các tháng đã có giao dịch (YYYY-MM) trong năm được chọn
-    const availableMonths = useMemo(() => {
-        const months = new Set<string>();
-        transactions.forEach(t => {
-            const baseDate = t.created_at || t.date;
-            if (baseDate) {
-                const adjustedDate = getDisplayDate(baseDate);
-                if (adjustedDate.getFullYear().toString() === selectedYear) {
-                    months.add(adjustedDate.toISOString().substring(0, 7));
-                }
-            }
-        });
-        const monthArray = Array.from(months).sort((a, b) => b.localeCompare(a));
-        // Nếu chưa có giao dịch nào
-        if (monthArray.length === 0) {
-            const currentPeriod = getDisplayDate(new Date()).toISOString().substring(0, 7);
-            if (currentPeriod.startsWith(selectedYear)) {
-                monthArray.push(currentPeriod);
-            }
-        }
-        return monthArray;
-    }, [transactions, selectedYear]);
-
-    const [selectedMonth, setSelectedMonth] = useState<string>(availableMonths[0] || `${selectedYear}-01`);
-
-    React.useEffect(() => {
-        if (availableMonths.length > 0 && !availableMonths.includes(selectedMonth)) {
-            setSelectedMonth(availableMonths[0]);
-        }
-    }, [selectedYear, availableMonths, selectedMonth]);
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
 
     // Lọc giao dịch theo tháng đã chọn
     const monthTransactions = useMemo(() => {
         return transactions.filter(t => {
             const baseDate = t.created_at || t.date;
             const adjustedDate = getDisplayDate(baseDate);
-            return adjustedDate.toISOString().startsWith(selectedMonth);
+            return adjustedDate.getMonth() + 1 === selectedMonth && adjustedDate.getFullYear() === selectedYear;
         });
-    }, [transactions, selectedMonth]);
+    }, [transactions, selectedMonth, selectedYear]);
+
 
     // Tổng thu & chi
     const totalIncome = monthTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
@@ -108,23 +63,26 @@ export default function ReportsPage() {
 
             <main className="flex-grow flex flex-col pt-2">
                 {/* THANH CHỌN NĂM */}
-                <div className="px-6 pb-2">
-                    <select
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(e.target.value)}
-                        className="bg-white border border-pink-100 text-[#1E293B] font-bold text-sm rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                <div className="px-6 pb-4 flex items-center justify-between">
+                    <button
+                        onClick={() => setSelectedYear(y => y - 1)}
+                        className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-pink-50 transition-colors"
                     >
-                        {availableYears.map(year => (
-                            <option key={year} value={year}>Năm {year}</option>
-                        ))}
-                    </select>
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <h2 className="text-xl font-extrabold text-[#1E293B]">{selectedYear}</h2>
+                    <button
+                        onClick={() => setSelectedYear(y => y + 1)}
+                        className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-pink-50 transition-colors"
+                    >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                    </button>
                 </div>
 
                 {/* THANH CHỌN THÁNG (Horizontal Scroll) */}
-                <div className="w-full overflow-x-auto hide-scrollbar px-6 pb-4">
+                <div className="w-full overflow-x-auto hide-scrollbar px-6 pb-6">
                     <div className="flex items-center gap-2" style={{ width: 'max-content' }}>
-                        {availableMonths.map((month) => {
-                            const [yyyy, mm] = month.split('-');
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                             const isSelected = month === selectedMonth;
                             return (
                                 <button
@@ -135,7 +93,7 @@ export default function ReportsPage() {
                                         : 'bg-white text-[#94A3B8] border border-pink-100 hover:bg-gray-50'
                                         }`}
                                 >
-                                    Tháng {mm}/{yyyy.substring(2)}
+                                    Tháng {month}
                                 </button>
                             );
                         })}
