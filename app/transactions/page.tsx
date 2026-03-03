@@ -99,26 +99,7 @@ export default function TransactionHistoryPage() {
         const dd = String(displayDate.getDate()).padStart(2, '0');
         const mm = String(displayDate.getMonth() + 1).padStart(2, '0');
         const yyyy = displayDate.getFullYear();
-        const displayDateFormatted = `${dd}/${mm}/${yyyy}`;
-
-        const today = new Date();
-        today.setDate(today.getDate() + 1); // +1 shift cho 'now'
-
-        const tDd = String(today.getDate()).padStart(2, '0');
-        const tMm = String(today.getMonth() + 1).padStart(2, '0');
-        const tYyyy = today.getFullYear();
-        const todayFormatted = `${tDd}/${tMm}/${tYyyy}`;
-
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yDd = String(yesterday.getDate()).padStart(2, '0');
-        const yMm = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const yYyyy = yesterday.getFullYear();
-        const yesterdayFormatted = `${yDd}/${yMm}/${yYyyy}`;
-
-        if (displayDateFormatted === todayFormatted) return 'Hôm nay';
-        if (displayDateFormatted === yesterdayFormatted) return 'Hôm qua';
-        return displayDateFormatted;
+        return `${dd}/${mm}/${yyyy}`;
     };
 
     return (

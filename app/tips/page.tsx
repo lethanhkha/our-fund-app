@@ -51,26 +51,7 @@ export default function TipsManagerPage() {
         const dd = String(displayDate.getDate()).padStart(2, '0');
         const mm = String(displayDate.getMonth() + 1).padStart(2, '0');
         const yyyy = displayDate.getFullYear();
-        const displayDateStr = `${dd}/${mm}/${yyyy}`;
-
-        const today = new Date();
-        today.setDate(today.getDate() + 1); // +1 shift cho 'now'
-
-        const tDd = String(today.getDate()).padStart(2, '0');
-        const tMm = String(today.getMonth() + 1).padStart(2, '0');
-        const tYyyy = today.getFullYear();
-        const todayStr = `${tDd}/${tMm}/${tYyyy}`;
-
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yDd = String(yesterday.getDate()).padStart(2, '0');
-        const yMm = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const yYyyy = yesterday.getFullYear();
-        const yesterdayStr = `${yDd}/${yMm}/${yYyyy}`;
-
-        if (displayDateStr === todayStr) return 'HÔM NAY';
-        if (displayDateStr === yesterdayStr) return 'HÔM QUA';
-        return displayDateStr;
+        return `${dd}/${mm}/${yyyy}`;
     };
 
     const groupedTips = filteredTips.reduce((acc, tip) => {
