@@ -26,7 +26,11 @@ export default function TransactionHistoryPage() {
     const netTotal = totalIncome - totalExpense;
 
     // Filter transactions based on active category
-    const filteredTransactions = filter === 'all' ? transactions : transactions.filter(t => t.categoryId === filter);
+    const filteredTransactions = filter === 'all' ? transactions : transactions.filter(t => t.category_id === filter);
+
+    // Get unique categories active in transactions
+    const activeCategoryIds = Array.from(new Set(transactions.map(t => t.category_id)));
+    const activeCategories = categories.filter(c => activeCategoryIds.includes(c.id));
 
     // Group giao dịch theo ngày từ danh sách đã lọc
     const groupedTransactions = filteredTransactions.reduce((acc, current) => {
@@ -88,7 +92,7 @@ export default function TransactionHistoryPage() {
                     >
                         Tất cả
                     </button>
-                    {categories.map(cat => (
+                    {activeCategories.map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => setFilter(cat.id)}
@@ -108,7 +112,7 @@ export default function TransactionHistoryPage() {
                             </h3>
                             <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
                                 {items.map((item, index) => {
-                                    const category = categories.find(c => c.id === item.categoryId);
+                                    const category = categories.find(c => c.id === item.category_id);
                                     const wallet = wallets.find(w => w.id === item.walletId);
                                     const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
 

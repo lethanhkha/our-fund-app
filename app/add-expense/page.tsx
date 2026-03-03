@@ -64,7 +64,7 @@ export default function AddExpensePage() {
 
         addTransaction({
             type: 'expense',
-            categoryId: selectedCategory,
+            category_id: selectedCategory,
             amount: parsedAmount * 1000, // Keep original amount calculation
             note: note,
             walletId: selectedWalletId // Use selected wallet

@@ -22,7 +22,7 @@ function EditTransactionForm() {
         const tx = transactions.find(t => t.id === id);
         if (tx) {
             setAmount((tx.amount / 1000).toString());
-            setSelectedCategory(tx.categoryId);
+            setSelectedCategory(tx.category_id);
             setNote(tx.note || '');
             setSelectedWalletId(tx.walletId);
             setType(tx.type);
@@ -80,7 +80,7 @@ function EditTransactionForm() {
 
         await updateTransaction(id, {
             type,
-            categoryId: selectedCategory,
+            category_id: selectedCategory,
             amount: parsedAmount * 1000,
             note: note,
             walletId: selectedWalletId

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 export interface Transaction {
     id: string;
     type: 'income' | 'expense';
-    categoryId: string;
+    category_id: string;
     amount: number;
     note: string;
     time: string;
@@ -139,7 +139,7 @@ export const useFinanceStore = create<FinanceState>()(
                                 walletId: tx.wallet_id,
                                 type: tx.type,
                                 amount: Number(tx.amount),
-                                categoryId: tx.category,
+                                category_id: tx.category_id,
                                 note: tx.note || '',
                                 date: tx.created_at.split('T')[0],
                                 time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -321,7 +321,7 @@ export const useFinanceStore = create<FinanceState>()(
                     const { count, error: countError } = await supabase
                         .from('transactions')
                         .select('*', { count: 'exact', head: true })
-                        .eq('category', categoryId);
+                        .eq('category_id', categoryId);
 
                     if (countError) throw countError;
 
@@ -361,7 +361,7 @@ export const useFinanceStore = create<FinanceState>()(
                         wallet_id: transactionData.walletId,
                         type: transactionData.type,
                         amount: transactionData.amount,
-                        category: transactionData.categoryId,
+                        category_id: transactionData.category_id,
                         note: transactionData.note
                     };
                     const { data: newTx, error: txError } = await supabase
@@ -478,7 +478,7 @@ export const useFinanceStore = create<FinanceState>()(
                     if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
                     if (updatedData.type !== undefined) dbUpdate['type'] = updatedData.type;
                     if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
-                    if (updatedData.categoryId !== undefined) dbUpdate['category'] = updatedData.categoryId;
+                    if (updatedData.category_id !== undefined) dbUpdate['category_id'] = updatedData.category_id;
                     if (updatedData.note !== undefined) dbUpdate['note'] = updatedData.note;
 
                     const { error: txError } = await supabase
@@ -540,7 +540,7 @@ export const useFinanceStore = create<FinanceState>()(
                     for (const tip of tipsToReceive) {
                         await get().addTransaction({
                             type: 'income',
-                            categoryId: tipsCategory?.id || '',
+                            category_id: tipsCategory?.id || '',
                             amount: tip.amount,
                             note: tip.description ? `Tiền tips: ${tip.description}` : `Tiền tips khách hàng`,
                             walletId: walletId

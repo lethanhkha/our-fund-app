@@ -59,7 +59,7 @@ export default function AddIncomePage() {
 
         addTransaction({
             type: 'income',
-            categoryId: selectedCategory,
+            category_id: selectedCategory,
             amount: numericAmount * 1000, // Keep original amount calculation logic
             note: note,
             walletId: selectedWalletId // Use selected wallet

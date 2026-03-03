@@ -13,25 +13,54 @@ export default function ReportsPage() {
     const router = useRouter();
     const { transactions, categories } = useFinanceStore();
 
-    // Lấy danh sách các tháng đã có giao dịch (YYYY-MM)
+    // Lấy danh sách các năm đã có giao dịch
+    const availableYears = useMemo(() => {
+        const years = new Set<string>();
+        transactions.forEach(t => {
+            const baseDate = t.created_at || t.date;
+            if (baseDate) {
+                years.add(getDisplayDate(baseDate).getFullYear().toString());
+            }
+        });
+        const yearArray = Array.from(years).sort((a, b) => b.localeCompare(a));
+        if (yearArray.length === 0) {
+            yearArray.push(getDisplayDate(new Date()).getFullYear().toString());
+        }
+        return yearArray;
+    }, [transactions]);
+
+    const [selectedYear, setSelectedYear] = useState<string>(availableYears[0]);
+
+    // Lấy danh sách các tháng đã có giao dịch (YYYY-MM) trong năm được chọn
     const availableMonths = useMemo(() => {
         const months = new Set<string>();
         transactions.forEach(t => {
             const baseDate = t.created_at || t.date;
             if (baseDate) {
                 const adjustedDate = getDisplayDate(baseDate);
-                months.add(adjustedDate.toISOString().substring(0, 7));
+                if (adjustedDate.getFullYear().toString() === selectedYear) {
+                    months.add(adjustedDate.toISOString().substring(0, 7));
+                }
             }
         });
         const monthArray = Array.from(months).sort((a, b) => b.localeCompare(a));
-        // Nếu chưa có giao dịch nào, hiển thị tháng hiện tại
+        // Nếu chưa có giao dịch nào
         if (monthArray.length === 0) {
-            monthArray.push(getDisplayDate(new Date()).toISOString().substring(0, 7));
+            const currentPeriod = getDisplayDate(new Date()).toISOString().substring(0, 7);
+            if (currentPeriod.startsWith(selectedYear)) {
+                monthArray.push(currentPeriod);
+            }
         }
         return monthArray;
-    }, [transactions]);
+    }, [transactions, selectedYear]);
 
-    const [selectedMonth, setSelectedMonth] = useState<string>(availableMonths[0]);
+    const [selectedMonth, setSelectedMonth] = useState<string>(availableMonths[0] || `${selectedYear}-01`);
+
+    React.useEffect(() => {
+        if (availableMonths.length > 0 && !availableMonths.includes(selectedMonth)) {
+            setSelectedMonth(availableMonths[0]);
+        }
+    }, [selectedYear, availableMonths, selectedMonth]);
 
     // Lọc giao dịch theo tháng đã chọn
     const monthTransactions = useMemo(() => {
@@ -52,12 +81,12 @@ export default function ReportsPage() {
         const grouped: Record<string, number> = {};
 
         expenseTxs.forEach(t => {
-            grouped[t.categoryId] = (grouped[t.categoryId] || 0) + t.amount;
+            grouped[t.category_id] = (grouped[t.category_id] || 0) + t.amount;
         });
 
         return Object.entries(grouped)
-            .map(([categoryId, amount]) => {
-                const cat = categories.find(c => c.id === categoryId);
+            .map(([category_id, amount]) => {
+                const cat = categories.find(c => c.id === category_id);
                 return {
                     name: cat ? cat.name : 'Khác',
                     icon: cat ? cat.icon : '✨',
@@ -78,6 +107,19 @@ export default function ReportsPage() {
             </header>
 
             <main className="flex-grow flex flex-col pt-2">
+                {/* THANH CHỌN NĂM */}
+                <div className="px-6 pb-2">
+                    <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="bg-white border border-pink-100 text-[#1E293B] font-bold text-sm rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                    >
+                        {availableYears.map(year => (
+                            <option key={year} value={year}>Năm {year}</option>
+                        ))}
+                    </select>
+                </div>
+
                 {/* THANH CHỌN THÁNG (Horizontal Scroll) */}
                 <div className="w-full overflow-x-auto hide-scrollbar px-6 pb-4">
                     <div className="flex items-center gap-2" style={{ width: 'max-content' }}>
