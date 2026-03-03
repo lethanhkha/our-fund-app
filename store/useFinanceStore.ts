@@ -77,6 +77,7 @@ interface FinanceState {
     addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status'>) => Promise<void>;
     receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
     undoReceiveTip: (tipId: string) => Promise<void>;
+    updateTip: (tipId: string, updatedData: Partial<Tip>) => Promise<void>;
     deleteTip: (tipId: string) => Promise<void>;
     addGoal: (goal: Pick<Goal, 'name' | 'targetAmount' | 'deadline'>) => Promise<void>;
 }
@@ -516,6 +517,30 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                }
+            },
+
+            updateTip: async (tipId, updatedData) => {
+                try {
+                    const dbUpdate: any = {};
+                    if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
+                    if (updatedData.customerName !== undefined) dbUpdate['customer'] = updatedData.customerName;
+                    if (updatedData.description !== undefined) dbUpdate['service'] = updatedData.description;
+                    if (updatedData.status !== undefined) dbUpdate['status'] = updatedData.status;
+                    if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
+
+                    const { error: tipError } = await supabase
+                        .from('tips')
+                        .update(dbUpdate)
+                        .eq('id', tipId);
+
+                    if (tipError) throw tipError;
+
+                    toast.success('Đã cập nhật Tip thành công! ✨');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    console.error("Lỗi khi sửa Tip:", error?.message || JSON.stringify(error));
                 }
             },
 

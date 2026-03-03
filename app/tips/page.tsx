@@ -168,9 +168,18 @@ export default function TipsManagerPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1">
-                                                    <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
-                                                        + {tip.amount.toLocaleString('vi-VN')} đ
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); router.push(`/edit-tip?id=${tip.id}`); }}
+                                                            className="text-gray-400 hover:text-[#EC4899] transition-colors p-1"
+                                                            title="Sửa Tips"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                        </button>
+                                                        <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
+                                                            + {tip.amount.toLocaleString('vi-VN')} đ
+                                                        </span>
+                                                    </div>
                                                     {tip.status === 'received' ? (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); undoReceiveTip(tip.id); }}
@@ -184,7 +193,7 @@ export default function TipsManagerPage() {
                                                             onClick={(e) => { e.stopPropagation(); handleOpenSheet([tip.id]); }}
                                                             className="bg-[#F43F5E] hover:bg-[#E11D48] text-white px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
                                                         >
-                                                            Đã nhận
+                                                            Nhận
                                                         </button>
                                                     )}
                                                 </div>

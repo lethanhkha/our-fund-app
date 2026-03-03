@@ -38,11 +38,13 @@ export default function RootLayout({
             <Toaster
               position="top-center"
               toastOptions={{
+                duration: 2500,
                 style: {
                   borderRadius: '1rem',
                   background: '#333',
                   color: '#fff',
-                  fontFamily: 'var(--font-quicksand)'
+                  fontFamily: 'var(--font-quicksand)',
+                  marginBottom: '20px'
                 }
               }}
             />
