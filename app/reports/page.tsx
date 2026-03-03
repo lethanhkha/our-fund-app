@@ -133,10 +133,11 @@ export default function ReportsPage() {
                         {expenseData.length > 0 ? (
                             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center mb-8">
                                 <h2 className="text-sm font-bold text-[#1E293B] self-start mb-4">Cơ cấu Chi tiêu</h2>
-                                <div className="w-full h-64 relative">
+                                <div className="w-full h-64 min-h-[250px] relative">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
+                                                isAnimationActive={false}
                                                 data={expenseData}
                                                 cx="50%"
                                                 cy="50%"
