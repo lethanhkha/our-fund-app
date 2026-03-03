@@ -25,15 +25,15 @@ export default function TipsManagerPage() {
         setIsSheetOpen(true);
     };
 
-    const adjustedNow = getDisplayDate(new Date());
-    const startOfWeek = new Date(adjustedNow);
-    startOfWeek.setDate(adjustedNow.getDate() - adjustedNow.getDay() + (adjustedNow.getDay() === 0 ? -6 : 1));
+    const nowLocal = new Date();
+    const startOfWeek = new Date(nowLocal);
+    startOfWeek.setDate(nowLocal.getDate() - nowLocal.getDay() + (nowLocal.getDay() === 0 ? -6 : 1));
     startOfWeek.setHours(0, 0, 0, 0);
-    const startOfMonth = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth(), 1);
+    const startOfMonth = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), 1);
 
     const filteredTips = tips.filter(t => {
         if (timeFilter === 'all') return true;
-        const tipDate = t.created_at ? getDisplayDate(t.created_at) : new Date(0);
+        const tipDate = t.created_at ? new Date(t.created_at) : new Date(0);
         if (timeFilter === 'week') return tipDate >= startOfWeek;
         if (timeFilter === 'month') return tipDate >= startOfMonth;
         return true;
@@ -44,11 +44,13 @@ export default function TipsManagerPage() {
 
     const getAdjustedDateGroup = (createdAt?: string, originalGroup?: string) => {
         if (!createdAt) return originalGroup || 'KHÁC';
-        const adjustedDate = getDisplayDate(createdAt);
-        const dateStr = adjustedDate.toISOString().split('T')[0];
-        const todayStr = adjustedNow.toISOString().split('T')[0];
+        const displayDate = getDisplayDate(createdAt);
+        const dateStr = displayDate.toISOString().split('T')[0];
 
-        const yesterdayDate = new Date(adjustedNow);
+        const dNow = getDisplayDate(new Date());
+        const todayStr = dNow.toISOString().split('T')[0];
+
+        const yesterdayDate = new Date(dNow);
         yesterdayDate.setDate(yesterdayDate.getDate() - 1);
         const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
 
@@ -169,13 +171,6 @@ export default function TipsManagerPage() {
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1">
                                                     <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); router.push(`/edit-tip?id=${tip.id}`); }}
-                                                            className="text-gray-400 hover:text-[#EC4899] transition-colors p-1"
-                                                            title="Sửa Tips"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                        </button>
                                                         <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
                                                             + {tip.amount.toLocaleString('vi-VN')} đ
                                                         </span>
@@ -235,40 +230,55 @@ export default function TipsManagerPage() {
             <BottomSheet isOpen={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)}>
                 <div className="flex flex-col gap-4 p-4 pb-8">
                     <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Tùy chọn Tips</h3>
-                    <button
-                        onClick={() => {
-                            setIsActionSheetOpen(false);
-                            if (selectedTipActionId) {
-                                toast((t) => (
-                                    <div className="flex flex-col gap-2">
-                                        <span className="font-bold">Xóa Tip này?</span>
-                                        <span className="text-sm">Nếu đã nhận, số dư ví sẽ được trừ lại.</span>
-                                        <div className="flex gap-2 mt-2">
-                                            <button
-                                                className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
-                                                onClick={async () => {
-                                                    toast.dismiss(t.id);
-                                                    await deleteTip(selectedTipActionId);
-                                                }}
-                                            >
-                                                Xóa
-                                            </button>
-                                            <button
-                                                className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
-                                                onClick={() => toast.dismiss(t.id)}
-                                            >
-                                                Thôi
-                                            </button>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={() => {
+                                setIsActionSheetOpen(false);
+                                if (selectedTipActionId) {
+                                    router.push(`/edit-tip?id=${selectedTipActionId}`);
+                                }
+                            }}
+                            className="w-full bg-pink-50 text-[#EC4899] border border-pink-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                        >
+                            <span className="text-2xl">✏️</span>
+                            Sửa Tips
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setIsActionSheetOpen(false);
+                                if (selectedTipActionId) {
+                                    toast((t) => (
+                                        <div className="flex flex-col gap-2">
+                                            <span className="font-bold">Xóa Tip này?</span>
+                                            <span className="text-sm">Nếu đã nhận, số dư ví sẽ được trừ lại.</span>
+                                            <div className="flex gap-2 mt-2">
+                                                <button
+                                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
+                                                    onClick={async () => {
+                                                        toast.dismiss(t.id);
+                                                        await deleteTip(selectedTipActionId);
+                                                    }}
+                                                >
+                                                    Xóa
+                                                </button>
+                                                <button
+                                                    className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
+                                                    onClick={() => toast.dismiss(t.id)}
+                                                >
+                                                    Thôi
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ), { duration: 5000 });
-                            }
-                        }}
-                        className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                    >
-                        <span className="text-2xl">🗑️</span>
-                        Xóa
-                    </button>
+                                    ), { duration: 5000 });
+                                }
+                            }}
+                            className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                        >
+                            <span className="text-2xl">🗑️</span>
+                            Xóa
+                        </button>
+                    </div>
                 </div>
             </BottomSheet>
         </div>

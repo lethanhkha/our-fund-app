@@ -29,13 +29,12 @@ export default function TransactionHistoryPage() {
 
     // Time calculations
     const nowLocal = new Date();
-    const adjustedNow = getDisplayDate(nowLocal);
 
-    const startOfWeek = new Date(adjustedNow);
-    startOfWeek.setDate(adjustedNow.getDate() - adjustedNow.getDay() + (adjustedNow.getDay() === 0 ? -6 : 1));
+    const startOfWeek = new Date(nowLocal);
+    startOfWeek.setDate(nowLocal.getDate() - nowLocal.getDay() + (nowLocal.getDay() === 0 ? -6 : 1));
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const startOfMonth = new Date(adjustedNow.getFullYear(), adjustedNow.getMonth(), 1);
+    const startOfMonth = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), 1);
 
     // Apply Time Filter First
     const timeFilteredTransactions = validTransactions.filter(t => {
@@ -53,7 +52,7 @@ export default function TransactionHistoryPage() {
     const timeFilteredTips = tips.filter(t => {
         if (t.status !== 'received') return false;
         if (timeFilter === 'all') return true;
-        const tipDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.time);
+        const tipDate = t.created_at ? new Date(t.created_at) : new Date(t.time);
 
         if (timeFilter === 'week') return tipDate >= startOfWeek;
         if (timeFilter === 'month') return tipDate >= startOfMonth;

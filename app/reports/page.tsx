@@ -19,9 +19,8 @@ export default function ReportsPage() {
     // Lọc giao dịch theo tháng đã chọn
     const monthTransactions = useMemo(() => {
         return transactions.filter(t => {
-            const baseDate = t.created_at || t.date;
-            const adjustedDate = getDisplayDate(baseDate);
-            return adjustedDate.getMonth() + 1 === selectedMonth && adjustedDate.getFullYear() === selectedYear;
+            const baseDate = t.created_at ? new Date(t.created_at) : new Date(t.date);
+            return baseDate.getMonth() + 1 === selectedMonth && baseDate.getFullYear() === selectedYear;
         });
     }, [transactions, selectedMonth, selectedYear]);
 
@@ -29,9 +28,8 @@ export default function ReportsPage() {
     const monthTips = useMemo(() => {
         return tips.filter(t => {
             if (t.status !== 'received') return false;
-            const baseDate = t.created_at || t.time;
-            const adjustedDate = getDisplayDate(baseDate);
-            return adjustedDate.getMonth() + 1 === selectedMonth && adjustedDate.getFullYear() === selectedYear;
+            const baseDate = t.created_at ? new Date(t.created_at) : new Date(t.time);
+            return baseDate.getMonth() + 1 === selectedMonth && baseDate.getFullYear() === selectedYear;
         });
     }, [tips, selectedMonth, selectedYear]);
 
