@@ -184,7 +184,10 @@ export default function ReportsPage() {
                                                     {item.icon}
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-[#1E293B] text-sm">{item.name}</h3>
+                                                    <h3 className="font-bold text-[#1E293B] text-sm flex items-center">
+                                                        <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                                                        {item.name}
+                                                    </h3>
                                                     <p className="text-xs text-[#94A3B8] font-medium">{percentage}%</p>
                                                 </div>
                                             </div>

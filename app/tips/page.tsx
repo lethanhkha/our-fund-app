@@ -200,7 +200,7 @@ export default function TipsManagerPage() {
             </main>
 
             {/* FLOATING ACTION BUTTON */}
-            <div className="fixed bottom-24 right-6 z-50">
+            <div className="fixed bottom-24 right-6 lg:right-[calc(50%-13rem)] z-50">
                 <Link href="/add-tips" className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#EC4899,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center active:scale-90 transition-transform">
                     <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                 </Link>

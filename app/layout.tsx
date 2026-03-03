@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   description: "Manage your funds easily",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#ffffff',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,18 +33,20 @@ export default function RootLayout({
         className={`${quicksand.variable} antialiased`}
       >
         <SupabaseProvider>
-          {children}
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              style: {
-                borderRadius: '1rem',
-                background: '#333',
-                color: '#fff',
-                fontFamily: 'var(--font-quicksand)'
-              }
-            }}
-          />
+          <div className="max-w-md mx-auto bg-white min-h-screen relative shadow-lg overflow-x-hidden">
+            {children}
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  borderRadius: '1rem',
+                  background: '#333',
+                  color: '#fff',
+                  fontFamily: 'var(--font-quicksand)'
+                }
+              }}
+            />
+          </div>
         </SupabaseProvider>
       </body>
     </html>

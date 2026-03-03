@@ -16,7 +16,8 @@ export default function TransactionHistoryPage() {
     const [customMonthOffset, setCustomMonthOffset] = useState<string>(''); // YYYY-MM
 
     // Category filter state
-    const [filter, setFilter] = useState('all');
+    const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
@@ -68,7 +69,14 @@ export default function TransactionHistoryPage() {
     const netTotal = totalIncome - totalExpense;
 
     // Filter transactions based on active category
-    const filteredTransactions = filter === 'all' ? timeFilteredTransactions : timeFilteredTransactions.filter(t => t.category_id === filter);
+    const filteredTransactions = timeFilteredTransactions.filter(t => {
+        // 1. Filter by Type
+        if (transactionType !== 'all' && t.type !== transactionType) return false;
+        // 2. Filter by Category ID
+        if (selectedCategoryId && t.category_id !== selectedCategoryId) return false;
+
+        return true;
+    });
 
     // Get unique categories active in transactions (based on time filter, not category filter)
     const activeCategoryIds = Array.from(new Set(timeFilteredTransactions.map(t => t.category_id)));
@@ -155,24 +163,48 @@ export default function TransactionHistoryPage() {
                     </div>
                 </div>
 
-                {/* FILTER DROPDOWN PILLS */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 -mx-6 px-6">
+                {/* FILTER DROPDOWN PILLS - TẦNG 1 */}
+                <div className={`flex gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 ${transactionType === 'all' ? 'mb-6' : 'mb-3'}`}>
                     <button
-                        onClick={() => setFilter('all')}
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === 'all' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                        onClick={() => { setTransactionType('all'); setSelectedCategoryId(null); }}
+                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'all' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
                     >
                         Tất cả
                     </button>
-                    {activeCategories.map(cat => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setFilter(cat.id)}
-                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${filter === cat.id ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
-                        >
-                            {cat.name} {cat.icon}
-                        </button>
-                    ))}
+                    <button
+                        onClick={() => { setTransactionType('income'); setSelectedCategoryId(null); }}
+                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'income' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                    >
+                        Thu nhập
+                    </button>
+                    <button
+                        onClick={() => { setTransactionType('expense'); setSelectedCategoryId(null); }}
+                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'expense' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                    >
+                        Chi tiêu
+                    </button>
                 </div>
+
+                {/* FILTER DROPDOWN PILLS - TẦNG 2 */}
+                {transactionType !== 'all' && (
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 -mx-6 px-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <button
+                            onClick={() => setSelectedCategoryId(null)}
+                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${!selectedCategoryId ? 'bg-pink-100 text-pink-700 shadow-sm' : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
+                        >
+                            Tất cả danh mục
+                        </button>
+                        {categories.filter(c => c.type === transactionType).map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategoryId(cat.id)}
+                                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${selectedCategoryId === cat.id ? 'bg-pink-100 text-pink-700 shadow-sm' : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
+                            >
+                                {cat.name} {cat.icon}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* DYNAMIC LIST */}
                 <div className="flex flex-col gap-6">
@@ -241,7 +273,7 @@ export default function TransactionHistoryPage() {
             </main>
 
             {/* FLOATING ACTION BUTTON */}
-            <div className="fixed bottom-24 right-6 z-50">
+            <div className="fixed bottom-24 right-6 lg:right-[calc(50%-13rem)] z-50">
                 <button
                     onClick={() => setIsSheetOpen(true)}
                     className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center active:scale-90 transition-transform">
