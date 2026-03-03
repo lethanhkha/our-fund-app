@@ -39,7 +39,7 @@ export default function TransactionHistoryPage() {
     // Apply Time Filter First
     const timeFilteredTransactions = validTransactions.filter(t => {
         if (timeFilter === 'all') return true;
-        const tipDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.date);
+        const tipDate = t.created_at ? new Date(t.created_at) : new Date(t.date);
 
         if (timeFilter === 'week') return tipDate >= startOfWeek;
         if (timeFilter === 'month') return tipDate >= startOfMonth;
@@ -74,11 +74,11 @@ export default function TransactionHistoryPage() {
     const activeCategoryIds = Array.from(new Set(timeFilteredTransactions.map(t => t.category_id)));
     const activeCategories = categories.filter(c => activeCategoryIds.includes(c.id));
 
-    // Group giao dịch theo ngày từ danh sách đã lọc
+    // Group giao dịch theo ngày từ danh sách đã lọc (sử dụng ngày gốc, không cộng 1 ngày)
     const groupedTransactions = filteredTransactions.reduce((acc, current) => {
         const baseDateString = current.created_at || current.date;
-        const adjustedDate = getDisplayDate(baseDateString);
-        const dateStr = adjustedDate.toISOString().split('T')[0];
+        const baseDate = new Date(baseDateString);
+        const dateStr = baseDate.toISOString().split('T')[0];
         if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(current);
         return acc;
@@ -176,51 +176,66 @@ export default function TransactionHistoryPage() {
 
                 {/* DYNAMIC LIST */}
                 <div className="flex flex-col gap-6">
-                    {Object.entries(groupedTransactions).map(([dateStr, items]) => (
-                        <section key={dateStr}>
-                            <h3 className="text-sm font-bold text-[#94A3B8] mb-3 uppercase tracking-wider">
-                                {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' :
-                                    dateStr === new Date(getDisplayDate(new Date()).setDate(getDisplayDate(new Date()).getDate() - 1)).toISOString().split('T')[0] ? 'Hôm qua' :
-                                        dateStr.split('-').reverse().join('/')}
-                            </h3>
-                            <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
-                                {items.map((item, index) => {
-                                    const category = categories.find(c => c.id === item.category_id);
-                                    const wallet = wallets.find(w => w.id === item.walletId);
-                                    const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
+                    {Object.entries(groupedTransactions)
+                        .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime()) // Sắp xếp ngày mới nhất lên đầu
+                        .map(([dateStr, items]) => {
+                            // Tính tổng thu/chi trong ngày
+                            const dailyIncome = items.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                            const dailyExpense = items.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
 
-                                    return (
-                                        <React.Fragment key={item.id}>
-                                            <TransactionItem
-                                                icon={<span className="text-xl">{details.icon}</span>}
-                                                iconBgColor={details.color}
-                                                title={
-                                                    <div className="flex flex-col items-start gap-1">
-                                                        <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide border border-black/5 shadow-sm text-[#1E293B] ${details.color}`}>
-                                                            {details.icon} <span className="ml-1 opacity-90">{details.title}</span>
-                                                        </span>
-                                                        <span className="text-sm font-semibold max-w-[200px] truncate">{item.note || details.title}</span>
-                                                    </div>
-                                                }
-                                                subtitle={
-                                                    <span className="flex items-center gap-1 mt-1 text-xs">
-                                                        {item.time} &bull; <span className="font-semibold text-gray-500">{wallet?.name || 'Ví không xác định'}</span>
-                                                    </span>
-                                                }
-                                                amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
-                                                type={item.type}
-                                                onClick={() => {
-                                                    setSelectedTransactionId(item.id);
-                                                    setIsActionSheetOpen(true);
-                                                }}
-                                            />
-                                            {index < items.length - 1 && <div className="w-full h-px bg-gray-50 my-1"></div>}
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    ))}
+                            return (
+                                <section key={dateStr}>
+                                    <div className="flex justify-between items-end mb-3">
+                                        <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">
+                                            {dateStr === getDisplayDate(new Date()).toISOString().split('T')[0] ? 'Hôm nay' :
+                                                dateStr === new Date(getDisplayDate(new Date()).setDate(getDisplayDate(new Date()).getDate() - 1)).toISOString().split('T')[0] ? 'Hôm qua' :
+                                                    dateStr.split('-').reverse().join('/')}
+                                        </h3>
+                                        <div className="flex gap-2">
+                                            {dailyIncome > 0 && <span className="text-xs font-bold text-emerald-500">+{dailyIncome.toLocaleString('vi-VN')}</span>}
+                                            {dailyIncome > 0 && dailyExpense > 0 && <span className="text-xs text-slate-300">|</span>}
+                                            {dailyExpense > 0 && <span className="text-xs font-bold text-rose-500">-{dailyExpense.toLocaleString('vi-VN')}</span>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col gap-1">
+                                        {items.map((item, index) => {
+                                            const category = categories.find(c => c.id === item.category_id);
+                                            const wallet = wallets.find(w => w.id === item.walletId);
+                                            const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
+
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    <TransactionItem
+                                                        icon={<span className="text-xl">{details.icon}</span>}
+                                                        iconBgColor={details.color}
+                                                        title={
+                                                            <div className="flex flex-col items-start gap-1">
+                                                                <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide border border-black/5 shadow-sm text-[#1E293B] ${details.color}`}>
+                                                                    {details.icon} <span className="ml-1 opacity-90">{details.title}</span>
+                                                                </span>
+                                                                <span className="text-sm font-semibold max-w-[200px] truncate">{item.note || details.title}</span>
+                                                            </div>
+                                                        }
+                                                        subtitle={
+                                                            <span className="flex items-center gap-1 mt-1 text-xs">
+                                                                {item.time} &bull; <span className="font-semibold text-gray-500">{wallet?.name || 'Ví không xác định'}</span>
+                                                            </span>
+                                                        }
+                                                        amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
+                                                        type={item.type}
+                                                        onClick={() => {
+                                                            setSelectedTransactionId(item.id);
+                                                            setIsActionSheetOpen(true);
+                                                        }}
+                                                    />
+                                                    {index < items.length - 1 && <div className="w-full h-px bg-gray-50 my-1"></div>}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
+                            );
+                        })}
                 </div>
 
             </main>
