@@ -11,7 +11,7 @@ const COLORS = ['#F43F5E', '#D946EF', '#FBCFE8', '#E879F9', '#F9A8D4', '#FDA4AF'
 
 export default function ReportsPage() {
     const router = useRouter();
-    const { transactions, categories } = useFinanceStore();
+    const { transactions, categories, tips } = useFinanceStore();
 
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
@@ -25,9 +25,18 @@ export default function ReportsPage() {
         });
     }, [transactions, selectedMonth, selectedYear]);
 
+    // Lọc tips theo tháng đã chọn
+    const monthTips = useMemo(() => {
+        return tips.filter(t => {
+            if (t.status !== 'received') return false;
+            const baseDate = t.created_at || t.time;
+            const adjustedDate = getDisplayDate(baseDate);
+            return adjustedDate.getMonth() + 1 === selectedMonth && adjustedDate.getFullYear() === selectedYear;
+        });
+    }, [tips, selectedMonth, selectedYear]);
 
     // Tổng thu & chi
-    const totalIncome = monthTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const totalIncome = monthTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0) + monthTips.reduce((s, t) => s + t.amount, 0);
     const totalExpense = monthTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
     // Gom nhóm chi tiêu theo danh mục để vẽ biểu đồ và xếp hạng

@@ -5,7 +5,7 @@ export type TransactionType = 'income' | 'expense';
 interface TransactionItemProps {
     icon: React.ReactNode;
     iconBgColor?: string;
-    title: string;
+    title: React.ReactNode;
     subtitle: React.ReactNode;
     amount: string;
     type?: TransactionType;

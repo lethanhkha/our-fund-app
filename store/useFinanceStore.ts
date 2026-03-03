@@ -535,17 +535,18 @@ export const useFinanceStore = create<FinanceState>()(
 
                     if (tipsError) throw tipsError;
 
-                    // 2. Auto sync tips to transactions
-                    const tipsCategory = get().categories.find(c => c.name === 'Tiền Tips');
-                    for (const tip of tipsToReceive) {
-                        await get().addTransaction({
-                            type: 'income',
-                            category_id: tipsCategory?.id || '',
-                            amount: tip.amount,
-                            note: tip.description ? `Tiền tips: ${tip.description}` : `Tiền tips khách hàng`,
-                            walletId: walletId
-                        });
+                    // 2. Update wallet balance directly instead of creating transactions
+                    const wallet = state.wallets.find(w => w.id === walletId);
+                    if (wallet) {
+                        const { error: walletError } = await supabase
+                            .from('wallets')
+                            .update({ balance: wallet.balance + totalAmount })
+                            .eq('id', walletId);
+
+                        if (walletError) throw walletError;
                     }
+
+                    toast.success('Đã nhận tiền Tips! 🎉');
 
                     await get().fetchInitialData();
                 } catch (error: any) {

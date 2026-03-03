@@ -51,7 +51,11 @@ export default function DashboardPage() {
         const tDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.date);
         return tDate.toISOString().startsWith(prefix);
       });
-      const inc = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const monthTips = tips.filter(t => {
+        const tDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.time);
+        return tDate.toISOString().startsWith(prefix) && t.status === 'received';
+      });
+      const inc = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0) + monthTips.reduce((s, t) => s + t.amount, 0);
       const exp = monthTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
       return inc - exp;
     };

@@ -21,7 +21,7 @@ export default function TransactionHistoryPage() {
     const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
-    const { transactions, categories, deleteTransaction, wallets } = useFinanceStore();
+    const { transactions, categories, deleteTransaction, wallets, tips } = useFinanceStore();
 
     // Remove tips that are synced automatically
     const validTransactions = transactions.filter(t => t.note !== 'Tiền Tips');
@@ -49,8 +49,21 @@ export default function TransactionHistoryPage() {
         return true;
     });
 
+    const timeFilteredTips = tips.filter(t => {
+        if (t.status !== 'received') return false;
+        if (timeFilter === 'all') return true;
+        const tipDate = t.created_at ? getDisplayDate(t.created_at) : getDisplayDate(t.time);
+
+        if (timeFilter === 'week') return tipDate >= startOfWeek;
+        if (timeFilter === 'month') return tipDate >= startOfMonth;
+        if (timeFilter === 'custom' && customMonthOffset) {
+            return tipDate.toISOString().startsWith(customMonthOffset);
+        }
+        return true;
+    });
+
     // Calculate this period's totals
-    const totalIncome = timeFilteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = timeFilteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) + timeFilteredTips.reduce((sum, t) => sum + t.amount, 0);
     const totalExpense = timeFilteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const netTotal = totalIncome - totalExpense;
 
@@ -88,37 +101,33 @@ export default function TransactionHistoryPage() {
                     </div>
                 </div>
 
-                {/* SMART TIME FILTER */}
+                {/* SMART TIME FILTER & CUSTOM MONTH */}
                 <div className="mt-4 flex flex-col gap-2">
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                        {['week', 'month', 'all', 'custom'].map((opt) => (
-                            <button
-                                key={opt}
-                                onClick={() => {
-                                    setTimeFilter(opt as any);
-                                    if (opt !== 'custom') setCustomMonthOffset('');
-                                }}
-                                className={`px-4 py-2 rounded-xl whitespace-nowrap text-xs font-bold transition-all border ${timeFilter === opt
-                                    ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-sm'
-                                    : 'bg-white text-[#94A3B8] border-pink-100'
-                                    }`}
-                            >
-                                {opt === 'week' ? 'Tuần này' : opt === 'month' ? 'Tháng này' : opt === 'all' ? 'Tất cả' : 'Tùy chọn'}
-                            </button>
-                        ))}
+                    <div className="flex gap-2">
+                        <select
+                            value={timeFilter}
+                            onChange={(e) => {
+                                setTimeFilter(e.target.value as any);
+                                if (e.target.value !== 'custom') setCustomMonthOffset('');
+                            }}
+                            className="bg-white border border-pink-100 text-[#1E293B] font-bold text-sm rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        >
+                            <option value="week">Tuần này</option>
+                            <option value="month">Tháng này</option>
+                            <option value="all">Tất cả</option>
+                            <option value="custom">Tùy chọn...</option>
+                        </select>
+                        {timeFilter === 'custom' && (
+                            <div className="animate-in fade-in slide-in-from-left-2 duration-200 flex-1">
+                                <input
+                                    type="month"
+                                    value={customMonthOffset}
+                                    onChange={(e) => setCustomMonthOffset(e.target.value)}
+                                    className="w-full bg-white border border-pink-100 text-[#1E293B] text-sm rounded-xl px-4 py-2 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                                />
+                            </div>
+                        )}
                     </div>
-
-                    {/* CUSTOM MONTH PICKER */}
-                    {timeFilter === 'custom' && (
-                        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                            <input
-                                type="month"
-                                value={customMonthOffset}
-                                onChange={(e) => setCustomMonthOffset(e.target.value)}
-                                className="w-full bg-white border border-pink-100 text-[#1E293B] text-sm rounded-xl px-4 py-3 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
-                            />
-                        </div>
-                    )}
                 </div>
             </header>
 
@@ -185,9 +194,16 @@ export default function TransactionHistoryPage() {
                                             <TransactionItem
                                                 icon={<span className="text-xl">{details.icon}</span>}
                                                 iconBgColor={details.color}
-                                                title={item.note || details.title}
+                                                title={
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide border border-black/5 shadow-sm text-[#1E293B] ${details.color}`}>
+                                                            {details.icon} <span className="ml-1 opacity-90">{details.title}</span>
+                                                        </span>
+                                                        <span className="text-sm font-semibold max-w-[200px] truncate">{item.note || details.title}</span>
+                                                    </div>
+                                                }
                                                 subtitle={
-                                                    <span className="flex items-center gap-1">
+                                                    <span className="flex items-center gap-1 mt-1 text-xs">
                                                         {item.time} &bull; <span className="font-semibold text-gray-500">{wallet?.name || 'Ví không xác định'}</span>
                                                     </span>
                                                 }
