@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${quicksand.variable} antialiased`}
+        className={`${quicksand.variable} antialiased [scrollbar-gutter:stable]`}
       >
         <SupabaseProvider>
           <div className="w-full min-h-screen bg-gray-50 flex flex-col md:flex-row relative shadow-lg overflow-x-hidden">

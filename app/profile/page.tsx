@@ -5,7 +5,7 @@ import { BottomNav } from '../../components/ui/BottomNav';
 
 export default function ProfilePage() {
     return (
-        <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
+        <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
 
             {/* HEADER SECTION */}
             <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">

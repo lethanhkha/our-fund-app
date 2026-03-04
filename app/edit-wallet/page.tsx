@@ -58,8 +58,10 @@ function EditWalletForm() {
 
         const existingWallet = wallets.find(w => w.id === id);
         if (!existingWallet) {
-            toast.error("Không tìm thấy ví!");
-            router.push('/wallets');
+            if (wallets.length > 0) {
+                toast.error("Không tìm thấy ví!");
+                router.push('/wallets');
+            }
             return;
         }
 
@@ -114,7 +116,24 @@ function EditWalletForm() {
         router.replace('/wallets');
     };
 
-    if (loading) return null;
+    if (wallets.length === 0 || loading) {
+        return (
+            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex items-center justify-center font-bold text-pink-500">
+                Đang tải dữ liệu ví...
+            </div>
+        );
+    }
+
+    // Tìm lại wallet cho phần render
+    const wallet = wallets.find(w => w.id === id);
+    if (!wallet) {
+        return (
+            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col items-center justify-center gap-4">
+                <p className="font-bold text-[#1E293B]">Không tìm thấy ví hợp lệ!</p>
+                <button onClick={() => router.push('/wallets')} className="px-6 py-3 font-bold text-white bg-pink-500 rounded-full active:scale-95 transition-transform">Quay lại</button>
+            </div>
+        );
+    }
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
