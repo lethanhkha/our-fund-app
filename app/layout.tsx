@@ -33,8 +33,10 @@ export default function RootLayout({
         className={`${quicksand.variable} antialiased`}
       >
         <SupabaseProvider>
-          <div className="max-w-md mx-auto bg-white min-h-screen relative shadow-lg overflow-x-hidden">
-            {children}
+          <div className="w-full min-h-screen bg-gray-50 flex flex-col md:flex-row relative shadow-lg overflow-x-hidden">
+            <div className="flex-1 md:ml-64 pb-20 md:pb-0">
+              {children}
+            </div>
             <Toaster
               position="top-center"
               toastOptions={{

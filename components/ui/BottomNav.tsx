@@ -35,16 +35,38 @@ export const BottomNav: React.FC = () => {
     ];
 
     return (
-        <nav className="fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]">
-            {items.map((item, idx) => {
-                const isActive = pathname === item.href;
-                return (
-                    <Link href={item.href} key={idx} className={`flex flex-col items-center gap-1 relative transition-colors cursor-pointer active:scale-95 ${isActive ? 'text-[#F43F5E]' : 'text-slate-400'}`}>
-                        {item.icon}
-                        <span className="text-[10px] font-bold">{item.label}</span>
-                    </Link>
-                );
-            })}
-        </nav>
+        <>
+            {/* Mobile Bottom Nav */}
+            <nav className="md:hidden fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]">
+                {items.map((item, idx) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link href={item.href} key={idx} className={`flex flex-col items-center gap-1 relative transition-colors cursor-pointer active:scale-95 ${isActive ? 'text-[#F43F5E]' : 'text-slate-400'}`}>
+                            {item.icon}
+                            <span className="text-[10px] font-bold">{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r bg-white p-4 z-50">
+                <div className="flex items-center gap-2 mb-8 px-2 mt-4 text-[#F43F5E]">
+                    <span className="text-3xl">🍯</span>
+                    <h1 className="text-xl font-extrabold">Honey Money</h1>
+                </div>
+                <div className="flex flex-col gap-2">
+                    {items.map((item, idx) => {
+                        const isActive = pathname === item.href;
+                        return (
+                            <Link href={item.href} key={idx} className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors ${isActive ? 'bg-pink-50 text-[#F43F5E]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                {item.icon}
+                                <span className="font-bold text-sm">{item.label}</span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </aside>
+        </>
     );
 };

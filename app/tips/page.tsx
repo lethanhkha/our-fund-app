@@ -65,145 +65,147 @@ export default function TipsPage() {
 
     return (
         <PageWrapper>
-            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
+            <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
+                <div className="md:max-w-4xl md:mx-auto w-full flex flex-col flex-grow">
 
-                {/* HEADER SECTION */}
-                <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] shadow-sm">
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                    {/* HEADER SECTION */}
+                    <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] shadow-sm">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <h1 className="text-xl font-extrabold text-[#1E293B]">Sổ ghi tips 💅</h1>
+                        </div>
+                        <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-pink-100 shadow-sm text-[#94A3B8]">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </button>
-                        <h1 className="text-xl font-extrabold text-[#1E293B]">Sổ ghi tips 💅</h1>
-                    </div>
-                    <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-pink-100 shadow-sm text-[#94A3B8]">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </button>
-                </header>
+                    </header>
 
-                <main className="px-6 mt-2 flex-grow">
+                    <main className="px-6 mt-2 flex-grow">
 
-                    {/* HIỆU SUẤT SECTION */}
-                    <section className="mb-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold text-[#1E293B]">Hiệu suất</h2>
-                            <select
-                                value={timeFilter}
-                                onChange={(e) => setTimeFilter(e.target.value as any)}
-                                className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold outline-none cursor-pointer appearance-none text-center pr-6 relative shadow-sm"
-                                style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23b45309%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
-                            >
-                                <option value="week">Tuần này</option>
-                                <option value="month">Tháng này</option>
-                                <option value="all">Tất cả</option>
-                            </select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                                <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-[#EC4899] mb-3">
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                </div>
-                                <p className="text-[#94A3B8] text-xs font-medium mb-1">Đã nhận</p>
-                                <p className="text-xl font-black text-[#1E293B]">{totalReceived.toLocaleString('vi-VN')} đ</p>
+                        {/* HIỆU SUẤT SECTION */}
+                        <section className="mb-8">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-bold text-[#1E293B]">Hiệu suất</h2>
+                                <select
+                                    value={timeFilter}
+                                    onChange={(e) => setTimeFilter(e.target.value as any)}
+                                    className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold outline-none cursor-pointer appearance-none text-center pr-6 relative shadow-sm"
+                                    style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23b45309%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                                >
+                                    <option value="week">Tuần này</option>
+                                    <option value="month">Tháng này</option>
+                                    <option value="all">Tất cả</option>
+                                </select>
                             </div>
-                            <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-[#F43F5E] mb-3">
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                </div>
-                                <p className="text-[#94A3B8] text-xs font-medium mb-1">Đang chờ</p>
-                                <p className="text-xl font-black text-[#1E293B]">{totalPending.toLocaleString('vi-VN')} đ</p>
-                            </div>
-                        </div>
-                    </section>
 
-                    {/* DANH SÁCH SECTION */}
-                    <section className="mb-4">
-                        <div className="flex flex-col gap-6">
-                            {Object.entries(groupedTips).map(([dateGroup, tipsList]) => {
-                                const pendingTips = tipsList.filter(t => t.status === 'pending');
-                                const dailyTotal = tipsList.reduce((sum, t) => sum + t.amount, 0);
-                                return (
-                                    <div key={dateGroup}>
-                                        <div className="flex justify-between items-center mb-3">
-                                            <div className="flex items-baseline gap-2">
-                                                <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">{dateGroup}</h3>
-                                                <span className="text-xs font-bold text-gray-400">Tổng: {dailyTotal.toLocaleString('vi-VN')} đ</span>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
+                                    <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-[#EC4899] mb-3">
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <p className="text-[#94A3B8] text-xs font-medium mb-1">Đã nhận</p>
+                                    <p className="text-xl font-black text-[#1E293B]">{totalReceived.toLocaleString('vi-VN')} đ</p>
+                                </div>
+                                <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
+                                    <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-[#F43F5E] mb-3">
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <p className="text-[#94A3B8] text-xs font-medium mb-1">Đang chờ</p>
+                                    <p className="text-xl font-black text-[#1E293B]">{totalPending.toLocaleString('vi-VN')} đ</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* DANH SÁCH SECTION */}
+                        <section className="mb-4">
+                            <div className="flex flex-col gap-6">
+                                {Object.entries(groupedTips).map(([dateGroup, tipsList]) => {
+                                    const pendingTips = tipsList.filter(t => t.status === 'pending');
+                                    const dailyTotal = tipsList.reduce((sum, t) => sum + t.amount, 0);
+                                    return (
+                                        <div key={dateGroup}>
+                                            <div className="flex justify-between items-center mb-3">
+                                                <div className="flex items-baseline gap-2">
+                                                    <h3 className="text-sm font-bold text-[#94A3B8] uppercase tracking-wider">{dateGroup}</h3>
+                                                    <span className="text-xs font-bold text-gray-400">Tổng: {dailyTotal.toLocaleString('vi-VN')} đ</span>
+                                                </div>
+                                                {pendingTips.length > 0 && (
+                                                    <button
+                                                        onClick={() => handleOpenSheet(pendingTips.map(t => t.id))}
+                                                        className="text-[#F43F5E] text-xs font-bold hover:underline"
+                                                    >
+                                                        Nhận tất cả 💸
+                                                    </button>
+                                                )}
                                             </div>
-                                            {pendingTips.length > 0 && (
-                                                <button
-                                                    onClick={() => handleOpenSheet(pendingTips.map(t => t.id))}
-                                                    className="text-[#F43F5E] text-xs font-bold hover:underline"
-                                                >
-                                                    Nhận tất cả 💸
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col gap-3">
-                                            {tipsList.map((tip, index) => (
-                                                <motion.div
-                                                    key={tip.id}
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                                                    onClick={() => {
-                                                        setSelectedTipActionId(tip.id);
-                                                        setIsActionSheetOpen(true);
-                                                    }}
-                                                    className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start cursor-pointer transition-colors"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
-                                                            {tip.customerName === 'Khách hàng' ? 'K' : tip.customerName.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <h3 className={`font-bold text-sm ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</h3>
-                                                            <div className="text-xs text-[#94A3B8] font-medium mt-0.5 flex flex-wrap items-center gap-1">
-                                                                <span>{tip.time}</span>
-                                                                <span>&bull;</span>
-                                                                <span className="font-semibold text-gray-500">{wallets.find(w => w.id === tip.walletId)?.name || 'Ví không xác định'}</span>
-                                                                {tip.description && (
-                                                                    <>
-                                                                        <span>&bull;</span>
-                                                                        <span>{tip.description}</span>
-                                                                    </>
-                                                                )}
+                                            <div className="flex flex-col gap-3">
+                                                {tipsList.map((tip, index) => (
+                                                    <motion.div
+                                                        key={tip.id}
+                                                        initial={{ opacity: 0, x: -20 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                                                        onClick={() => {
+                                                            setSelectedTipActionId(tip.id);
+                                                            setIsActionSheetOpen(true);
+                                                        }}
+                                                        className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start cursor-pointer transition-colors"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
+                                                                {tip.customerName === 'Khách hàng' ? 'K' : tip.customerName.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <h3 className={`font-bold text-sm ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</h3>
+                                                                <div className="text-xs text-[#94A3B8] font-medium mt-0.5 flex flex-wrap items-center gap-1">
+                                                                    <span>{tip.time}</span>
+                                                                    <span>&bull;</span>
+                                                                    <span className="font-semibold text-gray-500">{wallets.find(w => w.id === tip.walletId)?.name || 'Ví không xác định'}</span>
+                                                                    {tip.description && (
+                                                                        <>
+                                                                            <span>&bull;</span>
+                                                                            <span>{tip.description}</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end gap-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
-                                                                + {tip.amount.toLocaleString('vi-VN')} đ
-                                                            </span>
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-lg font-black ${tip.status === 'received' ? 'text-green-500' : 'text-[#1E293B]'}`}>
+                                                                    + {tip.amount.toLocaleString('vi-VN')} đ
+                                                                </span>
+                                                            </div>
+                                                            {tip.status === 'received' ? (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); undoReceiveTip(tip.id); }}
+                                                                    title="Hoàn tác"
+                                                                    className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
+                                                                >
+                                                                    Đã nhận
+                                                                </button>
+                                                            ) : (
+                                                                <motion.button
+                                                                    whileTap={{ scale: 0.95 }}
+                                                                    onClick={(e) => { e.stopPropagation(); handleOpenSheet([tip.id]); }}
+                                                                    className="bg-[#F43F5E] text-white px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
+                                                                >
+                                                                    Nhận
+                                                                </motion.button>
+                                                            )}
                                                         </div>
-                                                        {tip.status === 'received' ? (
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); undoReceiveTip(tip.id); }}
-                                                                title="Hoàn tác"
-                                                                className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
-                                                            >
-                                                                Đã nhận
-                                                            </button>
-                                                        ) : (
-                                                            <motion.button
-                                                                whileTap={{ scale: 0.95 }}
-                                                                onClick={(e) => { e.stopPropagation(); handleOpenSheet([tip.id]); }}
-                                                                className="bg-[#F43F5E] text-white px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
-                                                            >
-                                                                Nhận
-                                                            </motion.button>
-                                                        )}
-                                                    </div>
-                                                </motion.div>
-                                            ))}
+                                                    </motion.div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </section>
+                                    )
+                                })}
+                            </div>
+                        </section>
 
-                </main>
+                    </main>
+                </div>
 
                 {/* FLOATING ACTION BUTTON */}
                 <div className="fixed bottom-24 right-6 lg:right-[calc(50%-13rem)] z-50">

@@ -77,7 +77,7 @@ export default function DashboardPage() {
 
   return (
     <PageWrapper>
-      <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
+      <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
 
         {/* HEADER SECTION */}
         <header className="px-6 pt-10 pb-2 flex items-center justify-between">
@@ -97,90 +97,97 @@ export default function DashboardPage() {
           </button>
         </header>
 
-        <main className="px-6 flex-grow">
+        <main className="px-6 flex-grow md:grid md:grid-cols-12 md:gap-8">
 
-          {/* BALANCE CARD */}
-          <BalanceCard
-            label="Tổng tài sản hiện có"
-            totalBalance={showBalance ? getTotalBalance().toLocaleString('vi-VN') : "***"}
-            currency={showBalance ? "đ" : ""}
-            trend={showBalance ? trend : undefined}
-          />
+          <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-6">
 
-          {/* QUICK ACTIONS */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <Link href="/add-income" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-              <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-emerald-100 shadow-sm group-hover:shadow-md transition-shadow">
-                <svg className="h-7 w-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-              </div>
-              <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Thu Nhập</span>
-            </Link>
+            {/* BALANCE CARD */}
+            <BalanceCard
+              label="Tổng tài sản hiện có"
+              totalBalance={showBalance ? getTotalBalance().toLocaleString('vi-VN') : "***"}
+              currency={showBalance ? "đ" : ""}
+              trend={showBalance ? trend : undefined}
+            />
 
-            <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-              <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-pink-100 shadow-sm group-hover:shadow-md transition-shadow">
-                <svg className="h-7 w-7 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
-              </div>
-              <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Chi Tiêu</span>
-            </Link>
+            {/* QUICK ACTIONS */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <Link href="/add-income" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
+                <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-emerald-100 shadow-sm group-hover:shadow-md transition-shadow">
+                  <svg className="h-7 w-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                </div>
+                <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Thu Nhập</span>
+              </Link>
 
-            <Link href="/add-tips" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-              <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-yellow-100 shadow-sm group-hover:shadow-md transition-shadow">
-                <div className="w-7 h-7 bg-yellow-400 text-white rounded-full flex items-center justify-center font-bold text-lg">$</div>
-              </div>
-              <span className="text-xs font-bold text-[#1E293B] text-center w-full">Ghi<br />Tips</span>
-            </Link>
-          </div>
+              <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
+                <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-pink-100 shadow-sm group-hover:shadow-md transition-shadow">
+                  <svg className="h-7 w-7 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
+                </div>
+                <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Chi Tiêu</span>
+              </Link>
 
-          {/* WALLET LIST (HORIZONTAL) */}
-          <section className="mb-8 overflow-hidden -mx-6 px-6">
-            <div className="flex justify-between items-end mb-4 pr-2">
-              <h2 className="text-lg font-bold text-[#1E293B]">Ví của em</h2>
-              <Link href="/wallets" className="text-[#F43F5E] text-sm font-bold hover:opacity-80 transition-opacity">
-                Xem tất cả
+              <Link href="/add-tips" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
+                <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-yellow-100 shadow-sm group-hover:shadow-md transition-shadow">
+                  <div className="w-7 h-7 bg-yellow-400 text-white rounded-full flex items-center justify-center font-bold text-lg">$</div>
+                </div>
+                <span className="text-xs font-bold text-[#1E293B] text-center w-full">Ghi<br />Tips</span>
               </Link>
             </div>
 
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-              {wallets.map(wallet => {
-                const iconData = getWalletIcon(wallet.id);
-                return (
-                  <motion.div
-                    key={wallet.id}
-                    whileTap={{ scale: 0.95 }}
-                    className="min-w-[160px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3 cursor-pointer"
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${iconData.color}`}>
-                      {iconData.isText ? iconData.icon : <span className="text-lg">{iconData.icon}</span>}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-[#1E293B]">{wallet.name}</h3>
-                      <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? `${wallet.balance.toLocaleString('vi-VN')} đ` : '***'}</p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </section>
+            {/* WALLET LIST (HORIZONTAL) */}
+            <section className="mb-8 overflow-hidden -mx-6 px-6">
+              <div className="flex justify-between items-end mb-4 pr-2">
+                <h2 className="text-lg font-bold text-[#1E293B]">Ví của em</h2>
+                <Link href="/wallets" className="text-[#F43F5E] text-sm font-bold hover:opacity-80 transition-opacity">
+                  Xem tất cả
+                </Link>
+              </div>
 
-          {/* RECENT TIPS (HORIZONTAL) */}
-          <section className="mb-4 overflow-hidden -mx-6 px-6">
-            <h2 className="text-lg font-bold text-[#1E293B] mb-4">Tips gần đây 💅</h2>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-              {recentTips.map(tip => (
-                <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                  <div className="text-xs text-[#94A3B8] mb-1 font-medium flex gap-1 flex-wrap items-center">
-                    <span>{tip.time}</span>
-                    <span>&bull;</span>
-                    <span className="font-semibold text-gray-400">{wallets.find(w => w.id === tip.walletId)?.name || 'Chưa rõ ví'}</span>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
+                {wallets.map(wallet => {
+                  const iconData = getWalletIcon(wallet.id);
+                  return (
+                    <motion.div
+                      key={wallet.id}
+                      whileTap={{ scale: 0.95 }}
+                      className="min-w-[160px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex items-center gap-3 cursor-pointer"
+                    >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${iconData.color}`}>
+                        {iconData.isText ? iconData.icon : <span className="text-lg">{iconData.icon}</span>}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-[#1E293B]">{wallet.name}</h3>
+                        <p className="text-xs text-[#94A3B8] font-medium mt-0.5">{showBalance ? `${wallet.balance.toLocaleString('vi-VN')} đ` : '***'}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+
+          </div>
+
+          <div className="md:col-span-7 lg:col-span-8">
+            {/* RECENT TIPS (HORIZONTAL) */}
+            <section className="mb-4 overflow-hidden -mx-6 px-6">
+              <h2 className="text-lg font-bold text-[#1E293B] mb-4">Tips gần đây 💅</h2>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
+                {recentTips.map(tip => (
+                  <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
+                    <div className="text-xs text-[#94A3B8] mb-1 font-medium flex gap-1 flex-wrap items-center">
+                      <span>{tip.time}</span>
+                      <span>&bull;</span>
+                      <span className="font-semibold text-gray-400">{wallets.find(w => w.id === tip.walletId)?.name || 'Chưa rõ ví'}</span>
+                    </div>
+                    <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
+                      + {(tip.amount / 1000).toLocaleString('vi-VN')}k
+                    </div>
+                    <div className={`text-sm font-bold truncate ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</div>
                   </div>
-                  <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
-                    + {(tip.amount / 1000).toLocaleString('vi-VN')}k
-                  </div>
-                  <div className={`text-sm font-bold truncate ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+
+          </div>
 
         </main>
 

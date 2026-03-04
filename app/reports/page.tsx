@@ -61,7 +61,7 @@ export default function ReportsPage() {
 
     return (
         <PageWrapper>
-            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
+            <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
                 {/* HEADER */}
                 <header className="px-6 pt-10 pb-4 sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40 flex items-center gap-3">
                     <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#1E293B]">
@@ -129,78 +129,86 @@ export default function ReportsPage() {
                             </div>
                         </div>
 
-                        {/* BIỂU ĐỒ TRÒN CHI TIÊU */}
-                        {expenseData.length > 0 ? (
-                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center mb-8">
-                                <h2 className="text-sm font-bold text-[#1E293B] self-start mb-4">Cơ cấu Chi tiêu</h2>
-                                <div className="w-full h-64 min-h-[250px] relative">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                isAnimationActive={false}
-                                                data={expenseData}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={90}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                                stroke="none"
-                                            >
-                                                {expenseData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} đ`, 'Số tiền']}
-                                                contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                            />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                    {/* Inner circle text */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                        <span className="text-[#94A3B8] text-xs font-bold">Tổng chi</span>
-                                        <span className="text-[#1E293B] font-black">{totalExpense >= 1000000 ? (totalExpense / 1000000).toFixed(1) + 'Tr' : (totalExpense / 1000).toLocaleString('vi-VN') + 'k'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center justify-center mb-8 h-48">
-                                <span className="text-4xl text-gray-200 mb-2">🍩</span>
-                                <p className="text-sm font-bold text-[#94A3B8]">Chưa có khoản chi nào tháng này!</p>
-                            </div>
-                        )}
+                        {/* WRAPPER BỐ CỤC 2 CỘT CHO DESKTOP */}
+                        <div className="flex flex-col md:flex-row gap-8 items-start">
 
-                        {/* DANH SÁCH TOP CHI TIÊU */}
-                        {expenseData.length > 0 && (
-                            <div className="mb-4">
-                                <h2 className="text-sm font-bold text-[#1E293B] mb-4">Top chi tiêu tháng này</h2>
-                                <div className="flex flex-col gap-3">
-                                    {expenseData.map((item, index) => {
-                                        const percentage = ((item.value / totalExpense) * 100).toFixed(1);
-                                        return (
-                                            <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-50 border border-gray-100" style={{ borderColor: `${COLORS[index % COLORS.length]}30`, backgroundColor: `${COLORS[index % COLORS.length]}10` }}>
-                                                        {item.icon}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-[#1E293B] text-sm flex items-center">
-                                                            <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                                                            {item.name}
-                                                        </h3>
-                                                        <p className="text-xs text-[#94A3B8] font-medium">{percentage}%</p>
-                                                    </div>
-                                                </div>
-                                                <div className="font-black text-[#1E293B]">
-                                                    {item.value.toLocaleString('vi-VN')} đ
-                                                </div>
+                            {/* CỘT TRÁI: BIỂU ĐỒ TRÒN CHI TIÊU */}
+                            <div className="w-full md:w-1/2">
+                                {expenseData.length > 0 ? (
+                                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center mb-8 md:mb-0 md:h-96">
+                                        <h2 className="text-sm font-bold text-[#1E293B] self-start mb-4">Cơ cấu Chi tiêu</h2>
+                                        <div className="w-full h-64 md:h-72 min-h-[250px] relative">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        isAnimationActive={false}
+                                                        data={expenseData}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={60}
+                                                        outerRadius={90}
+                                                        paddingAngle={5}
+                                                        dataKey="value"
+                                                        stroke="none"
+                                                    >
+                                                        {expenseData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip
+                                                        formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} đ`, 'Số tiền']}
+                                                        contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                            {/* Inner circle text */}
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                <span className="text-[#94A3B8] text-xs font-bold">Tổng chi</span>
+                                                <span className="text-[#1E293B] font-black">{totalExpense >= 1000000 ? (totalExpense / 1000000).toFixed(1) + 'Tr' : (totalExpense / 1000).toLocaleString('vi-VN') + 'k'}</span>
                                             </div>
-                                        )
-                                    })}
-                                </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center justify-center mb-8 h-48">
+                                        <span className="text-4xl text-gray-200 mb-2">🍩</span>
+                                        <p className="text-sm font-bold text-[#94A3B8]">Chưa có khoản chi nào tháng này!</p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+
+                            {/* CỘT PHẢI: DANH SÁCH TOP CHI TIÊU */}
+                            <div className="w-full md:w-1/2">
+                                {expenseData.length > 0 && (
+                                    <div className="mb-4">
+                                        <h2 className="text-sm font-bold text-[#1E293B] mb-4">Top chi tiêu tháng này</h2>
+                                        <div className="flex flex-col gap-3">
+                                            {expenseData.map((item, index) => {
+                                                const percentage = ((item.value / totalExpense) * 100).toFixed(1);
+                                                return (
+                                                    <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-50 border border-gray-100" style={{ borderColor: `${COLORS[index % COLORS.length]}30`, backgroundColor: `${COLORS[index % COLORS.length]}10` }}>
+                                                                {item.icon}
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="font-bold text-[#1E293B] text-sm flex items-center">
+                                                                    <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                                                                    {item.name}
+                                                                </h3>
+                                                                <p className="text-xs text-[#94A3B8] font-medium">{percentage}%</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="font-black text-[#1E293B]">
+                                                            {item.value.toLocaleString('vi-VN')} đ
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </main>
 
