@@ -78,7 +78,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageWrapper>
-        <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
+        <div className={`font-sans antialiased w-full min-h-screen ${activeUserId === 'kha' ? 'bg-emerald-50/30' : 'bg-[#FDF2F8]'} flex flex-col pb-28 relative overflow-x-hidden md:p-8`}>
 
           {/* HEADER SECTION */}
           < header className="px-6 pt-10 pb-2 flex items-center justify-between" >
@@ -108,6 +108,7 @@ export default function DashboardPage() {
                 totalBalance={showBalance ? getTotalBalance().toLocaleString('vi-VN') : "***"}
                 currency={showBalance ? "đ" : ""}
                 trend={showBalance ? trend : undefined}
+                isGreenTheme={activeUserId === 'kha'}
               />
 
               {/* QUICK ACTIONS */}
@@ -120,8 +121,8 @@ export default function DashboardPage() {
                 </Link>
 
                 <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-                  <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-pink-100 shadow-sm group-hover:shadow-md transition-shadow">
-                    <svg className="h-7 w-7 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
+                  <div className={`w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 ${activeUserId === 'kha' ? 'border-emerald-100' : 'border-pink-100'} shadow-sm group-hover:shadow-md transition-shadow`}>
+                    <svg className={`h-7 w-7 ${activeUserId === 'kha' ? 'text-emerald-500' : 'text-[#EC4899]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
                   </div>
                   <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Chi Tiêu</span>
                 </Link>
@@ -138,7 +139,7 @@ export default function DashboardPage() {
               <section className="mb-8 overflow-hidden -mx-6 px-6">
                 <div className="flex justify-between items-end mb-4 pr-2">
                   <h2 className="text-lg font-bold text-[#1E293B]">Ví của em</h2>
-                  <Link href="/wallets" className="text-[#F43F5E] text-sm font-bold hover:opacity-80 transition-opacity">
+                  <Link href="/wallets" className={`${activeUserId === 'kha' ? 'text-emerald-500' : 'text-[#F43F5E]'} text-sm font-bold hover:opacity-80 transition-opacity`}>
                     Xem tất cả
                   </Link>
                 </div>

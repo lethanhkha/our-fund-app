@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 
 export default function CategoriesManagementPage() {
     const router = useRouter();
-    const { categories, addCategory, deleteCategory } = useFinanceStore();
+    const { categories, addCategory, deleteCategory, activeUserId } = useFinanceStore();
     const [activeTab, setActiveTab] = useState<'income' | 'expense'>('expense');
 
     // Add form state
@@ -62,9 +62,9 @@ export default function CategoriesManagementPage() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-[#FDF2F8]">
-            <div className="font-sans antialiased w-full max-w-md mx-auto min-h-screen flex flex-col pb-28 relative overflow-x-hidden">
-                <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
+        <div className={`w-full min-h-screen ${activeUserId === 'kha' ? 'bg-emerald-50/30' : 'bg-[#FDF2F8]'}`}>
+            <div className="font-sans antialiased w-full max-w-md md:max-w-5xl mx-auto min-h-screen flex flex-col pb-28 relative overflow-x-hidden">
+                <header className={`px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 ${activeUserId === 'kha' ? 'bg-[#f4fcf9]/90' : 'bg-[#FDF2F8]/90'} backdrop-blur-md z-40`}>
                     <div className="flex items-center gap-3">
                         <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#1E293B]">
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>

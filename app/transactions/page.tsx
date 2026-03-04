@@ -22,7 +22,7 @@ export default function TransactionHistoryPage() {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
-    const { transactions, categories, deleteTransaction, wallets, tips } = useFinanceStore();
+    const { transactions, categories, deleteTransaction, wallets, tips, activeUserId } = useFinanceStore();
 
     // Remove tips that are synced automatically
     const validTransactions = transactions.filter(t => t.note !== 'Tiền Tips');
@@ -106,11 +106,11 @@ export default function TransactionHistoryPage() {
     return (
         <>
             <PageWrapper>
-                <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
+                <div className={`font-sans antialiased w-full min-h-screen ${activeUserId === 'kha' ? 'bg-emerald-50/30' : 'bg-[#FDF2F8]'} flex flex-col pb-28 relative overflow-x-hidden md:p-8`}>
                     <div className="md:max-w-4xl md:mx-auto w-full flex flex-col flex-grow">
 
                         {/* HEADER SECTION */}
-                        <header className="px-6 pt-10 pb-4 flex flex-col md:flex-row md:items-center md:justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
+                        <header className={`px-6 pt-10 pb-4 flex flex-col md:flex-row md:items-center md:justify-between sticky top-0 ${activeUserId === 'kha' ? 'bg-[#f4fcf9]/90' : 'bg-[#FDF2F8]/90'} backdrop-blur-md z-40`}>
                             <div className="flex items-center gap-3">
                                 <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] shadow-sm">
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
@@ -154,22 +154,22 @@ export default function TransactionHistoryPage() {
                         <main className="px-6 flex-grow">
 
                             {/* BIG EXPENSE CARD */}
-                            <div className="bg-[linear-gradient(to_right,#FF9A9E,#F43F5E)] rounded-[2rem] p-6 text-white shadow-lg shadow-pink-200 relative overflow-hidden my-6 md:my-8 md:p-8">
+                            <div className={`${activeUserId === 'kha' ? 'bg-[linear-gradient(to_right,#A7F3D0,#34D399)] shadow-emerald-200 text-emerald-900' : 'bg-[linear-gradient(to_right,#FF9A9E,#F43F5E)] shadow-pink-200 text-white'} rounded-[2rem] p-6 shadow-lg relative overflow-hidden my-6 md:my-8 md:p-8`}>
                                 <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                                 <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
 
                                 <div className="relative z-10 flex flex-col gap-3">
-                                    <div className="flex justify-between items-center text-white/90">
+                                    <div className={`flex justify-between items-center ${activeUserId === 'kha' ? 'text-emerald-900/80' : 'text-white/90'}`}>
                                         <span className="text-sm font-medium">Tổng Thu</span>
-                                        <span className="font-bold text-green-100">+{totalIncome.toLocaleString('vi-VN')} đ</span>
+                                        <span className={`font-bold ${activeUserId === 'kha' ? 'text-emerald-800' : 'text-green-100'}`}>+{totalIncome.toLocaleString('vi-VN')} đ</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-white/90">
+                                    <div className={`flex justify-between items-center ${activeUserId === 'kha' ? 'text-emerald-900/80' : 'text-white/90'}`}>
                                         <span className="text-sm font-medium">Tổng Chi</span>
-                                        <span className="font-bold text-red-100">-{totalExpense.toLocaleString('vi-VN')} đ</span>
+                                        <span className={`font-bold ${activeUserId === 'kha' ? 'text-rose-700' : 'text-red-100'}`}>-{totalExpense.toLocaleString('vi-VN')} đ</span>
                                     </div>
-                                    <div className="w-full h-px bg-white/30 my-1"></div>
+                                    <div className={`w-full h-px ${activeUserId === 'kha' ? 'bg-emerald-900/10' : 'bg-white/30'} my-1`}></div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm font-medium text-white/90">Thu Chi Ròng</span>
+                                        <span className={`text-sm font-medium ${activeUserId === 'kha' ? 'text-emerald-900/80' : 'text-white/90'}`}>Thu Chi Ròng</span>
                                         <span className="text-2xl font-extrabold">{netTotal.toLocaleString('vi-VN')} đ</span>
                                     </div>
                                 </div>
@@ -352,7 +352,7 @@ export default function TransactionHistoryPage() {
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsSheetOpen(true)}
-                            className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center transition-colors">
+                            className={`w-14 h-14 ${activeUserId === 'kha' ? 'bg-[linear-gradient(to_bottom_right,#34D399,#059669)] shadow-emerald-300 text-white' : 'bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] shadow-pink-300 text-white'} rounded-full shadow-lg flex items-center justify-center transition-colors`}>
                             <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                         </motion.button>
                     </div>
