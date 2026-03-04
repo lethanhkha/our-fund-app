@@ -80,6 +80,9 @@ interface FinanceState {
     updateTip: (tipId: string, updatedData: Partial<Tip>) => Promise<void>;
     deleteTip: (tipId: string) => Promise<void>;
     addGoal: (goal: Pick<Goal, 'name' | 'targetAmount' | 'deadline'>) => Promise<void>;
+    deleteGoal: (goalId: string) => Promise<void>;
+    depositGoal: (goalId: string, walletId: string, amount: number) => Promise<void>;
+    withdrawGoal: (goalId: string, walletId: string, amount: number) => Promise<void>;
 }
 
 // Utility to categorize dates for tips
@@ -664,6 +667,156 @@ export const useFinanceStore = create<FinanceState>()(
                     console.error("Lỗi khi thêm mục tiêu:", error?.message || JSON.stringify(error));
                     toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
                     throw error;
+                }
+            },
+
+            deleteGoal: async (goalId: string) => {
+                try {
+                    const state = get();
+                    const goal = state.goals.find(g => g.id === goalId);
+                    if (!goal) return;
+
+                    if (goal.currentAmount > 0) {
+                        toast.error('Vui lòng rút hết tiền trong quỹ trước khi xóa!');
+                        return;
+                    }
+
+                    const { error } = await supabase
+                        .from('goals')
+                        .delete()
+                        .eq('id', goalId);
+
+                    if (error) throw error;
+
+                    toast.success('Đã xóa mục tiêu tiết kiệm! 🗑️');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi xóa mục tiêu:", error);
+                    toast.error("Lỗi khi xóa mục tiêu! ❌");
+                }
+            },
+
+            depositGoal: async (goalId: string, walletId: string, amount: number) => {
+                try {
+                    const state = get();
+                    const wallet = state.wallets.find(w => w.id === walletId);
+                    const goal = state.goals.find(g => g.id === goalId);
+
+                    if (!wallet || !goal) return;
+
+                    if (amount > wallet.balance) {
+                        toast.error('Số dư ví không đủ!');
+                        throw new Error('Số dư ví không đủ!');
+                    }
+
+                    // 1. Ensure "Gửi tiết kiệm" category exists
+                    let category = state.categories.find(c => c.name === 'Gửi tiết kiệm' && c.type === 'expense');
+                    let categoryId = category?.id;
+
+                    if (!categoryId) {
+                        const { data: newCat, error: catError } = await supabase
+                            .from('categories')
+                            .insert({ name: 'Gửi tiết kiệm', icon: '🐷', type: 'expense' })
+                            .select()
+                            .single();
+                        if (catError) throw catError;
+                        categoryId = newCat.id;
+                    }
+
+                    // 2. Reduce wallet balance
+                    const { error: walletError } = await supabase
+                        .from('wallets')
+                        .update({ balance: wallet.balance - amount })
+                        .eq('id', walletId);
+                    if (walletError) throw walletError;
+
+                    // 3. Increase goal current_amount
+                    const { error: goalError } = await supabase
+                        .from('goals')
+                        .update({ current_amount: goal.currentAmount + amount })
+                        .eq('id', goalId);
+                    if (goalError) throw goalError;
+
+                    // 4. Create transaction
+                    const dbTransaction = {
+                        wallet_id: walletId,
+                        type: 'expense',
+                        amount: amount,
+                        category_id: categoryId,
+                        note: `Góp tiền vào mục tiêu: ${goal.name}`
+                    };
+                    const { error: txError } = await supabase
+                        .from('transactions')
+                        .insert(dbTransaction);
+                    if (txError) throw txError;
+
+                    toast.success('Góp tiền thành công! 🎉');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi góp tiền:", error);
+                    toast.error("Góp tiền thất bại! ❌");
+                }
+            },
+
+            withdrawGoal: async (goalId: string, walletId: string, amount: number) => {
+                try {
+                    const state = get();
+                    const wallet = state.wallets.find(w => w.id === walletId);
+                    const goal = state.goals.find(g => g.id === goalId);
+
+                    if (!wallet || !goal) return;
+
+                    if (amount > goal.currentAmount) {
+                        toast.error('Số tiền rút vượt quá số dư quỹ!');
+                        throw new Error('Số dư quỹ không đủ!');
+                    }
+
+                    // 1. Ensure "Rút tiết kiệm" category exists
+                    let category = state.categories.find(c => c.name === 'Rút tiết kiệm' && c.type === 'income');
+                    let categoryId = category?.id;
+
+                    if (!categoryId) {
+                        const { data: newCat, error: catError } = await supabase
+                            .from('categories')
+                            .insert({ name: 'Rút tiết kiệm', icon: '🏦', type: 'income' })
+                            .select()
+                            .single();
+                        if (catError) throw catError;
+                        categoryId = newCat.id;
+                    }
+
+                    // 2. Increase wallet balance
+                    const { error: walletError } = await supabase
+                        .from('wallets')
+                        .update({ balance: wallet.balance + amount })
+                        .eq('id', walletId);
+                    if (walletError) throw walletError;
+
+                    // 3. Decrease goal current_amount
+                    const { error: goalError } = await supabase
+                        .from('goals')
+                        .update({ current_amount: goal.currentAmount - amount })
+                        .eq('id', goalId);
+                    if (goalError) throw goalError;
+
+                    // 4. Create transaction
+                    const dbTransaction = {
+                        wallet_id: walletId,
+                        type: 'income',
+                        amount: amount,
+                        category_id: categoryId,
+                        note: `Rút tiền từ mục tiêu: ${goal.name}`
+                    };
+                    const { error: txError } = await supabase
+                        .from('transactions')
+                        .insert(dbTransaction);
+                    if (txError) throw txError;
+
+                    toast.success('Rút tiền thành công! 💸');
+                    await get().fetchInitialData();
+                } catch (error: any) {
+                    console.error("Lỗi rút tiền:", error);
+                    toast.error("Rút tiền thất bại! ❌");
                 }
             }
         }),
