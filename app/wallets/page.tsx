@@ -100,7 +100,7 @@ export default function WalletsPage() {
                                         <button
                                             onClick={() => {
                                                 setActionMenuId(null);
-                                                router.push(`/edit-wallet/${w.id}`);
+                                                router.push(`/edit-wallet?id=${w.id}`);
                                             }}
                                             className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
                                         >

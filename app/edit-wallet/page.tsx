@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { useFinanceStore } from '../../../store/useFinanceStore';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 // --- PRESETS ---
 const BANKS = [
@@ -34,10 +34,10 @@ const COLORS = [
     { id: 'yellow', value: 'bg-yellow-400' },
 ];
 
-export default function EditWalletPage() {
+function EditWalletForm() {
     const router = useRouter();
-    const params = useParams();
-    const id = params.id as string;
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id');
 
     const ObjectStore = useFinanceStore();
     const { wallets, updateWallet } = ObjectStore;
@@ -50,7 +50,6 @@ export default function EditWalletPage() {
     const [selectedIcon, setSelectedIcon] = useState('cash');
     const [selectedColor, setSelectedColor] = useState('teal');
 
-    // Chống Crash: Fetch wallet when ID varies
     useEffect(() => {
         if (!id) {
             router.push('/wallets');
@@ -112,18 +111,10 @@ export default function EditWalletPage() {
             color: selectedColor
         });
 
-        router.push('/wallets');
+        router.replace('/wallets');
     };
 
-    // Bổ sung UI Loading/Fallback
-    if (loading) {
-        return (
-            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden justify-center items-center">
-                <div className="w-8 h-8 rounded-full border-4 border-pink-200 border-t-pink-500 animate-spin mb-4"></div>
-                <p className="text-[#EC4899] font-bold">Đang tải dữ liệu ví...</p>
-            </div>
-        );
-    }
+    if (loading) return null;
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
@@ -247,5 +238,18 @@ export default function EditWalletPage() {
                 </button>
             </div>
         </div>
+    );
+}
+
+export default function EditWalletPage() {
+    return (
+        <Suspense fallback={
+            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden justify-center items-center">
+                <div className="w-8 h-8 rounded-full border-4 border-pink-200 border-t-pink-500 animate-spin mb-4"></div>
+                <p className="text-[#EC4899] font-bold">Đang tải dữ liệu ví...</p>
+            </div>
+        }>
+            <EditWalletForm />
+        </Suspense>
     );
 }
