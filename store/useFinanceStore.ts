@@ -60,10 +60,14 @@ interface FinanceState {
     transactions: Transaction[];
     goals: Goal[];
 
+    // Multi-profile state
+    activeUserId: 'nga' | 'kha';
+
     // Getters
     getTotalBalance: () => number;
 
     // Actions
+    setActiveUserId: (id: 'nga' | 'kha') => void;
     fetchInitialData: () => Promise<void>;
     addWallet: (wallet: Omit<Wallet, 'is_default'>) => Promise<void>;
     setPrimaryWallet: (walletId: string) => Promise<void>;
@@ -104,6 +108,19 @@ export const useFinanceStore = create<FinanceState>()(
             tips: [],
             transactions: [],
             goals: [],
+            activeUserId: 'nga',
+
+            setActiveUserId: (id: 'nga' | 'kha') => {
+                set({
+                    activeUserId: id,
+                    wallets: [],
+                    categories: [],
+                    tips: [],
+                    transactions: [],
+                    goals: []
+                });
+                get().fetchInitialData();
+            },
 
             getTotalBalance: () => {
                 const { wallets } = get();
@@ -112,20 +129,22 @@ export const useFinanceStore = create<FinanceState>()(
 
             fetchInitialData: async () => {
                 try {
+                    const userId = get().activeUserId;
+
                     // Fetch categories
-                    const { data: categoriesData } = await supabase.from('categories').select('*').order('created_at', { ascending: true });
+                    const { data: categoriesData } = await supabase.from('categories').select('*').eq('user_id', userId).order('created_at', { ascending: true });
 
                     // Fetch wallets
-                    const { data: walletsData } = await supabase.from('wallets').select('*').order('created_at', { ascending: true });
+                    const { data: walletsData } = await supabase.from('wallets').select('*').eq('user_id', userId).order('created_at', { ascending: true });
 
                     // Fetch transactions
-                    const { data: txData } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+                    const { data: txData } = await supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
 
                     // Fetch tips
-                    const { data: tipsData } = await supabase.from('tips').select('*').order('created_at', { ascending: false });
+                    const { data: tipsData } = await supabase.from('tips').select('*').eq('user_id', userId).order('created_at', { ascending: false });
 
                     // Fetch goals
-                    const { data: goalsData } = await supabase.from('goals').select('*').order('created_at', { ascending: true });
+                    const { data: goalsData } = await supabase.from('goals').select('*').eq('user_id', userId).order('created_at', { ascending: true });
 
                     set({
                         categories: categoriesData || [],
@@ -187,7 +206,8 @@ export const useFinanceStore = create<FinanceState>()(
                         balance: walletData.balance,
                         icon: walletData.icon,
                         color: walletData.color,
-                        is_default: get().wallets.length === 0 ? true : false
+                        is_default: get().wallets.length === 0 ? true : false,
+                        user_id: get().activeUserId
                     }]);
 
                     if (error) {
@@ -311,7 +331,8 @@ export const useFinanceStore = create<FinanceState>()(
                         .insert({
                             name: categoryData.name,
                             icon: categoryData.icon,
-                            type: categoryData.type
+                            type: categoryData.type,
+                            user_id: get().activeUserId
                         });
                     if (error) throw error;
                     await get().fetchInitialData();
@@ -367,7 +388,8 @@ export const useFinanceStore = create<FinanceState>()(
                         type: transactionData.type,
                         amount: transactionData.amount,
                         category_id: transactionData.category_id,
-                        note: transactionData.note
+                        note: transactionData.note,
+                        user_id: get().activeUserId
                     };
                     const { data: newTx, error: txError } = await supabase
                         .from('transactions')
@@ -508,7 +530,8 @@ export const useFinanceStore = create<FinanceState>()(
                         customer: tipData.customerName || 'Khách hàng',
                         service: tipData.description || '',
                         status: 'pending',
-                        wallet_id: tipData.walletId || null
+                        wallet_id: tipData.walletId || null,
+                        user_id: get().activeUserId
                     };
 
                     const { error } = await supabase
@@ -658,7 +681,8 @@ export const useFinanceStore = create<FinanceState>()(
                             name: goalData.name,
                             target_amount: goalData.targetAmount,
                             current_amount: 0,
-                            target_date: goalData.deadline || null
+                            target_date: goalData.deadline || null,
+                            user_id: get().activeUserId
                         });
 
                     if (error) throw error;
@@ -716,7 +740,7 @@ export const useFinanceStore = create<FinanceState>()(
                     if (!categoryId) {
                         const { data: newCat, error: catError } = await supabase
                             .from('categories')
-                            .insert({ name: 'Gửi tiết kiệm', icon: '🐷', type: 'expense' })
+                            .insert({ name: 'Gửi tiết kiệm', icon: '🐷', type: 'expense', user_id: get().activeUserId })
                             .select()
                             .single();
                         if (catError) throw catError;
@@ -743,7 +767,8 @@ export const useFinanceStore = create<FinanceState>()(
                         type: 'expense',
                         amount: amount,
                         category_id: categoryId,
-                        note: `Góp tiền vào mục tiêu: ${goal.name}`
+                        note: `Góp tiền vào mục tiêu: ${goal.name}`,
+                        user_id: get().activeUserId
                     };
                     const { error: txError } = await supabase
                         .from('transactions')
@@ -778,7 +803,7 @@ export const useFinanceStore = create<FinanceState>()(
                     if (!categoryId) {
                         const { data: newCat, error: catError } = await supabase
                             .from('categories')
-                            .insert({ name: 'Rút tiết kiệm', icon: '🏦', type: 'income' })
+                            .insert({ name: 'Rút tiết kiệm', icon: '🏦', type: 'income', user_id: get().activeUserId })
                             .select()
                             .single();
                         if (catError) throw catError;
@@ -805,7 +830,8 @@ export const useFinanceStore = create<FinanceState>()(
                         type: 'income',
                         amount: amount,
                         category_id: categoryId,
-                        note: `Rút tiền từ mục tiêu: ${goal.name}`
+                        note: `Rút tiền từ mục tiêu: ${goal.name}`,
+                        user_id: get().activeUserId
                     };
                     const { error: txError } = await supabase
                         .from('transactions')

@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { ProfileSwitcher } from '@/components/ui/ProfileSwitcher';
 
 export const BottomNav: React.FC = () => {
     const pathname = usePathname();
@@ -37,6 +38,11 @@ export const BottomNav: React.FC = () => {
 
     return (
         <>
+            {/* Mobile Top Profile Switcher */}
+            <div className="md:hidden fixed top-2 left-1/2 -translate-x-1/2 z-[100] scale-90">
+                <ProfileSwitcher />
+            </div>
+
             {/* Mobile Bottom Nav */}
             <nav className="md:hidden fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]">
                 {items.map((item, idx) => {
@@ -61,9 +67,12 @@ export const BottomNav: React.FC = () => {
 
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r bg-white p-4 z-50">
-                <div className="flex items-center gap-2 mb-8 px-2 mt-4 text-[#F43F5E]">
+                <div className="flex items-center gap-2 mb-6 px-2 mt-4 text-[#F43F5E]">
                     <span className="text-3xl">🍯</span>
                     <h1 className="text-xl font-extrabold">Honey Money</h1>
+                </div>
+                <div className="mb-6 px-2">
+                    <ProfileSwitcher />
                 </div>
                 <div className="flex flex-col gap-2">
                     {items.map((item, idx) => {
