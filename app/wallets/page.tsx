@@ -41,123 +41,125 @@ export default function WalletsPage() {
     };
 
     return (
-        <PageWrapper>
-            <div className="font-sans antialiased w-full max-w-md mx-auto min-h-[calc(100vh-80px)] md:min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
+        <div className="w-full min-h-screen bg-[#FDF2F8]">
+            <PageWrapper>
+                <div className="font-sans antialiased w-full max-w-md mx-auto min-h-screen flex flex-col relative overflow-x-hidden">
 
-                {/* HEADER SECTION */}
-                <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] shadow-sm">
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
-                        </button>
-                        <div>
-                            <h1 className="text-xl font-extrabold text-[#1E293B]">Quản lý ví 💳</h1>
-                            <p className="text-xs text-[#EC4899] font-bold mt-0.5">Tài khoản & Tiền mặt</p>
+                    {/* HEADER SECTION */}
+                    <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] shadow-sm">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <div>
+                                <h1 className="text-xl font-extrabold text-[#1E293B]">Quản lý ví 💳</h1>
+                                <p className="text-xs text-[#EC4899] font-bold mt-0.5">Tài khoản & Tiền mặt</p>
+                            </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
 
-                <main className="px-6 mt-4 flex-grow flex flex-col">
-                    <section className="mb-6">
-                        {wallets.map(w => (
-                            <motion.div whileTap={{ scale: 0.98 }} key={w.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative ${actionMenuId === w.id ? 'z-50' : 'z-10'}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-full ${getWalletColor(w.color)} flex items-center justify-center text-xl font-bold uppercase`}>
-                                        {getWalletIcon(w.icon, w.name)}
+                    <main className="px-6 mt-4 flex-grow flex flex-col">
+                        <section className="mb-6">
+                            {wallets.map(w => (
+                                <motion.div whileTap={{ scale: 0.98 }} key={w.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative ${actionMenuId === w.id ? 'z-50' : 'z-10'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-full ${getWalletColor(w.color)} flex items-center justify-center text-xl font-bold uppercase`}>
+                                            {getWalletIcon(w.icon, w.name)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-[#1E293B] text-base">
+                                                {w.name} {w.is_default && '👑'}
+                                            </h3>
+                                            <p className={`text-xs font-bold mt-0.5 ${w.is_default ? 'text-[#EC4899]' : 'text-[#94A3B8]'}`}>
+                                                {w.is_default ? 'Ví chính' : 'Ví phụ'}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-[#1E293B] text-base">
-                                            {w.name} {w.is_default && '👑'}
-                                        </h3>
-                                        <p className={`text-xs font-bold mt-0.5 ${w.is_default ? 'text-[#EC4899]' : 'text-[#94A3B8]'}`}>
-                                            {w.is_default ? 'Ví chính' : 'Ví phụ'}
-                                        </p>
+                                    <div className="text-right flex items-center gap-3">
+                                        <p className="font-bold text-[#1E293B] text-base">{w.balance.toLocaleString('vi-VN')} đ</p>
+                                        <button
+                                            onClick={() => setActionMenuId(actionMenuId === w.id ? null : w.id)}
+                                            className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-50 transition-colors">
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                                        </button>
                                     </div>
-                                </div>
-                                <div className="text-right flex items-center gap-3">
-                                    <p className="font-bold text-[#1E293B] text-base">{w.balance.toLocaleString('vi-VN')} đ</p>
-                                    <button
-                                        onClick={() => setActionMenuId(actionMenuId === w.id ? null : w.id)}
-                                        className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-50 transition-colors">
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                                    </button>
-                                </div>
 
-                                {/* DROPDOWN MENU */}
-                                {actionMenuId === w.id && (
-                                    <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden animate-fade-in">
-                                        {!w.is_default && (
+                                    {/* DROPDOWN MENU */}
+                                    {actionMenuId === w.id && (
+                                        <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden animate-fade-in">
+                                            {!w.is_default && (
+                                                <button
+                                                    onClick={async () => {
+                                                        setActionMenuId(null);
+                                                        await setPrimaryWallet(w.id);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                                >
+                                                    <span className="text-xl">⭐</span> Đặt làm ví chính
+                                                </button>
+                                            )}
                                             <button
-                                                onClick={async () => {
+                                                onClick={() => {
                                                     setActionMenuId(null);
-                                                    await setPrimaryWallet(w.id);
+                                                    router.push(`/edit-wallet?id=${w.id}`);
                                                 }}
-                                                className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                                className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
                                             >
-                                                <span className="text-xl">⭐</span> Đặt làm ví chính
+                                                <span className="text-xl">✏️</span> Sửa thông tin ví
                                             </button>
-                                        )}
-                                        <button
-                                            onClick={() => {
-                                                setActionMenuId(null);
-                                                router.push(`/edit-wallet?id=${w.id}`);
-                                            }}
-                                            className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
-                                        >
-                                            <span className="text-xl">✏️</span> Sửa thông tin ví
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setActionMenuId(null);
-                                                toast.custom((t) => (
-                                                    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white shadow-2xl rounded-[2rem] p-6 border border-pink-100 pointer-events-auto flex flex-col items-center text-center`}>
-                                                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                                                            <span className="text-3xl">🗑️</span>
+                                            <button
+                                                onClick={() => {
+                                                    setActionMenuId(null);
+                                                    toast.custom((t) => (
+                                                        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white shadow-2xl rounded-[2rem] p-6 border border-pink-100 pointer-events-auto flex flex-col items-center text-center`}>
+                                                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                                                                <span className="text-3xl">🗑️</span>
+                                                            </div>
+                                                            <h3 className="text-xl font-extrabold text-[#1E293B] mb-2">Xóa ví này?</h3>
+                                                            <p className="text-[#64748B] text-sm font-medium mb-6">
+                                                                Em chắc chắn muốn xóa ví <strong>{w.name}</strong> chứ?
+                                                            </p>
+                                                            <div className="flex gap-3 w-full">
+                                                                <button
+                                                                    onClick={() => toast.dismiss(t.id)}
+                                                                    className="flex-1 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-[#64748B] font-bold rounded-2xl transition-colors"
+                                                                >
+                                                                    Hủy bỏ
+                                                                </button>
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        toast.dismiss(t.id);
+                                                                        await deleteWallet(w.id);
+                                                                    }}
+                                                                    className="flex-1 px-4 py-3 bg-[#F43F5E] hover:bg-rose-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition-all active:scale-95"
+                                                                >
+                                                                    Xác nhận Xóa
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <h3 className="text-xl font-extrabold text-[#1E293B] mb-2">Xóa ví này?</h3>
-                                                        <p className="text-[#64748B] text-sm font-medium mb-6">
-                                                            Em chắc chắn muốn xóa ví <strong>{w.name}</strong> chứ?
-                                                        </p>
-                                                        <div className="flex gap-3 w-full">
-                                                            <button
-                                                                onClick={() => toast.dismiss(t.id)}
-                                                                className="flex-1 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-[#64748B] font-bold rounded-2xl transition-colors"
-                                                            >
-                                                                Hủy bỏ
-                                                            </button>
-                                                            <button
-                                                                onClick={async () => {
-                                                                    toast.dismiss(t.id);
-                                                                    await deleteWallet(w.id);
-                                                                }}
-                                                                className="flex-1 px-4 py-3 bg-[#F43F5E] hover:bg-rose-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition-all active:scale-95"
-                                                            >
-                                                                Xác nhận Xóa
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ), { duration: Infinity });
-                                            }}
-                                            className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors border-t border-gray-50"
-                                        >
-                                            <span className="text-xl">🗑️</span> Xóa ví
-                                        </button>
-                                    </div>
-                                )}
+                                                    ), { duration: Infinity });
+                                                }}
+                                                className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors border-t border-gray-50"
+                                            >
+                                                <span className="text-xl">🗑️</span> Xóa ví
+                                            </button>
+                                        </div>
+                                    )}
 
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            ))}
 
-                        <Link href="/add-wallet">
-                            <motion.div whileTap={{ scale: 0.95 }} className="w-full bg-white border-2 border-dashed border-pink-200 text-[#EC4899] hover:bg-pink-50/50 font-bold py-4 rounded-[1.5rem] mt-2 transition-colors flex items-center justify-center gap-2">
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-                                Thêm ví mới
-                            </motion.div>
-                        </Link>
-                    </section>
-                </main>
+                            <Link href="/add-wallet">
+                                <motion.div whileTap={{ scale: 0.95 }} className="w-full bg-white border-2 border-dashed border-pink-200 text-[#EC4899] hover:bg-pink-50/50 font-bold py-4 rounded-[1.5rem] mt-2 transition-colors flex items-center justify-center gap-2">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                                    Thêm ví mới
+                                </motion.div>
+                            </Link>
+                        </section>
+                    </main>
 
-            </div>
-        </PageWrapper>
+                </div>
+            </PageWrapper>
+        </div>
     );
 }
