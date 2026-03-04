@@ -60,7 +60,7 @@ export default function WalletsPage() {
                 <main className="px-6 mt-4 flex-grow flex flex-col">
                     <section className="mb-6">
                         {wallets.map(w => (
-                            <motion.div whileTap={{ scale: 0.98 }} key={w.id} className="bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative">
+                            <motion.div whileTap={{ scale: 0.98 }} key={w.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative ${actionMenuId === w.id ? 'z-50' : 'z-10'}`}>
                                 <div className="flex items-center gap-4">
                                     <div className={`w-12 h-12 rounded-full ${getWalletColor(w.color)} flex items-center justify-center text-xl font-bold uppercase`}>
                                         {getWalletIcon(w.icon, w.name)}
@@ -85,7 +85,7 @@ export default function WalletsPage() {
 
                                 {/* DROPDOWN MENU */}
                                 {actionMenuId === w.id && (
-                                    <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-10 py-2 overflow-hidden animate-fade-in">
+                                    <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden animate-fade-in">
                                         {!w.is_default && (
                                             <button
                                                 onClick={async () => {

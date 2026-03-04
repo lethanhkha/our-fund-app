@@ -131,7 +131,8 @@ export const useFinanceStore = create<FinanceState>()(
                             name: w.name,
                             balance: Number(w.balance),
                             icon: w.icon,
-                            color: w.color
+                            color: w.color,
+                            is_default: w.is_default
                         })),
                         transactions: (txData || []).map(tx => {
                             const dateObj = new Date(tx.created_at);
