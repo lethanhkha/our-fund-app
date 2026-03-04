@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   generateBuildId: async () => {
-    return 'build-' + Date.now().toString();
+    return 'my-build-id-' + Date.now();
   },
+  // Không có basePath hay assetPrefix ở đây nữa
 };
 
 export default nextConfig;
