@@ -44,8 +44,8 @@ export const BottomNav: React.FC = () => {
 
     return (
         <>
-            {/* Mobile Top Profile Switcher */}
-            <div className="md:hidden fixed top-2 left-1/2 -translate-x-1/2 z-[100] scale-90">
+            {/* Mobile Top Profile Switcher - Hidden as per request */}
+            <div className="hidden">
                 <ProfileSwitcher />
             </div>
 

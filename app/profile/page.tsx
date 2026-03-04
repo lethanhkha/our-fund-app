@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { BottomNav } from '../../components/ui/BottomNav';
 import { useFinanceStore } from '@/store/useFinanceStore';
+import { ProfileSwitcher } from '@/components/ui/ProfileSwitcher';
 
 export default function ProfilePage() {
     const { activeUserId } = useFinanceStore();
@@ -23,6 +24,10 @@ export default function ProfilePage() {
             </header>
 
             <main className="px-6 flex-grow flex flex-col pt-8">
+
+                <div className="flex justify-center mb-6 md:hidden">
+                    <ProfileSwitcher />
+                </div>
 
                 <div className={`bg-white rounded-[2rem] p-6 shadow-sm border ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'} flex items-center gap-4 mb-6`}>
                     <div className={`w-16 h-16 rounded-full ${activeUserId === 'kha' ? 'bg-emerald-100' : 'bg-pink-100'} flex items-center justify-center text-3xl`}>🌸</div>

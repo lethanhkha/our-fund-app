@@ -7,12 +7,17 @@ import { BottomNav } from '../../components/ui/BottomNav';
 import { getDisplayDate } from '@/lib/utils';
 import { PageWrapper } from '../../components/ui/PageWrapper';
 
-// Feminine tone colors (Pink, Purple, Rose tones)
-const COLORS = ['#F43F5E', '#D946EF', '#FBCFE8', '#E879F9', '#F9A8D4', '#FDA4AF', '#C084FC'];
+// Feminine tone colors (Pink, Purple, Rose tones) for Nga
+const NGA_COLORS = ['#F43F5E', '#D946EF', '#FBCFE8', '#E879F9', '#F9A8D4', '#FDA4AF', '#C084FC'];
+
+// Emerald and Teal tones for Kha
+const KHA_COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#059669', '#047857', '#065F46'];
 
 export default function ReportsPage() {
     const router = useRouter();
-    const { transactions, categories, tips } = useFinanceStore();
+    const { transactions, categories, tips, activeUserId } = useFinanceStore();
+
+    const COLORS = activeUserId === 'kha' ? KHA_COLORS : NGA_COLORS;
 
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
@@ -62,9 +67,9 @@ export default function ReportsPage() {
     return (
         <>
             <PageWrapper>
-                <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
+                <div className={`font-sans antialiased w-full min-h-screen ${activeUserId === 'kha' ? 'bg-[#F0FDF4]' : 'bg-[#FDF2F8]'} flex flex-col pb-28 relative overflow-x-hidden md:p-8`}>
                     {/* HEADER */}
-                    <header className="px-6 pt-10 pb-4 sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40 flex items-center gap-3">
+                    <header className={`px-6 pt-10 pb-4 sticky top-0 ${activeUserId === 'kha' ? 'bg-[#F0FDF4]/90' : 'bg-[#FDF2F8]/90'} backdrop-blur-md z-40 flex items-center gap-3`}>
                         <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#1E293B]">
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
                         </button>
@@ -76,14 +81,14 @@ export default function ReportsPage() {
                         <div className="px-6 pb-4 flex items-center justify-between">
                             <button
                                 onClick={() => setSelectedYear(y => y - 1)}
-                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-[var(--color-brand-secondary)] transition-colors"
+                                className={`w-10 h-10 rounded-full border ${activeUserId === 'kha' ? 'border-emerald-100 hover:bg-emerald-50' : 'border-pink-100 hover:bg-[var(--color-brand-secondary)]'} bg-white flex items-center justify-center text-[#1E293B] transition-colors`}
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <h2 className="text-xl font-extrabold text-[#1E293B]">{selectedYear}</h2>
                             <button
                                 onClick={() => setSelectedYear(y => y + 1)}
-                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-[var(--color-brand-secondary)] transition-colors"
+                                className={`w-10 h-10 rounded-full border ${activeUserId === 'kha' ? 'border-emerald-100 hover:bg-emerald-50' : 'border-pink-100 hover:bg-[var(--color-brand-secondary)]'} bg-white flex items-center justify-center text-[#1E293B] transition-colors`}
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                             </button>
@@ -100,7 +105,7 @@ export default function ReportsPage() {
                                             onClick={() => setSelectedMonth(month)}
                                             className={`px-5 py-2 whitespace-nowrap rounded-full font-bold text-sm transition-all duration-300 ${isSelected
                                                 ? 'bg-[#1E293B] text-white shadow-md'
-                                                : 'bg-white text-[#94A3B8] border border-pink-100 hover:bg-gray-50'
+                                                : `bg-white text-[#94A3B8] border hover:bg-gray-50 ${activeUserId === 'kha' ? 'border-emerald-100' : 'border-pink-100'}`
                                                 }`}
                                         >
                                             Tháng {month}
@@ -136,7 +141,7 @@ export default function ReportsPage() {
                                 {/* CỘT TRÁI: BIỂU ĐỒ TRÒN CHI TIÊU */}
                                 <div className="w-full md:w-1/2">
                                     {expenseData.length > 0 ? (
-                                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center mb-8 md:mb-0 md:h-96">
+                                        <div className={`bg-white rounded-[2rem] p-6 shadow-sm border flex flex-col items-center mb-8 md:mb-0 md:h-96 ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'}`}>
                                             <h2 className="text-sm font-bold text-[#1E293B] self-start mb-4">Cơ cấu Chi tiêu</h2>
                                             <div className="w-full h-64 md:h-72 min-h-[250px] relative">
                                                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
@@ -170,7 +175,7 @@ export default function ReportsPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center justify-center mb-8 h-48">
+                                        <div className={`bg-white rounded-[2rem] p-6 shadow-sm border flex flex-col items-center justify-center mb-8 h-48 ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'}`}>
                                             <span className="text-4xl text-gray-200 mb-2">🍩</span>
                                             <p className="text-sm font-bold text-[#94A3B8]">Chưa có khoản chi nào tháng này!</p>
                                         </div>
@@ -186,7 +191,7 @@ export default function ReportsPage() {
                                                 {expenseData.map((item, index) => {
                                                     const percentage = ((item.value / totalExpense) * 100).toFixed(1);
                                                     return (
-                                                        <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between">
+                                                        <div key={index} className={`bg-white rounded-2xl p-4 shadow-sm border flex items-center justify-between ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'}`}>
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-50 border border-gray-100" style={{ borderColor: `${COLORS[index % COLORS.length]}30`, backgroundColor: `${COLORS[index % COLORS.length]}10` }}>
                                                                     {item.icon}
