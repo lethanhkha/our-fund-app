@@ -20,8 +20,7 @@ export default function TransactionHistoryPage() {
     const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
-    const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+    const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     const { transactions, categories, deleteTransaction, wallets, tips } = useFinanceStore();
 
@@ -252,6 +251,7 @@ export default function TransactionHistoryPage() {
                                                                 initial={{ opacity: 0, x: -20 }}
                                                                 animate={{ opacity: 1, x: 0 }}
                                                                 transition={{ duration: 0.3, delay: index * 0.05 }}
+                                                                className="relative"
                                                             >
                                                                 <TransactionItem
                                                                     icon={<span className="text-xl">{details.icon}</span>}
@@ -272,10 +272,68 @@ export default function TransactionHistoryPage() {
                                                                     amount={`${item.type === 'income' ? '+' : '-'}${item.amount.toLocaleString('vi-VN')} đ`}
                                                                     type={item.type}
                                                                     onClick={() => {
-                                                                        setSelectedTransactionId(item.id);
-                                                                        setIsActionSheetOpen(true);
+                                                                        setActionMenuId(actionMenuId === item.id ? null : item.id);
                                                                     }}
                                                                 />
+
+                                                                {/* Overlay vô hình để click ra ngoài đóng menu */}
+                                                                {actionMenuId === item.id && (
+                                                                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActionMenuId(null); }}></div>
+                                                                )}
+
+                                                                {/* Menu Action (Sửa/Xóa) popup */}
+                                                                {actionMenuId === item.id && (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                                        animate={{ opacity: 1, scale: 1 }}
+                                                                        className="absolute right-4 top-12 mt-2 w-40 bg-white rounded-2xl shadow-xl z-50 border border-pink-100 overflow-hidden"
+                                                                    >
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setActionMenuId(null);
+                                                                                router.push(`/edit-transaction?id=${item.id}`);
+                                                                            }}
+                                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors"
+                                                                        >
+                                                                            <span>✏️</span> Sửa
+                                                                        </button>
+                                                                        <div className="w-full h-px bg-gray-50"></div>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setActionMenuId(null);
+                                                                                toast((t) => (
+                                                                                    <div className="flex flex-col gap-2">
+                                                                                        <span className="font-bold">Xóa giao dịch này?</span>
+                                                                                        <span className="text-sm">Số dư ví sẽ được hoàn lại.</span>
+                                                                                        <div className="flex gap-2 mt-2">
+                                                                                            <button
+                                                                                                className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold active:scale-95 transition-transform"
+                                                                                                onClick={async () => {
+                                                                                                    toast.dismiss(t.id);
+                                                                                                    await deleteTransaction(item.id);
+                                                                                                }}
+                                                                                            >
+                                                                                                Xóa
+                                                                                            </button>
+                                                                                            <button
+                                                                                                className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold active:scale-95 transition-transform"
+                                                                                                onClick={() => toast.dismiss(t.id)}
+                                                                                            >
+                                                                                                Thôi
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ), { duration: 5000 });
+                                                                            }}
+                                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                                                                        >
+                                                                            <span>🗑️</span> Xóa
+                                                                        </button>
+                                                                    </motion.div>
+                                                                )}
+
                                                                 {index < items.length - 1 && <div className="w-full h-px bg-gray-50 my-1"></div>}
                                                             </motion.div>
                                                         );
@@ -315,58 +373,7 @@ export default function TransactionHistoryPage() {
                         </div>
                     </BottomSheet>
 
-                    {/* ACTION BOTTOM SHEET */}
-                    <BottomSheet isOpen={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)}>
-                        <div className="flex flex-col gap-4 p-4 pb-8">
-                            <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Tùy chọn giao dịch</h3>
-                            <button
-                                onClick={() => {
-                                    setIsActionSheetOpen(false);
-                                    if (selectedTransactionId) {
-                                        router.push(`/edit-transaction?id=${selectedTransactionId}`);
-                                    }
-                                }}
-                                className="w-full bg-blue-50 text-blue-600 border border-blue-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                            >
-                                <span className="text-2xl">✏️</span>
-                                Chỉnh sửa
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsActionSheetOpen(false);
-                                    if (selectedTransactionId) {
-                                        toast((t) => (
-                                            <div className="flex flex-col gap-2">
-                                                <span className="font-bold">Xóa giao dịch này?</span>
-                                                <span className="text-sm">Số dư ví sẽ được hoàn lại.</span>
-                                                <div className="flex gap-2 mt-2">
-                                                    <button
-                                                        className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
-                                                        onClick={async () => {
-                                                            toast.dismiss(t.id);
-                                                            await deleteTransaction(selectedTransactionId);
-                                                        }}
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                    <button
-                                                        className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
-                                                        onClick={() => toast.dismiss(t.id)}
-                                                    >
-                                                        Thôi
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ), { duration: 5000 });
-                                    }
-                                }}
-                                className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                            >
-                                <span className="text-2xl">🗑️</span>
-                                Xóa
-                            </button>
-                        </div>
-                    </BottomSheet>
+
                 </div>
             </PageWrapper>
             <BottomNav />

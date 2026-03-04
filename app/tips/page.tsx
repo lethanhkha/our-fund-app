@@ -15,9 +15,8 @@ import { motion } from 'framer-motion';
 export default function TipsPage() {
     const router = useRouter();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
     const [selectedTipIds, setSelectedTipIds] = useState<string[]>([]);
-    const [selectedTipActionId, setSelectedTipActionId] = useState<string | null>(null);
+    const [actionMenuId, setActionMenuId] = useState<string | null>(null);
     const { tips, undoReceiveTip, deleteTip, wallets } = useFinanceStore();
 
     const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
@@ -148,10 +147,9 @@ export default function TipsPage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.3, delay: index * 0.05 }}
                                                             onClick={() => {
-                                                                setSelectedTipActionId(tip.id);
-                                                                setIsActionSheetOpen(true);
+                                                                setActionMenuId(actionMenuId === tip.id ? null : tip.id);
                                                             }}
-                                                            className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start cursor-pointer transition-colors"
+                                                            className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50 flex justify-between items-start cursor-pointer transition-colors relative"
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${tip.type === 'nail' ? 'bg-pink-100 text-[#EC4899]' : 'bg-blue-100 text-blue-500'}`}>
@@ -196,6 +194,64 @@ export default function TipsPage() {
                                                                     </motion.button>
                                                                 )}
                                                             </div>
+
+                                                            {/* Overlay vô hình để click ra ngoài đóng menu */}
+                                                            {actionMenuId === tip.id && (
+                                                                <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActionMenuId(null); }}></div>
+                                                            )}
+
+                                                            {/* Menu Action (Sửa/Xóa) popup */}
+                                                            {actionMenuId === tip.id && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    className="absolute right-4 top-14 mt-2 w-40 bg-white rounded-2xl shadow-xl z-50 border border-pink-100 overflow-hidden"
+                                                                >
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setActionMenuId(null);
+                                                                            router.push(`/edit-tip?id=${tip.id}`);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-pink-600 hover:bg-pink-50 flex items-center gap-2 transition-colors"
+                                                                    >
+                                                                        <span>✏️</span> Sửa Tips
+                                                                    </button>
+                                                                    <div className="w-full h-px bg-gray-50"></div>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setActionMenuId(null);
+                                                                            toast((t) => (
+                                                                                <div className="flex flex-col gap-2">
+                                                                                    <span className="font-bold">Xóa Tip này?</span>
+                                                                                    <span className="text-sm">Nếu đã nhận, số dư ví sẽ được trừ lại.</span>
+                                                                                    <div className="flex gap-2 mt-2">
+                                                                                        <button
+                                                                                            className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold active:scale-95 transition-transform"
+                                                                                            onClick={async () => {
+                                                                                                toast.dismiss(t.id);
+                                                                                                await deleteTip(tip.id);
+                                                                                            }}
+                                                                                        >
+                                                                                            Xóa
+                                                                                        </button>
+                                                                                        <button
+                                                                                            className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold active:scale-95 transition-transform"
+                                                                                            onClick={() => toast.dismiss(t.id)}
+                                                                                        >
+                                                                                            Thôi
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ), { duration: 5000 });
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                                                                    >
+                                                                        <span>🗑️</span> Xóa
+                                                                    </button>
+                                                                </motion.div>
+                                                            )}
                                                         </motion.div>
                                                     ))}
                                                 </div>
@@ -232,60 +288,7 @@ export default function TipsPage() {
                     </BottomSheet>
 
                     {/* ACTION BOTTOM SHEET */}
-                    <BottomSheet isOpen={isActionSheetOpen} onClose={() => setIsActionSheetOpen(false)}>
-                        <div className="flex flex-col gap-4 p-4 pb-8">
-                            <h3 className="text-xl font-bold text-[#1E293B] text-center mb-2">Tùy chọn Tips</h3>
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => {
-                                        setIsActionSheetOpen(false);
-                                        if (selectedTipActionId) {
-                                            router.push(`/edit-tip?id=${selectedTipActionId}`);
-                                        }
-                                    }}
-                                    className="w-full bg-pink-50 text-[#EC4899] border border-pink-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                                >
-                                    <span className="text-2xl">✏️</span>
-                                    Sửa Tips
-                                </button>
 
-                                <button
-                                    onClick={() => {
-                                        setIsActionSheetOpen(false);
-                                        if (selectedTipActionId) {
-                                            toast((t) => (
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="font-bold">Xóa Tip này?</span>
-                                                    <span className="text-sm">Nếu đã nhận, số dư ví sẽ được trừ lại.</span>
-                                                    <div className="flex gap-2 mt-2">
-                                                        <button
-                                                            className="bg-red-500 text-white px-3 py-1 rounded text-sm w-full font-bold"
-                                                            onClick={async () => {
-                                                                toast.dismiss(t.id);
-                                                                await deleteTip(selectedTipActionId);
-                                                            }}
-                                                        >
-                                                            Xóa
-                                                        </button>
-                                                        <button
-                                                            className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm w-full font-bold"
-                                                            onClick={() => toast.dismiss(t.id)}
-                                                        >
-                                                            Thôi
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ), { duration: 5000 });
-                                        }
-                                    }}
-                                    className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                                >
-                                    <span className="text-2xl">🗑️</span>
-                                    Xóa
-                                </button>
-                            </div>
-                        </div>
-                    </BottomSheet>
                 </div>
             </PageWrapper>
             <BottomNav />
