@@ -112,27 +112,29 @@ export default function DashboardPage() {
               />
 
               {/* QUICK ACTIONS */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <Link href="/add-income" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
+              <div className="flex justify-center items-start gap-8 md:gap-12 mb-8">
+                <Link href="/add-income" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group w-20">
                   <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-emerald-100 shadow-sm group-hover:shadow-md transition-shadow">
                     <svg className="h-7 w-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                   </div>
                   <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Thu Nhập</span>
                 </Link>
 
-                <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-                  <div className={`w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 ${activeUserId === 'kha' ? 'border-emerald-100' : 'border-pink-100'} shadow-sm group-hover:shadow-md transition-shadow`}>
-                    <svg className={`h-7 w-7 ${activeUserId === 'kha' ? 'text-emerald-500' : 'text-[#EC4899]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
+                <Link href="/add-expense" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group w-20">
+                  <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-red-100 shadow-sm group-hover:shadow-md transition-shadow">
+                    <svg className="h-7 w-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
                   </div>
                   <span className="text-xs font-bold text-[#1E293B] text-center w-full">Thêm<br />Chi Tiêu</span>
                 </Link>
 
-                <Link href="/add-tips" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group">
-                  <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-yellow-100 shadow-sm group-hover:shadow-md transition-shadow">
-                    <div className="w-7 h-7 bg-yellow-400 text-white rounded-full flex items-center justify-center font-bold text-lg">$</div>
-                  </div>
-                  <span className="text-xs font-bold text-[#1E293B] text-center w-full">Ghi<br />Tips</span>
-                </Link>
+                {activeUserId !== 'kha' && (
+                  <Link href="/add-tips" className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform group w-20">
+                    <div className="w-[4.5rem] h-[4.5rem] bg-white rounded-full flex items-center justify-center border-2 border-yellow-100 shadow-sm group-hover:shadow-md transition-shadow">
+                      <div className="w-7 h-7 bg-yellow-400 text-white rounded-full flex items-center justify-center font-bold text-lg">$</div>
+                    </div>
+                    <span className="text-xs font-bold text-[#1E293B] text-center w-full">Ghi<br />Tips</span>
+                  </Link>
+                )}
               </div>
 
               {/* WALLET LIST (HORIZONTAL) */}
