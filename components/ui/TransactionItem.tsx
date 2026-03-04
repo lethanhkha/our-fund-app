@@ -14,7 +14,7 @@ interface TransactionItemProps {
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({
     icon,
-    iconBgColor = 'bg-pink-50',
+    iconBgColor = 'bg-[var(--color-brand-secondary)]',
     title,
     subtitle,
     amount,

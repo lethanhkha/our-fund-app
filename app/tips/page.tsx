@@ -101,7 +101,7 @@ export default function TipsPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                                        <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-[#EC4899] mb-3">
+                                        <div className="w-10 h-10 bg-[var(--color-brand-secondary)] rounded-full flex items-center justify-center text-[#EC4899] mb-3">
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         </div>
                                         <p className="text-[#94A3B8] text-xs font-medium mb-1">Đã nhận</p>
@@ -180,7 +180,7 @@ export default function TipsPage() {
                                                                     <button
                                                                         onClick={(e) => { e.stopPropagation(); undoReceiveTip(tip.id); }}
                                                                         title="Hoàn tác"
-                                                                        className="bg-pink-50 text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
+                                                                        className="bg-[var(--color-brand-secondary)] text-[#F43F5E] px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-pink-100 transition-colors"
                                                                     >
                                                                         Đã nhận
                                                                     </button>
@@ -213,7 +213,7 @@ export default function TipsPage() {
                                                                             setActionMenuId(null);
                                                                             router.push(`/edit-tip?id=${tip.id}`);
                                                                         }}
-                                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-pink-600 hover:bg-pink-50 flex items-center gap-2 transition-colors"
+                                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-pink-600 hover:bg-[var(--color-brand-secondary)] flex items-center gap-2 transition-colors"
                                                                     >
                                                                         <span>✏️</span> Sửa Tips
                                                                     </button>
@@ -265,7 +265,7 @@ export default function TipsPage() {
                     </div>
 
                     {/* FLOATING ACTION BUTTON */}
-                    <div className="fixed bottom-24 right-6 lg:right-[calc(50%-13rem)] z-50">
+                    <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50">
                         <Link href="/add-tips">
                             <motion.div whileTap={{ scale: 0.95 }} className="w-14 h-14 bg-[linear-gradient(to_bottom_right,#EC4899,#F43F5E)] rounded-full text-white shadow-lg shadow-pink-300 flex items-center justify-center transition-transform">
                                 <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>

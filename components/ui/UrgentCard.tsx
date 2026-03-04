@@ -14,7 +14,7 @@ export const UrgentCard: React.FC<UrgentCardProps> = ({ name, subtitle, timeAgo,
         <div className="relative bg-white rounded-[2rem] p-5 shadow-[0_10px_30px_-10px_rgba(238,43,91,0.1)] overflow-hidden border-l-4 border-primary mt-4">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-pink-50 rounded-2xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-[var(--color-brand-secondary)] rounded-2xl flex items-center justify-center">
                         {/* Avatar block */}
                     </div>
                     <div>

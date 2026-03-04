@@ -98,7 +98,7 @@ export default function CategoriesManagementPage() {
                             displayedCategories.map(cat => (
                                 <div key={cat.id} className="flex items-center justify-between p-3 border border-gray-50 rounded-2xl">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${activeTab === 'income' ? 'bg-emerald-50' : 'bg-pink-50'}`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${activeTab === 'income' ? 'bg-emerald-50' : 'bg-[var(--color-brand-secondary)]'}`}>
                                             {cat.icon}
                                         </div>
                                         <span className="font-bold text-[#1E293B] text-sm">{cat.name}</span>
@@ -115,7 +115,7 @@ export default function CategoriesManagementPage() {
 
                         {/* ADD FORM INLINE */}
                         {isAdding ? (
-                            <div className="mt-4 p-4 border border-dashed border-pink-200 bg-pink-50/30 rounded-2xl flex flex-col gap-3">
+                            <div className="mt-4 p-4 border border-dashed border-pink-200 bg-[var(--color-brand-secondary)]/ rounded-2xl flex flex-col gap-3">
                                 <div className="flex gap-2">
                                     <div className="relative">
                                         <button

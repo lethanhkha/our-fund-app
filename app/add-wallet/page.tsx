@@ -160,7 +160,7 @@ export default function AddWalletPage() {
                                     <button
                                         key={bank.id}
                                         onClick={() => handleSelectPreset(bank)}
-                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === bank.name ? 'border-[#F43F5E] bg-pink-50 text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === bank.name ? 'border-[#F43F5E] bg-[var(--color-brand-secondary)] text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
                                     >
                                         {bank.name}
                                     </button>
@@ -177,7 +177,7 @@ export default function AddWalletPage() {
                                     <button
                                         key={ewallet.id}
                                         onClick={() => handleSelectPreset(ewallet)}
-                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === ewallet.name ? 'border-[#F43F5E] bg-pink-50 text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors ${name === ewallet.name ? 'border-[#F43F5E] bg-[var(--color-brand-secondary)] text-[#F43F5E]' : 'border-transparent bg-gray-50 text-[#64748B] hover:bg-gray-100'}`}
                                     >
                                         {ewallet.name}
                                     </button>

@@ -10,6 +10,7 @@ export const Keypad: React.FC<KeypadProps> = ({ onKeyPress }) => {
 
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
             if (e.key >= '0' && e.key <= '9') {
                 onKeyPress(e.key);
             } else if (e.key === 'Backspace') {

@@ -23,7 +23,7 @@ export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipIds, onConfir
     const getWalletColor = (name: string) => {
         if (name.includes('Tiền mặt')) return 'bg-green-50 text-green-500';
         if (name.includes('Techcombank')) return 'bg-red-50 text-red-500';
-        if (name.includes('MoMo')) return 'bg-pink-50 text-pink-500';
+        if (name.includes('MoMo')) return 'bg-[var(--color-brand-secondary)] text-pink-500';
         return 'bg-blue-50 text-blue-500';
     };
 
@@ -37,7 +37,7 @@ export const WalletSelector: React.FC<WalletSelectorProps> = ({ tipIds, onConfir
                         key={wallet.id}
                         onClick={() => setSelectedWallet(wallet.id)}
                         className={`flex items-center p-4 rounded-[1.5rem] border-2 cursor-pointer transition-all ${selectedWallet === wallet.id
-                            ? 'border-[#F43F5E] bg-pink-50/50'
+                            ? 'border-[#F43F5E] bg-[var(--color-brand-secondary)]/'
                             : 'border-transparent bg-gray-50 hover:bg-gray-100'
                             }`}
                     >

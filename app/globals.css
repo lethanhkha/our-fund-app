@@ -28,18 +28,20 @@
   --color-brand-accent: #FCE7F3;
   --gradient-main: linear-gradient(to bottom right, #FF9A9E, #F43F5E);
   --shadow-color: rgba(244, 63, 94, 0.2);
+  --bg-app: #FDF2F8;
 }
 
 .theme-kha {
-  --color-brand-primary: #10B981; 
+  --color-brand-primary: #10B981;
   --color-brand-secondary: #ECFDF5;
   --color-brand-accent: #D1FAE5;
   --gradient-main: linear-gradient(to bottom right, #34D399, #059669);
   --shadow-color: rgba(16, 185, 129, 0.2);
+  --bg-app: #F0FDF4;
 }
 
 body {
-  background-color: var(--color-primary-light);
+  background-color: var(--bg-app);
   color: var(--color-brandDark);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;

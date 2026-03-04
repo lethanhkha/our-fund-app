@@ -243,7 +243,7 @@ export default function TransactionHistoryPage() {
                                                     {items.map((item, index) => {
                                                         const category = categories.find(c => c.id === item.category_id);
                                                         const wallet = wallets.find(w => w.id === item.walletId);
-                                                        const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-pink-50', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
+                                                        const details = category ? { icon: category.icon, color: category.type === 'income' ? 'bg-emerald-50' : 'bg-[var(--color-brand-secondary)]', title: category.name } : { icon: '✨', color: 'bg-gray-50', title: 'Khác' };
 
                                                         return (
                                                             <motion.div
@@ -348,7 +348,7 @@ export default function TransactionHistoryPage() {
                     </div>
 
                     {/* FLOATING ACTION BUTTON */}
-                    <div className="fixed bottom-24 right-6 lg:right-[calc(50%-13rem)] z-50">
+                    <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50">
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsSheetOpen(true)}
@@ -366,7 +366,7 @@ export default function TransactionHistoryPage() {
                                 <span className="text-2xl">💰</span>
                                 Thêm Thu Nhập
                             </Link>
-                            <Link href="/add-expense" className="w-full bg-pink-50 text-[#F43F5E] border border-pink-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                            <Link href="/add-expense" className="w-full bg-[var(--color-brand-secondary)] text-[#F43F5E] border border-pink-100 font-bold py-4 rounded-[1.5rem] flex items-center justify-center gap-3 active:scale-95 transition-transform">
                                 <span className="text-2xl">🛍️</span>
                                 Thêm Chi Tiêu
                             </Link>

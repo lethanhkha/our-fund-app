@@ -76,14 +76,14 @@ export default function ReportsPage() {
                         <div className="px-6 pb-4 flex items-center justify-between">
                             <button
                                 onClick={() => setSelectedYear(y => y - 1)}
-                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-pink-50 transition-colors"
+                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-[var(--color-brand-secondary)] transition-colors"
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <h2 className="text-xl font-extrabold text-[#1E293B]">{selectedYear}</h2>
                             <button
                                 onClick={() => setSelectedYear(y => y + 1)}
-                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-pink-50 transition-colors"
+                                className="w-10 h-10 rounded-full border border-pink-100 bg-white flex items-center justify-center text-[#1E293B] hover:bg-[var(--color-brand-secondary)] transition-colors"
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                             </button>

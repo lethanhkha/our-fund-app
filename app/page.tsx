@@ -32,7 +32,7 @@ export default function DashboardPage() {
     switch (id) {
       case 'cash': return { icon: '💵', color: 'bg-teal-50 text-teal-500', isText: false };
       case 'tcb': return { icon: 'TCB', color: 'bg-red-50 text-red-500 text-xs uppercase', isText: true };
-      case 'momo': return { icon: 'M', color: 'bg-pink-50 text-[#EC4899] text-xs', isText: true };
+      case 'momo': return { icon: 'M', color: 'bg-[var(--color-brand-secondary)] text-[#EC4899] text-xs', isText: true };
       default: return { icon: '💳', color: 'bg-blue-50 text-blue-500', isText: false };
     }
   };
@@ -98,9 +98,9 @@ export default function DashboardPage() {
             </button>
           </header >
 
-          <main className="px-6 flex-grow md:grid md:grid-cols-12 md:gap-8">
+          <main className="px-6 flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 w-full items-start">
 
-            <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-6">
+            <div className="flex flex-col gap-6 w-full">
 
               {/* BALANCE CARD */}
               <BalanceCard
@@ -167,7 +167,7 @@ export default function DashboardPage() {
 
             </div>
 
-            <div className="md:col-span-7 lg:col-span-8 mt-8 md:mt-0">
+            <div className="w-full mt-8 md:mt-0">
               {/* RECENT TIPS (HORIZONTAL) */}
               {activeUserId !== 'kha' && (
                 <section className="mb-4 overflow-hidden -mx-6 px-6">
