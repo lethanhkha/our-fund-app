@@ -2,8 +2,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { BottomNav } from '../../components/ui/BottomNav';
+import { useFinanceStore } from '@/store/useFinanceStore';
 
 export default function ProfilePage() {
+    const { activeUserId } = useFinanceStore();
     return (
         <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
 
@@ -14,7 +16,7 @@ export default function ProfilePage() {
                         TN
                     </div>
                     <div>
-                        <h1 className="text-xl font-extrabold text-[#1E293B]">Hồ sơ của em</h1>
+                        <h1 className="text-xl font-extrabold text-[#1E293B]">Hồ sơ</h1>
                         <p className="text-xs text-[#94A3B8] font-medium mt-0.5">Cài đặt cá nhân</p>
                     </div>
                 </div>
@@ -25,8 +27,8 @@ export default function ProfilePage() {
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center text-3xl">🌸</div>
                     <div>
-                        <h2 className="text-lg font-bold text-[#1E293B] mb-1">Embee Tuyếtt Ngàaa</h2>
-                        <p className="text-sm text-[#94A3B8] font-medium">033 600 5420</p>
+                        <h2 className="text-lg font-bold text-[#1E293B] mb-1">{activeUserId === 'nga' ? 'Embee Tuyếtt Ngaa' : 'Thanhh Khaa'}</h2>
+                        <div className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-bold inline-block mt-0.5">Premium</div>
                     </div>
                 </div>
 

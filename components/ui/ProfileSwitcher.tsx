@@ -9,7 +9,7 @@ export const ProfileSwitcher: React.FC = () => {
 
     const handleSwitch = (id: 'nga' | 'kha') => {
         if (id === activeUserId) return;
-        toast(`Đang chuyển sang sổ sách của ${id === 'nga' ? 'Ngà' : 'Kha'}...`, {
+        toast(`Đang chuyển sang sổ sách của ${id === 'nga' ? 'embee' : 'anhbee'}...`, {
             icon: '🔄',
         });
         setActiveUserId(id);
@@ -21,13 +21,13 @@ export const ProfileSwitcher: React.FC = () => {
                 onClick={() => handleSwitch('nga')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-full text-sm font-bold z-10 transition-colors ${activeUserId === 'nga' ? 'text-pink-600' : 'text-slate-400 hover:text-slate-600'}`}
             >
-                <span className="text-lg">💆🏻‍♀️</span> Ngà
+                <span className="text-lg">💆🏻‍♀️</span> embee
             </button>
             <button
                 onClick={() => handleSwitch('kha')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-full text-sm font-bold z-10 transition-colors ${activeUserId === 'kha' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
             >
-                <span className="text-lg">👨🏻‍💻</span> Kha
+                <span className="text-lg">👨🏻‍💻</span> anhbee
             </button>
 
             {/* Sliding Background */}
