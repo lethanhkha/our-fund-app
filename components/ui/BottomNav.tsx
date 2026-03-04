@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export const BottomNav: React.FC = () => {
     const pathname = usePathname();
@@ -41,9 +42,18 @@ export const BottomNav: React.FC = () => {
                 {items.map((item, idx) => {
                     const isActive = pathname === item.href;
                     return (
-                        <Link href={item.href} key={idx} className={`flex flex-col items-center gap-1 relative transition-colors cursor-pointer active:scale-95 ${isActive ? 'text-[#F43F5E]' : 'text-slate-400'}`}>
-                            {item.icon}
-                            <span className="text-[10px] font-bold">{item.label}</span>
+                        <Link href={item.href} key={idx} className={`flex flex-col items-center justify-center gap-1 w-14 h-14 relative transition-colors cursor-pointer active:scale-95 ${isActive ? 'text-[#F43F5E]' : 'text-slate-400'}`}>
+                            {isActive && (
+                                <motion.div
+                                    layoutId="nav-indicator-mobile"
+                                    className="absolute inset-0 bg-pink-50 rounded-2xl z-0"
+                                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                />
+                            )}
+                            <div className="relative z-10 flex flex-col items-center justify-center gap-1">
+                                {item.icon}
+                                <span className="text-[10px] font-bold">{item.label}</span>
+                            </div>
                         </Link>
                     );
                 })}
@@ -59,9 +69,18 @@ export const BottomNav: React.FC = () => {
                     {items.map((item, idx) => {
                         const isActive = pathname === item.href;
                         return (
-                            <Link href={item.href} key={idx} className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors ${isActive ? 'bg-pink-50 text-[#F43F5E]' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                {item.icon}
-                                <span className="font-bold text-sm">{item.label}</span>
+                            <Link href={item.href} key={idx} className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors relative ${isActive ? 'text-[#F43F5E]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="nav-indicator-desktop"
+                                        className="absolute inset-0 bg-pink-50 rounded-2xl z-0"
+                                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                    />
+                                )}
+                                <div className="relative z-10 flex items-center gap-4">
+                                    {item.icon}
+                                    <span className="font-bold text-sm tracking-wide">{item.label}</span>
+                                </div>
                             </Link>
                         );
                     })}

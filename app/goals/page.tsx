@@ -65,7 +65,7 @@ export default function GoalsPage() {
     };
 
     return (
-        <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
+        <div className="font-sans antialiased w-full max-w-md mx-auto min-h-[calc(100vh-80px)] md:min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden pb-20 md:pb-0">
             {/* Click Outside Overlay */}
             {actionMenuId && (
                 <div

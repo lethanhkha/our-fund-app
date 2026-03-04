@@ -42,7 +42,7 @@ export default function WalletsPage() {
 
     return (
         <PageWrapper>
-            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
+            <div className="font-sans antialiased w-full max-w-md mx-auto min-h-[calc(100vh-80px)] md:min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
 
                 {/* HEADER SECTION */}
                 <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">

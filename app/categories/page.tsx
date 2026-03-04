@@ -62,7 +62,7 @@ export default function CategoriesManagementPage() {
     };
 
     return (
-        <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
+        <div className="font-sans antialiased w-full max-w-md mx-auto min-h-[calc(100vh-80px)] md:min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden">
             <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
                 <div className="flex items-center gap-3">
                     <button onClick={() => router.back()} className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#1E293B]">
