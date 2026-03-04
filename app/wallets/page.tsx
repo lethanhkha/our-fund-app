@@ -58,40 +58,40 @@ export default function WalletsPage() {
                         </div>
                     </header>
 
-                    <main className="px-6 mt-4 flex-grow flex flex-col">
-                        <section className="mb-6">
-                            {wallets.map(w => (
-                                <motion.div whileTap={{ scale: 0.98 }} key={w.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 mb-4 flex items-center justify-between relative ${actionMenuId === w.id ? 'z-50' : 'z-10'}`}>
+                    <main className="flex-grow px-6 pb-6 pt-4">
+                        <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-4">
+                            {wallets.map(wallet => (
+                                <motion.div whileTap={{ scale: 0.98 }} key={wallet.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-4 flex items-center justify-between relative ${actionMenuId === wallet.id ? 'z-50' : 'z-10'}`}>
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-full ${getWalletColor(w.color)} flex items-center justify-center text-xl font-bold uppercase`}>
-                                            {getWalletIcon(w.icon, w.name)}
+                                        <div className={`w-12 h-12 rounded-full ${getWalletColor(wallet.color)} flex items-center justify-center text-xl font-bold uppercase`}>
+                                            {getWalletIcon(wallet.icon, wallet.name)}
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-[#1E293B] text-base">
-                                                {w.name} {w.is_default && '👑'}
+                                                {wallet.name} {wallet.is_default && '👑'}
                                             </h3>
-                                            <p className={`text-xs font-bold mt-0.5 ${w.is_default ? 'text-[#EC4899]' : 'text-[#94A3B8]'}`}>
-                                                {w.is_default ? 'Ví chính' : 'Ví phụ'}
+                                            <p className={`text-xs font-bold mt-0.5 ${wallet.is_default ? 'text-[#EC4899]' : 'text-[#94A3B8]'}`}>
+                                                {wallet.is_default ? 'Ví chính' : 'Ví phụ'}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right flex items-center gap-3">
-                                        <p className="font-bold text-[#1E293B] text-base">{w.balance.toLocaleString('vi-VN')} đ</p>
+                                        <p className="font-bold text-[#1E293B] text-base">{wallet.balance.toLocaleString('vi-VN')} đ</p>
                                         <button
-                                            onClick={() => setActionMenuId(actionMenuId === w.id ? null : w.id)}
+                                            onClick={() => setActionMenuId(actionMenuId === wallet.id ? null : wallet.id)}
                                             className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-50 transition-colors">
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                                         </button>
                                     </div>
 
                                     {/* DROPDOWN MENU */}
-                                    {actionMenuId === w.id && (
+                                    {actionMenuId === wallet.id && (
                                         <div className="absolute top-16 right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden animate-fade-in">
-                                            {!w.is_default && (
+                                            {!wallet.is_default && (
                                                 <button
                                                     onClick={async () => {
                                                         setActionMenuId(null);
-                                                        await setPrimaryWallet(w.id);
+                                                        await setPrimaryWallet(wallet.id);
                                                     }}
                                                     className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors"
                                                 >
@@ -101,7 +101,7 @@ export default function WalletsPage() {
                                             <button
                                                 onClick={() => {
                                                     setActionMenuId(null);
-                                                    router.push(`/edit-wallet?id=${w.id}`);
+                                                    router.push(`/edit-wallet?id=${wallet.id}`);
                                                 }}
                                                 className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
                                             >
@@ -117,7 +117,7 @@ export default function WalletsPage() {
                                                             </div>
                                                             <h3 className="text-xl font-extrabold text-[#1E293B] mb-2">Xóa ví này?</h3>
                                                             <p className="text-[#64748B] text-sm font-medium mb-6">
-                                                                Em chắc chắn muốn xóa ví <strong>{w.name}</strong> chứ?
+                                                                Em chắc chắn muốn xóa ví <strong>{wallet.name}</strong> chứ?
                                                             </p>
                                                             <div className="flex gap-3 w-full">
                                                                 <button
@@ -129,7 +129,7 @@ export default function WalletsPage() {
                                                                 <button
                                                                     onClick={async () => {
                                                                         toast.dismiss(t.id);
-                                                                        await deleteWallet(w.id);
+                                                                        await deleteWallet(wallet.id);
                                                                     }}
                                                                     className="flex-1 px-4 py-3 bg-[#F43F5E] hover:bg-rose-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition-all active:scale-95"
                                                                 >
@@ -155,7 +155,7 @@ export default function WalletsPage() {
                                     Thêm ví mới
                                 </motion.div>
                             </Link>
-                        </section>
+                        </div>
                     </main>
 
                 </div>

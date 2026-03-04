@@ -8,6 +8,21 @@ interface KeypadProps {
 export const Keypad: React.FC<KeypadProps> = ({ onKeyPress }) => {
     const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key >= '0' && e.key <= '9') {
+                onKeyPress(e.key);
+            } else if (e.key === 'Backspace') {
+                onKeyPress('delete');
+            } else if (e.key === 'Escape' || e.key === 'Delete') {
+                onKeyPress('clear');
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onKeyPress]);
+
     return (
         <div className="grid grid-cols-3 gap-4 mb-8 mt-auto w-full">
             {numbers.map((num) => (

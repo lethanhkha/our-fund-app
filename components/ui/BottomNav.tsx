@@ -4,26 +4,26 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ProfileSwitcher } from '@/components/ui/ProfileSwitcher';
+import { useFinanceStore } from '@/store/useFinanceStore';
 
 export const BottomNav: React.FC = () => {
     const pathname = usePathname();
+    const { activeUserId } = useFinanceStore();
 
-    const items = [
+    const navItems = [
         {
             icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
             label: 'Trang chủ',
             href: '/',
         },
-        {
-            icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
-            label: 'Tips',
-            href: '/tips',
-        },
+        { icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>, label: 'Mục tiêu', href: '/goals' },
+        { icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, label: 'Tips', href: '/tips' },
         {
             icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
             label: 'Giao dịch',
             href: '/transactions',
         },
+        { icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, label: 'Mục', href: '/categories' },
         {
             icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
             label: 'Báo cáo',
@@ -36,6 +36,10 @@ export const BottomNav: React.FC = () => {
         },
     ];
 
+    const filteredNavItems = activeUserId === 'kha'
+        ? navItems.filter(item => item.href !== '/tips')
+        : navItems;
+
     return (
         <>
             {/* Mobile Top Profile Switcher */}
@@ -45,7 +49,7 @@ export const BottomNav: React.FC = () => {
 
             {/* Mobile Bottom Nav */}
             <nav className="md:hidden fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]">
-                {items.map((item, idx) => {
+                {filteredNavItems.map((item: { href: string; icon: React.ReactNode; label: string }, idx: number) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link href={item.href} key={idx} className={`flex flex-col items-center justify-center gap-1 w-14 h-14 relative transition-colors cursor-pointer active:scale-95 ${isActive ? 'text-[#F43F5E]' : 'text-slate-400'}`}>
@@ -75,7 +79,7 @@ export const BottomNav: React.FC = () => {
                     <ProfileSwitcher />
                 </div>
                 <div className="flex flex-col gap-2">
-                    {items.map((item, idx) => {
+                    {filteredNavItems.map((item: { href: string; icon: React.ReactNode; label: string }, idx: number) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link href={item.href} key={idx} className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors relative ${isActive ? 'text-[#F43F5E]' : 'text-slate-500 hover:bg-slate-50'}`}>

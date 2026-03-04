@@ -20,7 +20,7 @@ const LOVE_NOTES = [
 export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const { wallets, tips, transactions, getTotalBalance } = useFinanceStore();
+  const { wallets, tips, transactions, getTotalBalance, activeUserId } = useFinanceStore();
   const [greeting, setGreeting] = useState('Chào công chúa của anh! 🌸');
 
   useEffect(() => {
@@ -167,27 +167,28 @@ export default function DashboardPage() {
 
             </div>
 
-            <div className="md:col-span-7 lg:col-span-8">
+            <div className="md:col-span-7 lg:col-span-8 mt-8 md:mt-0">
               {/* RECENT TIPS (HORIZONTAL) */}
-              <section className="mb-4 overflow-hidden -mx-6 px-6">
-                <h2 className="text-lg font-bold text-[#1E293B] mb-4">Tips gần đây 💅</h2>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-                  {recentTips.map(tip => (
-                    <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
-                      <div className="text-xs text-[#94A3B8] mb-1 font-medium flex gap-1 flex-wrap items-center">
-                        <span>{tip.time}</span>
-                        <span>&bull;</span>
-                        <span className="font-semibold text-gray-400">{wallets.find(w => w.id === tip.walletId)?.name || 'Chưa rõ ví'}</span>
+              {activeUserId !== 'kha' && (
+                <section className="mb-4 overflow-hidden -mx-6 px-6">
+                  <h2 className="text-lg font-bold text-[#1E293B] mb-4">Tips gần đây 💅</h2>
+                  <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
+                    {recentTips.map(tip => (
+                      <div key={tip.id} className="min-w-[140px] bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-50">
+                        <div className="text-xs text-[#94A3B8] mb-1 font-medium flex gap-1 flex-wrap items-center">
+                          <span>{tip.time}</span>
+                          <span>&bull;</span>
+                          <span className="font-semibold text-gray-400">{wallets.find(w => w.id === tip.walletId)?.name || 'Chưa rõ ví'}</span>
+                        </div>
+                        <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
+                          + {(tip.amount / 1000).toLocaleString('vi-VN')}k
+                        </div>
+                        <div className={`text-sm font-bold truncate ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</div>
                       </div>
-                      <div className={`text-[1.35rem] font-black mb-2 ${tip.status === 'received' ? 'text-[#1E293B]' : 'text-[#F43F5E]'}`}>
-                        + {(tip.amount / 1000).toLocaleString('vi-VN')}k
-                      </div>
-                      <div className={`text-sm font-bold truncate ${tip.customerName === 'Khách hàng' ? 'text-[#94A3B8]' : 'text-[#1E293B]'}`}>{tip.customerName}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
 
           </main>

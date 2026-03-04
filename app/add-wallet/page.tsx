@@ -50,7 +50,7 @@ export default function AddWalletPage() {
     const handleKeyPress = (key: string) => {
         if (key === 'clear') {
             setAmount('0');
-        } else if (key === 'backspace') {
+        } else if (key === 'delete') {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
         } else {
             setAmount(prev => prev === '0' ? key : prev + key);

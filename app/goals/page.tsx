@@ -88,14 +88,14 @@ export default function GoalsPage() {
                     </div>
                 </header>
 
-                <main className="px-6 mt-4 flex-grow flex flex-col">
-                    <section className="mb-6">
+                <main className="flex-grow px-6 pt-4 pb-28 text-[#1E293B]">
+                    <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-4">
                         {goals.map(g => {
                             const percent = g.targetAmount > 0 ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
                             const isMenuOpen = actionMenuId === g.id;
 
                             return (
-                                <div key={g.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-5 mb-4 relative ${isMenuOpen ? 'z-50' : 'z-10'}`}>
+                                <div key={g.id} className={`bg-white rounded-[1.5rem] shadow-sm border border-pink-50 p-5 relative ${isMenuOpen ? 'z-50' : 'z-10'}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 text-lg">
@@ -175,13 +175,16 @@ export default function GoalsPage() {
                                 </div>
                             );
                         })}
-
-                        <Link href="/add-goal" className="w-full bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] hover:opacity-90 text-white font-bold py-4 rounded-[1.5rem] mt-2 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-pink-200">
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-                            Thêm mục tiêu
-                        </Link>
-                    </section>
+                    </div>
                 </main>
+
+                {/* ADD BUTTON OUTSIDE GRID */}
+                <div className="px-6">
+                    <Link href="/add-goal" className="w-full bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] hover:opacity-90 text-white font-bold py-4 rounded-[1.5rem] mt-2 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-pink-200">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                        Thêm mục tiêu
+                    </Link>
+                </div>
 
                 {/* Deposit Modal */}
                 <AnimatePresence>

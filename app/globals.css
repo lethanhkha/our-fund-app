@@ -22,6 +22,22 @@
   --radius-custom: 24px;
 }
 
+:root {
+  --color-brand-primary: #EC4899;
+  --color-brand-secondary: #FDF2F8;
+  --color-brand-accent: #FCE7F3;
+  --gradient-main: linear-gradient(to bottom right, #FF9A9E, #F43F5E);
+  --shadow-color: rgba(244, 63, 94, 0.2);
+}
+
+.theme-kha {
+  --color-brand-primary: #10B981; 
+  --color-brand-secondary: #ECFDF5;
+  --color-brand-accent: #D1FAE5;
+  --gradient-main: linear-gradient(to bottom right, #34D399, #059669);
+  --shadow-color: rgba(16, 185, 129, 0.2);
+}
+
 body {
   background-color: var(--color-primary-light);
   color: var(--color-brandDark);
