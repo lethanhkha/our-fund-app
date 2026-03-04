@@ -138,7 +138,7 @@ export default function ReportsPage() {
                                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex flex-col items-center mb-8 md:mb-0 md:h-96">
                                         <h2 className="text-sm font-bold text-[#1E293B] self-start mb-4">Cơ cấu Chi tiêu</h2>
                                         <div className="w-full h-64 md:h-72 min-h-[250px] relative">
-                                            <ResponsiveContainer width="100%" height="100%">
+                                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                                 <PieChart>
                                                     <Pie
                                                         isAnimationActive={false}

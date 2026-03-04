@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { useFinanceStore } from '../../store/useFinanceStore';
+import { useFinanceStore } from '../../../store/useFinanceStore';
 
 // --- PRESETS ---
 const BANKS = [
@@ -34,10 +34,10 @@ const COLORS = [
     { id: 'yellow', value: 'bg-yellow-400' },
 ];
 
-function EditWalletForm() {
+export default function EditWalletPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const id = searchParams.get('id');
+    const params = useParams();
+    const id = params.id as string;
 
     const ObjectStore = useFinanceStore();
     const { wallets, updateWallet } = ObjectStore;
@@ -50,6 +50,7 @@ function EditWalletForm() {
     const [selectedIcon, setSelectedIcon] = useState('cash');
     const [selectedColor, setSelectedColor] = useState('teal');
 
+    // Chống Crash: Fetch wallet when ID varies
     useEffect(() => {
         if (!id) {
             router.push('/wallets');
@@ -111,10 +112,18 @@ function EditWalletForm() {
             color: selectedColor
         });
 
-        router.replace('/wallets');
+        router.push('/wallets');
     };
 
-    if (loading) return null;
+    // Bổ sung UI Loading/Fallback
+    if (loading) {
+        return (
+            <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden justify-center items-center">
+                <div className="w-8 h-8 rounded-full border-4 border-pink-200 border-t-pink-500 animate-spin mb-4"></div>
+                <p className="text-[#EC4899] font-bold">Đang tải dữ liệu ví...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="font-sans antialiased max-w-md mx-auto min-h-screen bg-[#FDF2F8] flex flex-col relative overflow-x-hidden">
@@ -133,7 +142,7 @@ function EditWalletForm() {
                     <div className="text-4xl font-extrabold text-[#1E293B] tracking-tight">
                         {parseInt(amount || '0', 10).toLocaleString('vi-VN')} đ
                     </div>
-                    <p className="text-xs text-[#94A3B8] mt-2 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                    <p className="text-xs text-[#94A3B8] mt-2 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm text-center">
                         Để thay đổi số dư, vui lòng tạo giao dịch Thu/Chi.
                     </p>
                 </div>
@@ -238,17 +247,5 @@ function EditWalletForm() {
                 </button>
             </div>
         </div>
-    );
-}
-
-export default function EditWalletPage() {
-    return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-[#FDF2F8] flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-4 border-pink-200 border-t-pink-500 animate-spin"></div>
-            </div>
-        }>
-            <EditWalletForm />
-        </Suspense>
     );
 }

@@ -94,13 +94,13 @@ export default function WalletsPage() {
                                                 }}
                                                 className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors"
                                             >
-                                                <span className="text-xl">👑</span> Đặt làm ví chính
+                                                <span className="text-xl">⭐</span> Đặt làm ví chính
                                             </button>
                                         )}
                                         <button
                                             onClick={() => {
                                                 setActionMenuId(null);
-                                                router.push(`/edit-wallet?id=${w.id}`);
+                                                router.push(`/edit-wallet/${w.id}`);
                                             }}
                                             className="w-full px-4 py-3 text-left text-sm font-bold text-[#1E293B] hover:bg-gray-50 flex items-center gap-3 transition-colors border-t border-gray-50"
                                         >
