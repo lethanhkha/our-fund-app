@@ -7,12 +7,12 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 export default function ProfilePage() {
     const { activeUserId } = useFinanceStore();
     return (
-        <div className="font-sans antialiased w-full min-h-screen bg-[#FDF2F8] flex flex-col pb-28 relative overflow-x-hidden md:p-8">
+        <div className={`font-sans antialiased w-full min-h-screen ${activeUserId === 'kha' ? 'bg-[#F0FDF4]' : 'bg-[#FDF2F8]'} flex flex-col pb-28 relative overflow-x-hidden md:p-8`}>
 
             {/* HEADER SECTION */}
-            <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-[#FDF2F8]/90 backdrop-blur-md z-40">
+            <header className={`px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 ${activeUserId === 'kha' ? 'bg-[#F0FDF4]/90' : 'bg-[#FDF2F8]/90'} backdrop-blur-md z-40`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] flex items-center justify-center text-white shadow-sm font-bold shadow-pink-200">
+                    <div className={`w-10 h-10 rounded-full ${activeUserId === 'kha' ? 'bg-[linear-gradient(to_bottom_right,#34D399,#059669)] shadow-emerald-200' : 'bg-[linear-gradient(to_bottom_right,#FF9A9E,#F43F5E)] shadow-pink-200'} flex items-center justify-center text-white shadow-sm font-bold`}>
                         TN
                     </div>
                     <div>
@@ -24,15 +24,15 @@ export default function ProfilePage() {
 
             <main className="px-6 flex-grow flex flex-col pt-8">
 
-                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50 flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center text-3xl">🌸</div>
+                <div className={`bg-white rounded-[2rem] p-6 shadow-sm border ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'} flex items-center gap-4 mb-6`}>
+                    <div className={`w-16 h-16 rounded-full ${activeUserId === 'kha' ? 'bg-emerald-100' : 'bg-pink-100'} flex items-center justify-center text-3xl`}>🌸</div>
                     <div>
                         <h2 className="text-lg font-bold text-[#1E293B] mb-1">{activeUserId === 'nga' ? 'Embee Tuyếtt Ngaa' : 'Thanhh Khaa'}</h2>
                         <div className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-bold inline-block mt-0.5">Premium</div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-pink-50 flex flex-col mb-6">
+                <div className={`bg-white rounded-[2rem] p-4 shadow-sm border ${activeUserId === 'kha' ? 'border-emerald-50' : 'border-pink-50'} flex flex-col mb-6`}>
                     <Link href="/categories" className="flex items-center justify-between py-3 px-2 border-b border-gray-50 group">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 transition-colors group-hover:bg-purple-100">

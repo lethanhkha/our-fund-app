@@ -50,7 +50,7 @@ export const BottomNav: React.FC = () => {
             </div>
 
             {/* Mobile Bottom Nav */}
-            <nav className="md:hidden fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]">
+            <nav className={`md:hidden fixed bottom-6 left-6 right-6 max-w-md mx-auto bg-white rounded-[2.5rem] px-6 py-4 flex justify-between items-center z-50 ${activeUserId === 'kha' ? 'shadow-[0_10px_40px_0_rgba(16,185,129,0.15)]' : 'shadow-[0_10px_40px_0_rgba(238,43,91,0.1)]'}`}>
                 {filteredNavItems.map((item: { href: string; icon: React.ReactNode; label: string }, idx: number) => {
                     const isActive = pathname === item.href;
                     return (
