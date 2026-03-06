@@ -12,6 +12,11 @@ export default function AddIncomePage() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [note, setNote] = useState('');
     const [selectedWalletId, setSelectedWalletId] = useState('');
+    const [createdDate, setCreatedDate] = useState(() => {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        return now.toISOString().slice(0, 16);
+    });
     const { wallets, categories, addTransaction } = useFinanceStore();
     const incomeCategories = categories.filter(c => c.type === 'income');
 
@@ -62,7 +67,8 @@ export default function AddIncomePage() {
             category_id: selectedCategory,
             amount: numericAmount * 1000, // Keep original amount calculation logic
             note: note,
-            walletId: selectedWalletId // Use selected wallet
+            walletId: selectedWalletId, // Use selected wallet
+            created_at: createdDate ? new Date(createdDate).toISOString() : undefined
         });
 
         toast.success('Thêm giao dịch thành công! 🎉'); // Added success toast
@@ -155,10 +161,22 @@ export default function AddIncomePage() {
                     </div>
                 </div>
 
-                {/* NOTE INPUT */}
-                <div className="mb-auto">
+                {/* DATE AND NOTE INPUTS */}
+                <div className="mb-auto space-y-4">
+                    {/* DATE INPUT */}
                     <div className="flex items-center bg-gray-50 rounded-[1.5rem] p-4 border border-gray-100 focus-within:border-emerald-200 focus-within:bg-emerald-50/50 transition-colors">
-                        <svg className="h-5 w-5 text-[#94A3B8] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        <svg className="h-5 w-5 text-[#94A3B8] mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <input
+                            type="datetime-local"
+                            value={createdDate}
+                            onChange={(e) => setCreatedDate(e.target.value)}
+                            className="bg-transparent border-none outline-none w-full text-[#1E293B] font-medium"
+                        />
+                    </div>
+
+                    {/* NOTE INPUT */}
+                    <div className="flex items-center bg-gray-50 rounded-[1.5rem] p-4 border border-gray-100 focus-within:border-emerald-200 focus-within:bg-emerald-50/50 transition-colors">
+                        <svg className="h-5 w-5 text-[#94A3B8] mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         <input
                             type="text"
                             placeholder="Thu từ nguồn nào..."

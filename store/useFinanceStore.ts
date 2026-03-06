@@ -383,7 +383,7 @@ export const useFinanceStore = create<FinanceState>()(
                         throw new Error('Số dư ví không đủ!');
                     }
                     // 1. Insert into transactions table
-                    const dbTransaction = {
+                    const dbTransaction: any = {
                         wallet_id: transactionData.walletId,
                         type: transactionData.type,
                         amount: transactionData.amount,
@@ -391,6 +391,11 @@ export const useFinanceStore = create<FinanceState>()(
                         note: transactionData.note,
                         user_id: get().activeUserId
                     };
+
+                    if (transactionData.created_at) {
+                        dbTransaction['created_at'] = transactionData.created_at;
+                    }
+
                     const { data: newTx, error: txError } = await supabase
                         .from('transactions')
                         .insert(dbTransaction)
@@ -416,6 +421,7 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                    throw error;
                 }
             },
 
@@ -459,54 +465,86 @@ export const useFinanceStore = create<FinanceState>()(
                     const oldTx = state.transactions.find(t => t.id === transactionId);
                     if (!oldTx) return;
 
-                    // 1. Rollback old transaction
-                    const oldWallet = state.wallets.find(w => w.id === oldTx.walletId);
-                    if (oldWallet) {
-                        const modifier = oldTx.type === 'expense' ? 1 : -1;
-                        const revertedBalance = oldWallet.balance + (oldTx.amount * modifier);
+                    const hasWalletChanged = updatedData.walletId !== undefined && updatedData.walletId !== oldTx.walletId;
+                    const hasAmountOrTypeChanged = (updatedData.amount !== undefined && updatedData.amount !== oldTx.amount) ||
+                        (updatedData.type !== undefined && updatedData.type !== oldTx.type);
 
-                        const { error: oldWalletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: revertedBalance })
-                            .eq('id', oldWallet.id);
+                    if (hasWalletChanged) {
+                        // SCENARIO A: Wallet Changed
+                        const oldWallet = state.wallets.find(w => w.id === oldTx.walletId);
+                        const newWalletId = updatedData.walletId!;
+                        const newWallet = state.wallets.find(w => w.id === newWalletId);
 
-                        if (oldWalletError) throw oldWalletError;
-                    }
+                        // 1. Revert from old wallet
+                        if (oldWallet) {
+                            const revertModifier = oldTx.type === 'expense' ? 1 : -1;
+                            const revertedBalance = oldWallet.balance + (oldTx.amount * revertModifier);
+                            const { error: oldWalletError } = await supabase
+                                .from('wallets')
+                                .update({ balance: revertedBalance })
+                                .eq('id', oldWallet.id);
+                            if (oldWalletError) throw oldWalletError;
 
-                    // Fetch latest state to reflect rollback before applying new
-                    await get().fetchInitialData();
-                    const newState = get();
-
-                    // 2. Apply new transaction balance impact
-                    const newType = updatedData.type || oldTx.type;
-                    const newAmount = updatedData.amount ?? oldTx.amount;
-                    const newWalletId = updatedData.walletId || oldTx.walletId;
-
-                    const newWallet = newState.wallets.find(w => w.id === newWalletId);
-                    if (newWallet) {
-                        const modifier = newType === 'income' ? 1 : -1;
-                        const newBalance = newWallet.balance + (newAmount * modifier);
-
-                        if (newType === 'expense' && newAmount > newWallet.balance) {
-                            toast.error('Số dư ví không đủ để cập nhật!');
-                            throw new Error('Số dư ví không đủ!');
+                            // Immediately update local state temporary for new wallet check if needed
+                            oldWallet.balance = revertedBalance;
                         }
 
-                        const { error: newWalletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: newBalance })
-                            .eq('id', newWallet.id);
+                        // 2. Apply to new wallet
+                        if (newWallet) {
+                            const newType = updatedData.type || oldTx.type;
+                            const newAmount = updatedData.amount ?? oldTx.amount;
+                            const applyModifier = newType === 'income' ? 1 : -1;
+                            const newBalance = newWallet.balance + (newAmount * applyModifier);
 
-                        if (newWalletError) throw newWalletError;
+                            if (newType === 'expense' && newBalance < 0) {
+                                toast.error('Ví mới không đủ số dư để chuyển đổi sang chi tiêu!');
+                                throw new Error('Ví mới không đủ số dư!');
+                            }
+
+                            const { error: newWalletError } = await supabase
+                                .from('wallets')
+                                .update({ balance: newBalance })
+                                .eq('id', newWallet.id);
+                            if (newWalletError) throw newWalletError;
+                        }
+
+                    } else if (hasAmountOrTypeChanged) {
+                        // SCENARIO B: Wallet is the same, but Amount or Type changed
+                        const wallet = state.wallets.find(w => w.id === oldTx.walletId);
+                        if (wallet) {
+                            // Old impact on wallet: income adds to balance, expense subtracts
+                            const oldImpact = oldTx.type === 'income' ? oldTx.amount : -oldTx.amount;
+
+                            // New impact on wallet
+                            const newType = updatedData.type || oldTx.type;
+                            const newAmount = updatedData.amount ?? oldTx.amount;
+                            const newImpact = newType === 'income' ? newAmount : -newAmount;
+
+                            // Diff represents how much MORE money the wallet should have compared to right now
+                            const diff = newImpact - oldImpact;
+                            const newBalance = wallet.balance + diff;
+
+                            if (newBalance < 0) {
+                                toast.error('Số dư ví không đủ để thực hiện điều chỉnh!');
+                                throw new Error('Số dư ví không đủ!');
+                            }
+
+                            const { error: walletError } = await supabase
+                                .from('wallets')
+                                .update({ balance: newBalance })
+                                .eq('id', wallet.id);
+                            if (walletError) throw walletError;
+                        }
                     }
 
-                    // 3. Update transaction record
+                    // UPDATE TRANSACTION RECORD
                     const dbUpdate: any = {};
                     if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
                     if (updatedData.type !== undefined) dbUpdate['type'] = updatedData.type;
                     if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
                     if (updatedData.category_id !== undefined) dbUpdate['category_id'] = updatedData.category_id;
                     if (updatedData.note !== undefined) dbUpdate['note'] = updatedData.note;
+                    if (updatedData.created_at !== undefined) dbUpdate['created_at'] = updatedData.created_at;
 
                     const { error: txError } = await supabase
                         .from('transactions')
@@ -518,14 +556,14 @@ export const useFinanceStore = create<FinanceState>()(
                     toast.success('Cập nhật thành công! ✨');
                     await get().fetchInitialData();
                 } catch (error: any) {
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+                    toast.error("Có lỗi đường truyền hoặc số dư không đủ! 🚧");
                     console.error("Lỗi khi sửa GD:", error?.message || JSON.stringify(error));
                 }
             },
 
             addTip: async (tipData) => {
                 try {
-                    const dbTip = {
+                    const dbTip: any = {
                         amount: tipData.amount,
                         customer: tipData.customerName || 'Khách hàng',
                         service: tipData.description || '',
@@ -533,6 +571,10 @@ export const useFinanceStore = create<FinanceState>()(
                         wallet_id: tipData.walletId || null,
                         user_id: get().activeUserId
                     };
+
+                    if (tipData.created_at) {
+                        dbTip['created_at'] = tipData.created_at;
+                    }
 
                     const { error } = await supabase
                         .from('tips')
@@ -544,17 +586,78 @@ export const useFinanceStore = create<FinanceState>()(
                     await get().fetchInitialData();
                 } catch (error: any) {
                     console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
+                    throw error;
                 }
             },
 
             updateTip: async (tipId, updatedData) => {
                 try {
+                    const state = get();
+                    const oldTip = state.tips.find(t => t.id === tipId);
+                    if (!oldTip) return;
+
+                    // If tip is received, we need to reconcile the wallet balance
+                    if (oldTip.status === 'received' && oldTip.walletId) {
+                        const hasWalletChanged = updatedData.walletId !== undefined && updatedData.walletId !== oldTip.walletId;
+                        const hasAmountChanged = updatedData.amount !== undefined && updatedData.amount !== oldTip.amount;
+                        const isChangingToPending = updatedData.status === 'pending';
+
+                        // Handle un-receiving inherently
+                        if (isChangingToPending) {
+                            const wallet = state.wallets.find(w => w.id === oldTip.walletId);
+                            if (wallet) {
+                                const newBalance = wallet.balance - oldTip.amount;
+                                const { error: err } = await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id);
+                                if (err) throw err;
+                            }
+                        } else if (hasWalletChanged) {
+                            // SCENARIO A: Wallet Changed for a Received Tip
+                            const oldWallet = state.wallets.find(w => w.id === oldTip.walletId);
+                            const newWalletId = updatedData.walletId!;
+                            const newWallet = state.wallets.find(w => w.id === newWalletId);
+
+                            // Revert from old
+                            if (oldWallet) {
+                                const { error: er1 } = await supabase.from('wallets').update({ balance: oldWallet.balance - oldTip.amount }).eq('id', oldWallet.id);
+                                if (er1) throw er1;
+                            }
+
+                            // Apply to new
+                            if (newWallet) {
+                                const newAmount = updatedData.amount ?? oldTip.amount;
+                                const { error: er2 } = await supabase.from('wallets').update({ balance: newWallet.balance + newAmount }).eq('id', newWallet.id);
+                                if (er2) throw er2;
+                            }
+                        } else if (hasAmountChanged) {
+                            // SCENARIO B: Amount Changed on same wallet
+                            const wallet = state.wallets.find(w => w.id === oldTip.walletId);
+                            if (wallet) {
+                                const oldImpact = oldTip.amount;
+                                const newImpact = updatedData.amount!;
+                                const diff = newImpact - oldImpact;
+
+                                const { error: er3 } = await supabase.from('wallets').update({ balance: wallet.balance + diff }).eq('id', wallet.id);
+                                if (er3) throw er3;
+                            }
+                        }
+                    } else if (oldTip.status === 'pending' && updatedData.status === 'received' && updatedData.walletId) {
+                        // Changing from pending to received
+                        const walletId = updatedData.walletId;
+                        const amount = updatedData.amount ?? oldTip.amount;
+                        const wallet = state.wallets.find(w => w.id === walletId);
+                        if (wallet) {
+                            const { error: er4 } = await supabase.from('wallets').update({ balance: wallet.balance + amount }).eq('id', wallet.id);
+                            if (er4) throw er4;
+                        }
+                    }
+
                     const dbUpdate: any = {};
                     if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
                     if (updatedData.customerName !== undefined) dbUpdate['customer'] = updatedData.customerName;
                     if (updatedData.description !== undefined) dbUpdate['service'] = updatedData.description;
                     if (updatedData.status !== undefined) dbUpdate['status'] = updatedData.status;
                     if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
+                    if (updatedData.created_at !== undefined) dbUpdate['created_at'] = updatedData.created_at;
 
                     const { error: tipError } = await supabase
                         .from('tips')
