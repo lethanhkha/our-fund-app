@@ -17,12 +17,19 @@ export default function TransactionHistoryPage() {
     const [customMonthOffset, setCustomMonthOffset] = useState<string>(''); // YYYY-MM
 
     // Category filter state
-    const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
+    const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense' | 'wallet'>('all');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+    const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     const { transactions, categories, deleteTransaction, wallets, tips, activeUserId } = useFinanceStore();
+
+    React.useEffect(() => {
+        if (transactionType === 'wallet' && !selectedWalletId && wallets.length > 0) {
+            setSelectedWalletId(wallets[0].id);
+        }
+    }, [transactionType, selectedWalletId, wallets]);
 
     // Remove tips that are synced automatically
     const validTransactions = transactions.filter(t => t.note !== 'Tiền Tips');
@@ -67,10 +74,15 @@ export default function TransactionHistoryPage() {
     const totalExpense = timeFilteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const netTotal = totalIncome - totalExpense;
 
-    // Filter transactions based on active category
+    // Filter transactions based on active category / wallet
     const filteredTransactions = timeFilteredTransactions.filter(t => {
-        // 1. Filter by Type
-        if (transactionType !== 'all' && t.type !== transactionType) return false;
+        // 1. Filter by Type or Wallet
+        if (transactionType === 'income' || transactionType === 'expense') {
+            if (t.type !== transactionType) return false;
+        } else if (transactionType === 'wallet') {
+            if (t.walletId !== selectedWalletId) return false;
+        }
+
         // 2. Filter by Category ID
         if (selectedCategoryId && t.category_id !== selectedCategoryId) return false;
 
@@ -178,31 +190,37 @@ export default function TransactionHistoryPage() {
                             {/* FILTER DROPDOWN PILLS - TẦNG 1 */}
                             <div className={`flex gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 ${transactionType === 'all' ? 'mb-6' : 'mb-3'}`}>
                                 <button
-                                    onClick={() => { setTransactionType('all'); setSelectedCategoryId(null); }}
-                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'all' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                                    onClick={() => { setTransactionType('all'); setSelectedCategoryId(null); setSelectedWalletId(null); }}
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'all' ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-md' : 'bg-pink-100 text-pink-700 shadow-md') : 'bg-white text-[#94A3B8] border border-pink-50'}`}
                                 >
                                     Tất cả
                                 </button>
                                 <button
-                                    onClick={() => { setTransactionType('income'); setSelectedCategoryId(null); }}
-                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'income' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                                    onClick={() => { setTransactionType('income'); setSelectedCategoryId(null); setSelectedWalletId(null); }}
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'income' ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-md' : 'bg-pink-100 text-pink-700 shadow-md') : 'bg-white text-[#94A3B8] border border-pink-50'}`}
                                 >
                                     Thu nhập
                                 </button>
                                 <button
-                                    onClick={() => { setTransactionType('expense'); setSelectedCategoryId(null); }}
-                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'expense' ? 'bg-[#1E293B] text-white shadow-md' : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                                    onClick={() => { setTransactionType('expense'); setSelectedCategoryId(null); setSelectedWalletId(null); }}
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'expense' ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-md' : 'bg-pink-100 text-pink-700 shadow-md') : 'bg-white text-[#94A3B8] border border-pink-50'}`}
                                 >
                                     Chi tiêu
                                 </button>
+                                <button
+                                    onClick={() => { setTransactionType('wallet'); setSelectedCategoryId(null); }}
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${transactionType === 'wallet' ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-md' : 'bg-pink-100 text-pink-700 shadow-md') : 'bg-white text-[#94A3B8] border border-pink-50'}`}
+                                >
+                                    Ví tiền
+                                </button>
                             </div>
 
-                            {/* FILTER DROPDOWN PILLS - TẦNG 2 */}
-                            {transactionType !== 'all' && (
+                            {/* FILTER DROPDOWN PILLS - CATEGORY TẦNG 2 */}
+                            {(transactionType === 'income' || transactionType === 'expense') && (
                                 <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 -mx-6 px-6 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <button
                                         onClick={() => setSelectedCategoryId(null)}
-                                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${!selectedCategoryId ? 'bg-pink-100 text-pink-700 shadow-sm' : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
+                                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${!selectedCategoryId ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'bg-pink-100 text-pink-700 shadow-sm') : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
                                     >
                                         Tất cả danh mục
                                     </button>
@@ -210,9 +228,24 @@ export default function TransactionHistoryPage() {
                                         <button
                                             key={cat.id}
                                             onClick={() => setSelectedCategoryId(cat.id)}
-                                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${selectedCategoryId === cat.id ? 'bg-pink-100 text-pink-700 shadow-sm' : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
+                                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${selectedCategoryId === cat.id ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'bg-pink-100 text-pink-700 shadow-sm') : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
                                         >
                                             {cat.name} {cat.icon}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* FILTER DROPDOWN PILLS - WALLET TẦNG 2 */}
+                            {transactionType === 'wallet' && (
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 -mx-6 px-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    {wallets.map(w => (
+                                        <button
+                                            key={w.id}
+                                            onClick={() => setSelectedWalletId(w.id)}
+                                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${selectedWalletId === w.id ? (activeUserId === 'kha' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'bg-pink-100 text-pink-700 shadow-sm') : 'bg-white/50 text-[#94A3B8] border border-pink-50'}`}
+                                        >
+                                            {w.name}
                                         </button>
                                     ))}
                                 </div>
