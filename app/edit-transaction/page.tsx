@@ -26,7 +26,7 @@ function EditTransactionForm() {
     useEffect(() => {
         const tx = transactions.find(t => t.id === id);
         if (tx) {
-            setAmount((tx.amount / 1000).toString());
+            setAmount(tx.amount.toString());
             setSelectedCategory(tx.category_id);
             setNote(tx.note || '');
             setSelectedWalletId(tx.walletId);
@@ -50,18 +50,24 @@ function EditTransactionForm() {
             setAmount('0');
         } else if (key === 'delete') {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
+        } else if (key === '000') {
+            setAmount(prev => {
+                if (prev === '0' || prev === '') return '0';
+                if (prev.length >= 12) return prev;
+                return prev + '000';
+            });
         } else if (key !== '.') {
             setAmount(prev => {
-                if (prev.length >= 10) return prev;
+                if (prev.length >= 15) return prev;
                 return prev === '0' || prev === '' ? key : prev + key;
             });
         }
     };
 
     const handleConfirm = async () => {
-        const parsedAmount = parseInt(amount || '0');
+        const parsedAmount = parseInt(amount || '0', 10);
 
-        if (parsedAmount <= 0) {
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
             toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
@@ -82,7 +88,7 @@ function EditTransactionForm() {
             if (oldTx) {
                 // Tính số dư ví SAU KHI hoàn lại giao dịch cũ
                 const rollbackBalance = activeWallet.balance + oldTx.amount;
-                if ((parsedAmount * 1000) > rollbackBalance) {
+                if (parsedAmount > rollbackBalance) {
                     toast.error("Oops! Ví này hông đủ tiền rồi! 💸");
                     return;
                 }
@@ -92,7 +98,7 @@ function EditTransactionForm() {
         await updateTransaction(id, {
             type,
             category_id: selectedCategory,
-            amount: parsedAmount * 1000,
+            amount: parsedAmount,
             note: note,
             walletId: selectedWalletId,
             created_at: createdDate ? new Date(createdDate).toISOString() : undefined
@@ -152,11 +158,21 @@ function EditTransactionForm() {
                     <div className={`absolute top-0 right-0 ${isExpense ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'} font-bold px-3 py-1 rounded-full text-xs`}>
                         {isExpense ? 'Chi tiêu' : 'Thu nhập'}
                     </div>
-                    <div className="flex items-baseline mt-4">
-                        <span className={`text-5xl font-black ${primaryTextClass} tracking-tight`}>
-                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
-                        </span>
-                        <span className={`text-xl font-bold ${primaryTextClass} ml-1`}>đ</span>
+                    <div className="flex items-baseline mt-4 gap-2">
+                        <div className="flex items-baseline">
+                            <span className={`text-5xl font-black ${primaryTextClass} tracking-tight`}>
+                                {amount === '0' || amount === '' ? '0' : parseInt(amount, 10).toLocaleString('vi-VN')}
+                            </span>
+                            <span className={`text-xl font-bold ${primaryTextClass} ml-1`}>đ</span>
+                        </div>
+                        {amount !== '0' && amount !== '' && (
+                            <button
+                                onClick={() => setAmount('0')}
+                                className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center hover:bg-gray-300 transition-colors ml-2 relative -top-3"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
                     </div>
                 </div>
 

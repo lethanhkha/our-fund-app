@@ -52,8 +52,17 @@ export default function AddWalletPage() {
             setAmount('0');
         } else if (key === 'delete') {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
-        } else {
-            setAmount(prev => prev === '0' ? key : prev + key);
+        } else if (key === '000') {
+            setAmount(prev => {
+                if (prev === '0' || prev === '') return '0';
+                if (prev.length >= 12) return prev;
+                return prev + '000';
+            });
+        } else if (key !== '.') {
+            setAmount(prev => {
+                if (prev.length >= 15) return prev;
+                return prev === '0' || prev === '' ? key : prev + key;
+            });
         }
     };
 
@@ -105,11 +114,20 @@ export default function AddWalletPage() {
             </header>
 
             <main className="flex-grow flex flex-col px-6">
-                {/* AMOUNT DISPLAY */}
-                <div className="flex flex-col items-center justify-center py-6">
+                <div className="flex flex-col items-center justify-center py-6 relative">
                     <p className="text-[#94A3B8] text-sm font-bold mb-2 uppercase tracking-wider">Số dư ban đầu</p>
-                    <div className="text-4xl font-extrabold text-[#F43F5E] tracking-tight">
-                        {parseInt(amount || '0', 10).toLocaleString('vi-VN')} đ
+                    <div className="flex items-baseline gap-2">
+                        <div className="text-4xl font-extrabold text-[#F43F5E] tracking-tight">
+                            {amount === '0' || amount === '' ? '0' : parseInt(amount, 10).toLocaleString('vi-VN')} đ
+                        </div>
+                        {amount !== '0' && amount !== '' && (
+                            <button
+                                onClick={() => setAmount('0')}
+                                className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
                     </div>
                 </div>
 

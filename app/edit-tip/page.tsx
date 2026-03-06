@@ -24,7 +24,7 @@ function EditTipForm() {
         if (!tipId) return;
         const currentTip = tips.find(t => t.id === tipId);
         if (currentTip) {
-            setAmount((currentTip.amount / 1000).toString());
+            setAmount(currentTip.amount.toString());
             setNote(currentTip.customerName === 'Khách hàng' ? '' : currentTip.customerName);
             if (currentTip.walletId) {
                 setSelectedWalletId(currentTip.walletId);
@@ -46,16 +46,23 @@ function EditTipForm() {
             setAmount('0');
         } else if (key === 'delete') {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
+        } else if (key === '000') {
+            setAmount(prev => {
+                if (prev === '0' || prev === '') return '0';
+                if (prev.length >= 12) return prev;
+                return prev + '000';
+            });
         } else if (key !== '.') {
             setAmount(prev => {
-                if (prev.length >= 10) return prev;
-                return prev === '0' ? key : prev + key;
+                if (prev.length >= 15) return prev;
+                return prev === '0' || prev === '' ? key : prev + key;
             });
         }
     };
 
     const handleConfirm = async () => {
-        if (parseInt(amount) <= 0) {
+        const parsedAmount = parseInt(amount, 10);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
             toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
@@ -66,7 +73,7 @@ function EditTipForm() {
         }
 
         await updateTip(tipId as string, {
-            amount: parseInt(amount) * 1000,
+            amount: parsedAmount,
             customerName: note || 'Khách hàng',
             walletId: selectedWalletId,
             created_at: createdDate ? new Date(createdDate).toISOString() : undefined
@@ -122,11 +129,21 @@ function EditTipForm() {
                     <div className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 font-bold px-3 py-1 rounded-full text-xs">
                         Tiền tips
                     </div>
-                    <div className="flex items-baseline mt-4">
-                        <span className="text-5xl font-black text-[#F43F5E] tracking-tight">
-                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
-                        </span>
-                        <span className="text-xl font-bold text-[#F43F5E] ml-1">đ</span>
+                    <div className="flex items-baseline mt-4 gap-2">
+                        <div className="flex items-baseline">
+                            <span className="text-5xl font-black text-[#F43F5E] tracking-tight">
+                                {amount === '0' || amount === '' ? '0' : parseInt(amount, 10).toLocaleString('vi-VN')}
+                            </span>
+                            <span className="text-xl font-bold text-[#F43F5E] ml-1">đ</span>
+                        </div>
+                        {amount !== '0' && amount !== '' && (
+                            <button
+                                onClick={() => setAmount('0')}
+                                className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center hover:bg-gray-300 transition-colors ml-2 relative -top-3"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -37,18 +37,24 @@ export default function AddExpensePage() {
             setAmount('0');
         } else if (key === 'delete') {
             setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
+        } else if (key === '000') {
+            setAmount(prev => {
+                if (prev === '0' || prev === '') return '0';
+                if (prev.length >= 12) return prev;
+                return prev + '000';
+            });
         } else if (key !== '.') {
             setAmount(prev => {
-                if (prev.length >= 10) return prev;
-                return prev === '0' ? key : prev + key;
+                if (prev.length >= 15) return prev;
+                return prev === '0' || prev === '' ? key : prev + key;
             });
         }
     };
 
     const handleConfirm = () => {
-        const parsedAmount = parseInt(amount);
+        const parsedAmount = parseInt(amount, 10);
 
-        if (parsedAmount <= 0) {
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
             toast.error('Em chưa nhập số tiền kìa! 🥺');
             return;
         }
@@ -62,7 +68,7 @@ export default function AddExpensePage() {
         }
 
         const activeWallet = wallets.find(w => w.id === selectedWalletId);
-        if (activeWallet && (parsedAmount * 1000) > activeWallet.balance) { // Compare actual amount with balance
+        if (activeWallet && parsedAmount > activeWallet.balance) {
             toast.error("Oops! Ví này hông đủ tiền rồi! 💸");
             return;
         }
@@ -70,9 +76,9 @@ export default function AddExpensePage() {
         addTransaction({
             type: 'expense',
             category_id: selectedCategory,
-            amount: parsedAmount * 1000, // Keep original amount calculation
+            amount: parsedAmount,
             note: note,
-            walletId: selectedWalletId, // Use selected wallet
+            walletId: selectedWalletId,
             created_at: createdDate ? new Date(createdDate).toISOString() : undefined
         });
 
@@ -127,11 +133,21 @@ export default function AddExpensePage() {
                     <div className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 font-bold px-3 py-1 rounded-full text-xs">
                         Chi tiêu
                     </div>
-                    <div className="flex items-baseline mt-4">
-                        <span className="text-5xl font-black text-[#F43F5E] tracking-tight">
-                            {amount === '0' || amount === '' ? '0' : (parseInt(amount) * 1000).toLocaleString('vi-VN')}
-                        </span>
-                        <span className="text-xl font-bold text-[#F43F5E] ml-1">đ</span>
+                    <div className="flex items-baseline mt-4 gap-2">
+                        <div className="flex items-baseline">
+                            <span className="text-5xl font-black text-[#F43F5E] tracking-tight">
+                                {amount === '0' || amount === '' ? '0' : parseInt(amount, 10).toLocaleString('vi-VN')}
+                            </span>
+                            <span className="text-xl font-bold text-[#F43F5E] ml-1">đ</span>
+                        </div>
+                        {amount !== '0' && amount !== '' && (
+                            <button
+                                onClick={() => setAmount('0')}
+                                className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center hover:bg-gray-300 transition-colors ml-2 relative -top-3"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
                     </div>
                 </div>
 
