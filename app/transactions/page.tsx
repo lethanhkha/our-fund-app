@@ -103,11 +103,10 @@ export default function TransactionHistoryPage() {
         return acc;
     }, {} as Record<string, typeof transactions>);
 
-    // Format date string directly for UI, adding +1 day
+    // Format date string directly for UI, WITHOUT adding +1 day
     const renderDateHeader = (dateStr: string) => {
-        // dateStr is 'YYYY-MM-DD'. Parsed to UTC midnight, then date offset handled.
+        // dateStr is 'YYYY-MM-DD'. Parsed to UTC midnight.
         const displayDate = new Date(dateStr);
-        displayDate.setDate(displayDate.getDate() + 1);
 
         const dd = String(displayDate.getDate()).padStart(2, '0');
         const mm = String(displayDate.getMonth() + 1).padStart(2, '0');

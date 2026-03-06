@@ -46,8 +46,7 @@ export default function TipsPage() {
     const getAdjustedDateGroup = (createdAt?: string, originalGroup?: string) => {
         if (!createdAt) return originalGroup || 'KHÁC';
 
-        const displayDate = new Date(createdAt);
-        displayDate.setDate(displayDate.getDate() + 1);
+        const displayDate = getDisplayDate(createdAt, true);
 
         const dd = String(displayDate.getDate()).padStart(2, '0');
         const mm = String(displayDate.getMonth() + 1).padStart(2, '0');
