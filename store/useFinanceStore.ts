@@ -1,956 +1,1128 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { supabase } from "@/lib/supabase";
+import { toast } from "react-hot-toast";
 
 export interface Transaction {
-    id: string;
-    type: 'income' | 'expense';
-    category_id: string;
-    amount: number;
-    note: string;
-    time: string;
-    date: string;
-    walletId: string;
-    created_at?: string;
+  id: string;
+  type: "income" | "expense";
+  category_id: string;
+  amount: number;
+  note: string;
+  time: string;
+  date: string;
+  walletId: string;
+  created_at?: string;
 }
 
 export interface Goal {
-    id: string;
-    name: string;
-    targetAmount: number;
-    currentAmount: number;
-    deadline: string;
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: string;
 }
 
 export interface Tip {
-    id: string;
-    customerName: string;
-    amount: number;
-    description: string;
-    time: string;
-    dateGroup?: string;
-    status: 'pending' | 'received';
-    type: string;
-    walletId?: string;
-    created_at?: string;
+  id: string;
+  customerName: string;
+  amount: number;
+  description: string;
+  time: string;
+  dateGroup?: string;
+  status: "pending" | "received";
+  type: string;
+  walletId?: string;
+  created_at?: string;
 }
 
 export interface Category {
-    id: string;
-    name: string;
-    icon: string;
-    type: 'income' | 'expense';
-    created_at?: string;
+  id: string;
+  name: string;
+  icon: string;
+  type: "income" | "expense";
+  created_at?: string;
 }
 
 export interface Wallet {
-    id: string;
-    name: string;
-    balance: number;
-    icon?: string;
-    color?: string;
-    is_default?: boolean;
+  id: string;
+  name: string;
+  balance: number;
+  icon?: string;
+  color?: string;
+  is_default?: boolean;
 }
 
 interface FinanceState {
-    wallets: Wallet[];
-    categories: Category[];
-    tips: Tip[];
-    transactions: Transaction[];
-    goals: Goal[];
+  wallets: Wallet[];
+  categories: Category[];
+  tips: Tip[];
+  transactions: Transaction[];
+  goals: Goal[];
 
-    // Multi-profile state
-    activeUserId: 'nga' | 'kha';
+  // Multi-profile state
+  activeUserId: "nga" | "kha";
 
-    // Getters
-    getTotalBalance: () => number;
+  // Getters
+  getTotalBalance: () => number;
 
-    // Actions
-    setActiveUserId: (id: 'nga' | 'kha') => void;
-    fetchInitialData: () => Promise<void>;
-    addWallet: (wallet: Omit<Wallet, 'is_default'>) => Promise<void>;
-    setPrimaryWallet: (walletId: string) => Promise<void>;
-    updateWallet: (walletId: string, updatedData: Partial<Wallet>) => Promise<void>;
-    deleteWallet: (walletId: string) => Promise<void>;
-    addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
-    deleteCategory: (categoryId: string) => Promise<void>;
-    addTransaction: (transaction: Omit<Transaction, 'id' | 'time' | 'date'>) => Promise<void>;
-    deleteTransaction: (transactionId: string) => Promise<void>;
-    updateTransaction: (transactionId: string, updatedData: Partial<Transaction>) => Promise<void>;
-    addTip: (tip: Omit<Tip, 'id' | 'time' | 'dateGroup' | 'status'>) => Promise<void>;
-    receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
-    undoReceiveTip: (tipId: string) => Promise<void>;
-    updateTip: (tipId: string, updatedData: Partial<Tip>) => Promise<void>;
-    deleteTip: (tipId: string) => Promise<void>;
-    addGoal: (goal: Pick<Goal, 'name' | 'targetAmount' | 'deadline'>) => Promise<void>;
-    deleteGoal: (goalId: string) => Promise<void>;
-    depositGoal: (goalId: string, walletId: string, amount: number) => Promise<void>;
-    withdrawGoal: (goalId: string, walletId: string, amount: number) => Promise<void>;
+  // Actions
+  setActiveUserId: (id: "nga" | "kha") => void;
+  fetchInitialData: () => Promise<void>;
+  addWallet: (wallet: Omit<Wallet, "is_default">) => Promise<void>;
+  setPrimaryWallet: (walletId: string) => Promise<void>;
+  updateWallet: (
+    walletId: string,
+    updatedData: Partial<Wallet>,
+  ) => Promise<void>;
+  deleteWallet: (walletId: string) => Promise<void>;
+  addCategory: (category: Omit<Category, "id" | "created_at">) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<void>;
+  addTransaction: (
+    transaction: Omit<Transaction, "id" | "time" | "date">,
+  ) => Promise<void>;
+  deleteTransaction: (transactionId: string) => Promise<void>;
+  updateTransaction: (
+    transactionId: string,
+    updatedData: Partial<Transaction>,
+  ) => Promise<void>;
+  addTip: (
+    tip: Omit<Tip, "id" | "time" | "dateGroup" | "status">,
+  ) => Promise<void>;
+  receiveTips: (tipIds: string[], walletId: string) => Promise<void>;
+  undoReceiveTip: (tipId: string) => Promise<void>;
+  updateTip: (tipId: string, updatedData: Partial<Tip>) => Promise<void>;
+  deleteTip: (tipId: string) => Promise<void>;
+  addGoal: (
+    goal: Pick<Goal, "name" | "targetAmount" | "deadline">,
+  ) => Promise<void>;
+  deleteGoal: (goalId: string) => Promise<void>;
+  depositGoal: (
+    goalId: string,
+    walletId: string,
+    amount: number,
+  ) => Promise<void>;
+  withdrawGoal: (
+    goalId: string,
+    walletId: string,
+    amount: number,
+  ) => Promise<void>;
 }
 
 // Utility to categorize dates for tips
 const getDateGroup = (dateStr: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const itemDate = dateStr.split('T')[0];
+  const date = new Date(dateStr);
 
-    if (itemDate === today) return 'HÔM NAY';
-    if (itemDate === yesterday) return 'HÔM QUA';
-    return itemDate; // Fallback
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const itemDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+
+  if (itemDate.getTime() === today.getTime()) return "HÔM NAY";
+  if (itemDate.getTime() === yesterday.getTime()) return "HÔM QUA";
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 };
 
 export const useFinanceStore = create<FinanceState>()(
-    persist(
-        (set, get) => ({
-            wallets: [],
-            categories: [],
-            tips: [],
-            transactions: [],
-            goals: [],
-            activeUserId: 'nga',
-
-            setActiveUserId: (id: 'nga' | 'kha') => {
-                set({
-                    activeUserId: id,
-                    wallets: [],
-                    categories: [],
-                    tips: [],
-                    transactions: [],
-                    goals: []
-                });
-                get().fetchInitialData();
-            },
-
-            getTotalBalance: () => {
-                const { wallets } = get();
-                return wallets.reduce((sum, wallet) => sum + Number(wallet.balance), 0);
-            },
-
-            fetchInitialData: async () => {
-                try {
-                    const userId = get().activeUserId;
-
-                    // Fetch categories
-                    const { data: categoriesData } = await supabase.from('categories').select('*').eq('user_id', userId).order('created_at', { ascending: true });
-
-                    // Fetch wallets
-                    const { data: walletsData } = await supabase.from('wallets').select('*').eq('user_id', userId).order('created_at', { ascending: true });
-
-                    // Fetch transactions
-                    const { data: txData } = await supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-
-                    // Fetch tips
-                    const { data: tipsData } = await supabase.from('tips').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-
-                    // Fetch goals
-                    const { data: goalsData } = await supabase.from('goals').select('*').eq('user_id', userId).order('created_at', { ascending: true });
-
-                    set({
-                        categories: categoriesData || [],
-                        wallets: (walletsData || []).map(w => ({
-                            id: w.id,
-                            name: w.name,
-                            balance: Number(w.balance),
-                            icon: w.icon,
-                            color: w.color,
-                            is_default: w.is_default
-                        })),
-                        transactions: (txData || []).map(tx => {
-                            const dateObj = new Date(tx.created_at);
-                            return {
-                                id: tx.id,
-                                walletId: tx.wallet_id,
-                                type: tx.type,
-                                amount: Number(tx.amount),
-                                category_id: tx.category_id,
-                                note: tx.note || '',
-                                date: tx.created_at.split('T')[0],
-                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                                created_at: tx.created_at
-                            };
-                        }),
-                        tips: (tipsData || []).map(t => {
-                            const dateObj = new Date(t.created_at);
-                            return {
-                                id: t.id,
-                                customerName: t.customer,
-                                amount: Number(t.amount),
-                                description: t.service || '',
-                                status: t.status,
-                                walletId: t.wallet_id || undefined,
-                                type: 'other', // Defaulted or mapped
-                                dateGroup: getDateGroup(t.created_at),
-                                time: dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                                created_at: t.created_at
-                            };
-                        }),
-                        goals: (goalsData || []).map(g => ({
-                            id: g.id,
-                            name: g.name,
-                            targetAmount: Number(g.target_amount),
-                            currentAmount: Number(g.current_amount),
-                            deadline: g.target_date || ''
-                        }))
-                    });
-                } catch (error) {
-                    console.error('Lỗi khi tải dữ liệu bắt đầu:', error);
-                }
-            },
-
-            addWallet: async (walletData: Omit<Wallet, 'is_default'>) => {
-                try {
-                    const { error } = await supabase.from('wallets').insert([{
-                        id: walletData.id,
-                        name: walletData.name,
-                        balance: walletData.balance,
-                        icon: walletData.icon,
-                        color: walletData.color,
-                        is_default: get().wallets.length === 0 ? true : false,
-                        user_id: get().activeUserId
-                    }]);
-
-                    if (error) {
-                        toast.error('Lỗi khi thêm ví! ❌');
-                        console.error('Supabase error inserting wallet:', error);
-                        return;
-                    }
-
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error('Lỗi thêm ví:', error);
-                    toast.error('Lỗi thêm ví! ❌');
-                }
-            },
-
-            setPrimaryWallet: async (walletId: string) => {
-                try {
-                    // Cập nhật tất cả các ví khác thành false
-                    const { error: resetError } = await supabase
-                        .from('wallets')
-                        .update({ is_default: false })
-                        .neq('id', walletId);
-
-                    if (resetError) throw resetError;
-
-                    // Cập nhật ví được chọn thành true
-                    const { error: setError } = await supabase
-                        .from('wallets')
-                        .update({ is_default: true })
-                        .eq('id', walletId);
-
-                    if (setError) throw setError;
-
-                    set((state) => ({
-                        wallets: state.wallets.map(w => ({
-                            ...w,
-                            is_default: w.id === walletId
-                        }))
-                    }));
-
-                    toast.success('Đã đặt làm ví chính! 👑');
-                } catch (error: any) {
-                    toast.error('Có lỗi khi cài đặt ví chính ❌');
-                    console.error('Lỗi setPrimaryWallet:', error);
-                }
-            },
-
-            updateWallet: async (walletId: string, updatedData: Partial<Wallet>) => {
-                try {
-                    const { error } = await supabase
-                        .from('wallets')
-                        .update(updatedData)
-                        .eq('id', walletId);
-
-                    if (error) throw error;
-
-                    toast.success('Đã làm mới thông tin ví! ✨');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error('Có lỗi khi sửa thông tin ví ❌');
-                    console.error('Lỗi updateWallet:', error);
-                }
-            },
-
-            deleteWallet: async (walletId: string) => {
-                try {
-                    // Check if it's the default wallet
-                    const walletObj = get().wallets.find(w => w.id === walletId);
-                    if (walletObj?.is_default) {
-                        toast.error('Không thể xóa ví chính! Hãy set ví khác làm ví chính trước. 👑');
-                        return;
-                    }
-
-                    // Query transactions
-                    const { data: txs, error: txError } = await supabase
-                        .from('transactions')
-                        .select('id')
-                        .eq('wallet_id', walletId);
-
-                    if (txError) throw txError;
-
-                    // Query tips
-                    const { data: tips, error: tipsError } = await supabase
-                        .from('tips')
-                        .select('id')
-                        .eq('wallet_id', walletId);
-
-                    if (tipsError) throw tipsError;
-
-                    const totalCount = (txs?.length || 0) + (tips?.length || 0);
-
-                    if (totalCount > 0) {
-                        toast.error('Không thể xóa! Ví này đang chứa giao dịch/tips. Hãy xóa giao dịch trước. 🛑');
-                        return;
-                    }
-
-                    // Delete from Supabase
-                    const { error: deleteError } = await supabase
-                        .from('wallets')
-                        .delete()
-                        .eq('id', walletId);
-
-                    if (deleteError) throw deleteError;
-
-                    // Update state
-                    set((state) => ({
-                        wallets: state.wallets.filter(w => w.id !== walletId)
-                    }));
-
-                    toast.success('Đã xóa ví! 🗑️');
-                } catch (error: any) {
-                    toast.error('Lỗi khi xóa ví! ❌');
-                    console.error('Lỗi deleteWallet:', error);
-                }
-            },
-
-            addCategory: async (categoryData) => {
-                try {
-                    const { error } = await supabase
-                        .from('categories')
-                        .insert({
-                            name: categoryData.name,
-                            icon: categoryData.icon,
-                            type: categoryData.type,
-                            user_id: get().activeUserId
-                        });
-                    if (error) throw error;
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi khi thêm danh mục:", error?.message || JSON.stringify(error));
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                }
-            },
-
-            deleteCategory: async (categoryId) => {
-                try {
-                    const { count, error: countError } = await supabase
-                        .from('transactions')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('category_id', categoryId);
-
-                    if (countError) throw countError;
-
-                    if (count && count > 0) {
-                        toast.error('Không thể xóa! Đang có giao dịch sử dụng danh mục này 🛑');
-                        return;
-                    }
-
-                    const { error } = await supabase
-                        .from('categories')
-                        .delete()
-                        .eq('id', categoryId);
-                    if (error) throw error;
-                    toast.success('Xóa danh mục thành công! 🗑️');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi khi xóa danh mục:", error?.message || JSON.stringify(error));
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                }
-            },
-
-            addTransaction: async (transactionData) => {
-                try {
-                    const state = get();
-                    const wallet = state.wallets.find(w => w.id === transactionData.walletId);
-                    if (!wallet) {
-                        toast.error("Không tìm thấy ví!");
-                        throw new Error("Không tìm thấy ví!");
-                    }
-
-                    if (transactionData.type === 'expense' && transactionData.amount > wallet.balance) {
-                        toast.error('Số dư ví không đủ!');
-                        throw new Error('Số dư ví không đủ!');
-                    }
-                    // 1. Insert into transactions table
-                    const dbTransaction: any = {
-                        wallet_id: transactionData.walletId,
-                        type: transactionData.type,
-                        amount: transactionData.amount,
-                        category_id: transactionData.category_id,
-                        note: transactionData.note,
-                        user_id: get().activeUserId
-                    };
-
-                    if (transactionData.created_at) {
-                        dbTransaction['created_at'] = transactionData.created_at;
-                    }
-
-                    const { data: newTx, error: txError } = await supabase
-                        .from('transactions')
-                        .insert(dbTransaction)
-                        .select()
-                        .single();
-
-                    if (txError) throw txError;
-
-                    // 2. Update wallet balance
-                    if (wallet) {
-                        const modifier = transactionData.type === 'income' ? 1 : -1;
-                        const newBalance = wallet.balance + (transactionData.amount * modifier);
-
-                        const { error: walletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: newBalance })
-                            .eq('id', wallet.id);
-
-                        if (walletError) throw walletError;
-                    }
-
-                    // 3. Refresh data from cloud
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
-                    throw error;
-                }
-            },
-
-            deleteTransaction: async (transactionId) => {
-                try {
-                    const state = get();
-                    const tx = state.transactions.find(t => t.id === transactionId);
-                    if (!tx) return;
-
-                    const wallet = state.wallets.find(w => w.id === tx.walletId);
-                    if (wallet) {
-                        const modifier = tx.type === 'expense' ? 1 : -1; // Reverse effect
-                        const newBalance = wallet.balance + (tx.amount * modifier);
-
-                        const { error: walletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: newBalance })
-                            .eq('id', wallet.id);
-
-                        if (walletError) throw walletError;
-                    }
-
-                    const { error } = await supabase
-                        .from('transactions')
-                        .delete()
-                        .eq('id', transactionId);
-
-                    if (error) throw error;
-
-                    toast.success('Đã xóa và hoàn tiền về ví! ♻️');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                    console.error("Lỗi khi xóa GD:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            updateTransaction: async (transactionId, updatedData) => {
-                try {
-                    const state = get();
-                    const oldTx = state.transactions.find(t => t.id === transactionId);
-                    if (!oldTx) return;
-
-                    const hasWalletChanged = updatedData.walletId !== undefined && updatedData.walletId !== oldTx.walletId;
-                    const hasAmountOrTypeChanged = (updatedData.amount !== undefined && updatedData.amount !== oldTx.amount) ||
-                        (updatedData.type !== undefined && updatedData.type !== oldTx.type);
-
-                    if (hasWalletChanged) {
-                        // SCENARIO A: Wallet Changed
-                        const oldWallet = state.wallets.find(w => w.id === oldTx.walletId);
-                        const newWalletId = updatedData.walletId!;
-                        const newWallet = state.wallets.find(w => w.id === newWalletId);
-
-                        // 1. Revert from old wallet
-                        if (oldWallet) {
-                            const revertModifier = oldTx.type === 'expense' ? 1 : -1;
-                            const revertedBalance = oldWallet.balance + (oldTx.amount * revertModifier);
-                            const { error: oldWalletError } = await supabase
-                                .from('wallets')
-                                .update({ balance: revertedBalance })
-                                .eq('id', oldWallet.id);
-                            if (oldWalletError) throw oldWalletError;
-
-                            // Immediately update local state temporary for new wallet check if needed
-                            oldWallet.balance = revertedBalance;
-                        }
-
-                        // 2. Apply to new wallet
-                        if (newWallet) {
-                            const newType = updatedData.type || oldTx.type;
-                            const newAmount = updatedData.amount ?? oldTx.amount;
-                            const applyModifier = newType === 'income' ? 1 : -1;
-                            const newBalance = newWallet.balance + (newAmount * applyModifier);
-
-                            if (newType === 'expense' && newBalance < 0) {
-                                toast.error('Ví mới không đủ số dư để chuyển đổi sang chi tiêu!');
-                                throw new Error('Ví mới không đủ số dư!');
-                            }
-
-                            const { error: newWalletError } = await supabase
-                                .from('wallets')
-                                .update({ balance: newBalance })
-                                .eq('id', newWallet.id);
-                            if (newWalletError) throw newWalletError;
-                        }
-
-                    } else if (hasAmountOrTypeChanged) {
-                        // SCENARIO B: Wallet is the same, but Amount or Type changed
-                        const wallet = state.wallets.find(w => w.id === oldTx.walletId);
-                        if (wallet) {
-                            // Old impact on wallet: income adds to balance, expense subtracts
-                            const oldImpact = oldTx.type === 'income' ? oldTx.amount : -oldTx.amount;
-
-                            // New impact on wallet
-                            const newType = updatedData.type || oldTx.type;
-                            const newAmount = updatedData.amount ?? oldTx.amount;
-                            const newImpact = newType === 'income' ? newAmount : -newAmount;
-
-                            // Diff represents how much MORE money the wallet should have compared to right now
-                            const diff = newImpact - oldImpact;
-                            const newBalance = wallet.balance + diff;
-
-                            if (newBalance < 0) {
-                                toast.error('Số dư ví không đủ để thực hiện điều chỉnh!');
-                                throw new Error('Số dư ví không đủ!');
-                            }
-
-                            const { error: walletError } = await supabase
-                                .from('wallets')
-                                .update({ balance: newBalance })
-                                .eq('id', wallet.id);
-                            if (walletError) throw walletError;
-                        }
-                    }
-
-                    // UPDATE TRANSACTION RECORD
-                    const dbUpdate: any = {};
-                    if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
-                    if (updatedData.type !== undefined) dbUpdate['type'] = updatedData.type;
-                    if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
-                    if (updatedData.category_id !== undefined) dbUpdate['category_id'] = updatedData.category_id;
-                    if (updatedData.note !== undefined) dbUpdate['note'] = updatedData.note;
-                    if (updatedData.created_at !== undefined) dbUpdate['created_at'] = updatedData.created_at;
-
-                    const { error: txError } = await supabase
-                        .from('transactions')
-                        .update(dbUpdate)
-                        .eq('id', transactionId);
-
-                    if (txError) throw txError;
-
-                    toast.success('Cập nhật thành công! ✨');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error("Có lỗi đường truyền hoặc số dư không đủ! 🚧");
-                    console.error("Lỗi khi sửa GD:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            addTip: async (tipData) => {
-                try {
-                    const dbTip: any = {
-                        amount: tipData.amount,
-                        customer: tipData.customerName || 'Khách hàng',
-                        service: tipData.description || '',
-                        status: 'pending',
-                        wallet_id: tipData.walletId || null,
-                        user_id: get().activeUserId
-                    };
-
-                    if (tipData.created_at) {
-                        dbTip['created_at'] = tipData.created_at;
-                    }
-
-                    const { error } = await supabase
-                        .from('tips')
-                        .insert(dbTip)
-                        .select();
-
-                    if (error) throw error;
-
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
-                    throw error;
-                }
-            },
-
-            updateTip: async (tipId, updatedData) => {
-                try {
-                    const state = get();
-                    const oldTip = state.tips.find(t => t.id === tipId);
-                    if (!oldTip) return;
-
-                    // If tip is received, we need to reconcile the wallet balance
-                    if (oldTip.status === 'received' && oldTip.walletId) {
-                        const hasWalletChanged = updatedData.walletId !== undefined && updatedData.walletId !== oldTip.walletId;
-                        const hasAmountChanged = updatedData.amount !== undefined && updatedData.amount !== oldTip.amount;
-                        const isChangingToPending = updatedData.status === 'pending';
-
-                        // Handle un-receiving inherently
-                        if (isChangingToPending) {
-                            const wallet = state.wallets.find(w => w.id === oldTip.walletId);
-                            if (wallet) {
-                                const newBalance = wallet.balance - oldTip.amount;
-                                const { error: err } = await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id);
-                                if (err) throw err;
-                            }
-                        } else if (hasWalletChanged) {
-                            // SCENARIO A: Wallet Changed for a Received Tip
-                            const oldWallet = state.wallets.find(w => w.id === oldTip.walletId);
-                            const newWalletId = updatedData.walletId!;
-                            const newWallet = state.wallets.find(w => w.id === newWalletId);
-
-                            // Revert from old
-                            if (oldWallet) {
-                                const { error: er1 } = await supabase.from('wallets').update({ balance: oldWallet.balance - oldTip.amount }).eq('id', oldWallet.id);
-                                if (er1) throw er1;
-                            }
-
-                            // Apply to new
-                            if (newWallet) {
-                                const newAmount = updatedData.amount ?? oldTip.amount;
-                                const { error: er2 } = await supabase.from('wallets').update({ balance: newWallet.balance + newAmount }).eq('id', newWallet.id);
-                                if (er2) throw er2;
-                            }
-                        } else if (hasAmountChanged) {
-                            // SCENARIO B: Amount Changed on same wallet
-                            const wallet = state.wallets.find(w => w.id === oldTip.walletId);
-                            if (wallet) {
-                                const oldImpact = oldTip.amount;
-                                const newImpact = updatedData.amount!;
-                                const diff = newImpact - oldImpact;
-
-                                const { error: er3 } = await supabase.from('wallets').update({ balance: wallet.balance + diff }).eq('id', wallet.id);
-                                if (er3) throw er3;
-                            }
-                        }
-                    } else if (oldTip.status === 'pending' && updatedData.status === 'received' && updatedData.walletId) {
-                        // Changing from pending to received
-                        const walletId = updatedData.walletId;
-                        const amount = updatedData.amount ?? oldTip.amount;
-                        const wallet = state.wallets.find(w => w.id === walletId);
-                        if (wallet) {
-                            const { error: er4 } = await supabase.from('wallets').update({ balance: wallet.balance + amount }).eq('id', wallet.id);
-                            if (er4) throw er4;
-                        }
-                    }
-
-                    const dbUpdate: any = {};
-                    if (updatedData.amount !== undefined) dbUpdate['amount'] = updatedData.amount;
-                    if (updatedData.customerName !== undefined) dbUpdate['customer'] = updatedData.customerName;
-                    if (updatedData.description !== undefined) dbUpdate['service'] = updatedData.description;
-                    if (updatedData.status !== undefined) dbUpdate['status'] = updatedData.status;
-                    if (updatedData.walletId !== undefined) dbUpdate['wallet_id'] = updatedData.walletId;
-                    if (updatedData.created_at !== undefined) dbUpdate['created_at'] = updatedData.created_at;
-
-                    const { error: tipError } = await supabase
-                        .from('tips')
-                        .update(dbUpdate)
-                        .eq('id', tipId);
-
-                    if (tipError) throw tipError;
-
-                    toast.success('Đã cập nhật Tip thành công! ✨');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                    console.error("Lỗi khi sửa Tip:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            receiveTips: async (tipIds, walletId) => {
-                try {
-                    const state = get();
-                    const tipsToReceive = state.tips.filter(t => tipIds.includes(t.id) && t.status === 'pending');
-                    if (tipsToReceive.length === 0) return;
-
-                    const totalAmount = tipsToReceive.reduce((sum, tip) => sum + tip.amount, 0);
-
-                    // 1. Update all tips
-                    const { error: tipsError } = await supabase
-                        .from('tips')
-                        .update({ status: 'received', wallet_id: walletId })
-                        .in('id', tipIds);
-
-                    if (tipsError) throw tipsError;
-
-                    // 2. Update wallet balance directly instead of creating transactions
-                    const wallet = state.wallets.find(w => w.id === walletId);
-                    if (wallet) {
-                        const { error: walletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: wallet.balance + totalAmount })
-                            .eq('id', walletId);
-
-                        if (walletError) throw walletError;
-                    }
-
-                    toast.success('Đã nhận tiền Tips! 🎉');
-
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            undoReceiveTip: async (tipId) => {
-                try {
-                    const state = get();
-                    const tip = state.tips.find(t => t.id === tipId);
-
-                    if (!tip || tip.status === 'pending' || !tip.walletId) return;
-
-                    // 1. Revert tip status
-                    const { error: tipError } = await supabase
-                        .from('tips')
-                        .update({ status: 'pending', wallet_id: null })
-                        .eq('id', tipId);
-
-                    if (tipError) throw tipError;
-
-                    // 2. Revert wallet balance
-                    const wallet = state.wallets.find(w => w.id === tip.walletId);
-                    if (wallet) {
-                        const { error: walletError } = await supabase
-                            .from('wallets')
-                            .update({ balance: wallet.balance - tip.amount })
-                            .eq('id', wallet.id);
-
-                        if (walletError) throw walletError;
-                    }
-
-                    // 3. Refresh data
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Chi tiết lỗi:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            deleteTip: async (tipId) => {
-                try {
-                    const state = get();
-                    const tip = state.tips.find(t => t.id === tipId);
-                    if (!tip) return;
-
-                    if (tip.status === 'received' && tip.walletId) {
-                        const wallet = state.wallets.find(w => w.id === tip.walletId);
-                        if (wallet) {
-                            const { error: walletError } = await supabase
-                                .from('wallets')
-                                .update({ balance: wallet.balance - tip.amount })
-                                .eq('id', wallet.id);
-
-                            if (walletError) throw walletError;
-                        }
-                    }
-
-                    const { error } = await supabase
-                        .from('tips')
-                        .delete()
-                        .eq('id', tipId);
-
-                    if (error) throw error;
-
-                    toast.success('Đã xóa Tip! 🗑️');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                    console.error("Lỗi khi xóa Tip:", error?.message || JSON.stringify(error));
-                }
-            },
-
-            addGoal: async (goalData) => {
-                try {
-                    const { error } = await supabase
-                        .from('goals')
-                        .insert({
-                            name: goalData.name,
-                            target_amount: goalData.targetAmount,
-                            current_amount: 0,
-                            target_date: goalData.deadline || null,
-                            user_id: get().activeUserId
-                        });
-
-                    if (error) throw error;
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi khi thêm mục tiêu:", error?.message || JSON.stringify(error));
-                    toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
-                    throw error;
-                }
-            },
-
-            deleteGoal: async (goalId: string) => {
-                try {
-                    const state = get();
-                    const goal = state.goals.find(g => g.id === goalId);
-                    if (!goal) return;
-
-                    if (goal.currentAmount > 0) {
-                        toast.error('Vui lòng rút hết tiền trong quỹ trước khi xóa!');
-                        return;
-                    }
-
-                    const { error } = await supabase
-                        .from('goals')
-                        .delete()
-                        .eq('id', goalId);
-
-                    if (error) throw error;
-
-                    toast.success('Đã xóa mục tiêu tiết kiệm! 🗑️');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi xóa mục tiêu:", error);
-                    toast.error("Lỗi khi xóa mục tiêu! ❌");
-                }
-            },
-
-            depositGoal: async (goalId: string, walletId: string, amount: number) => {
-                try {
-                    const state = get();
-                    const wallet = state.wallets.find(w => w.id === walletId);
-                    const goal = state.goals.find(g => g.id === goalId);
-
-                    if (!wallet || !goal) return;
-
-                    if (amount > wallet.balance) {
-                        toast.error('Số dư ví không đủ!');
-                        throw new Error('Số dư ví không đủ!');
-                    }
-
-                    // 1. Ensure "Gửi tiết kiệm" category exists
-                    let category = state.categories.find(c => c.name === 'Gửi tiết kiệm' && c.type === 'expense');
-                    let categoryId = category?.id;
-
-                    if (!categoryId) {
-                        const { data: newCat, error: catError } = await supabase
-                            .from('categories')
-                            .insert({ name: 'Gửi tiết kiệm', icon: '🐷', type: 'expense', user_id: get().activeUserId })
-                            .select()
-                            .single();
-                        if (catError) throw catError;
-                        categoryId = newCat.id;
-                    }
-
-                    // 2. Reduce wallet balance
-                    const { error: walletError } = await supabase
-                        .from('wallets')
-                        .update({ balance: wallet.balance - amount })
-                        .eq('id', walletId);
-                    if (walletError) throw walletError;
-
-                    // 3. Increase goal current_amount
-                    const { error: goalError } = await supabase
-                        .from('goals')
-                        .update({ current_amount: goal.currentAmount + amount })
-                        .eq('id', goalId);
-                    if (goalError) throw goalError;
-
-                    // 4. Create transaction
-                    const dbTransaction = {
-                        wallet_id: walletId,
-                        type: 'expense',
-                        amount: amount,
-                        category_id: categoryId,
-                        note: `Góp tiền vào mục tiêu: ${goal.name}`,
-                        user_id: get().activeUserId
-                    };
-                    const { error: txError } = await supabase
-                        .from('transactions')
-                        .insert(dbTransaction);
-                    if (txError) throw txError;
-
-                    toast.success('Góp tiền thành công! 🎉');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi góp tiền:", error);
-                    toast.error("Góp tiền thất bại! ❌");
-                }
-            },
-
-            withdrawGoal: async (goalId: string, walletId: string, amount: number) => {
-                try {
-                    const state = get();
-                    const wallet = state.wallets.find(w => w.id === walletId);
-                    const goal = state.goals.find(g => g.id === goalId);
-
-                    if (!wallet || !goal) return;
-
-                    if (amount > goal.currentAmount) {
-                        toast.error('Số tiền rút vượt quá số dư quỹ!');
-                        throw new Error('Số dư quỹ không đủ!');
-                    }
-
-                    // 1. Ensure "Rút tiết kiệm" category exists
-                    let category = state.categories.find(c => c.name === 'Rút tiết kiệm' && c.type === 'income');
-                    let categoryId = category?.id;
-
-                    if (!categoryId) {
-                        const { data: newCat, error: catError } = await supabase
-                            .from('categories')
-                            .insert({ name: 'Rút tiết kiệm', icon: '🏦', type: 'income', user_id: get().activeUserId })
-                            .select()
-                            .single();
-                        if (catError) throw catError;
-                        categoryId = newCat.id;
-                    }
-
-                    // 2. Increase wallet balance
-                    const { error: walletError } = await supabase
-                        .from('wallets')
-                        .update({ balance: wallet.balance + amount })
-                        .eq('id', walletId);
-                    if (walletError) throw walletError;
-
-                    // 3. Decrease goal current_amount
-                    const { error: goalError } = await supabase
-                        .from('goals')
-                        .update({ current_amount: goal.currentAmount - amount })
-                        .eq('id', goalId);
-                    if (goalError) throw goalError;
-
-                    // 4. Create transaction
-                    const dbTransaction = {
-                        wallet_id: walletId,
-                        type: 'income',
-                        amount: amount,
-                        category_id: categoryId,
-                        note: `Rút tiền từ mục tiêu: ${goal.name}`,
-                        user_id: get().activeUserId
-                    };
-                    const { error: txError } = await supabase
-                        .from('transactions')
-                        .insert(dbTransaction);
-                    if (txError) throw txError;
-
-                    toast.success('Rút tiền thành công! 💸');
-                    await get().fetchInitialData();
-                } catch (error: any) {
-                    console.error("Lỗi rút tiền:", error);
-                    toast.error("Rút tiền thất bại! ❌");
-                }
-            }
-        }),
-        {
-            name: 'honey-money-storage',
+  persist(
+    (set, get) => ({
+      wallets: [],
+      categories: [],
+      tips: [],
+      transactions: [],
+      goals: [],
+      activeUserId: "nga",
+
+      setActiveUserId: (id: "nga" | "kha") => {
+        set({
+          activeUserId: id,
+          wallets: [],
+          categories: [],
+          tips: [],
+          transactions: [],
+          goals: [],
+        });
+        get().fetchInitialData();
+      },
+
+      getTotalBalance: () => {
+        const { wallets } = get();
+        return wallets.reduce((sum, wallet) => sum + Number(wallet.balance), 0);
+      },
+
+      fetchInitialData: async () => {
+        try {
+          const userId = get().activeUserId;
+
+          // Fetch categories
+          const { data: categoriesData } = await supabase
+            .from("categories")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: true });
+
+          // Fetch wallets
+          const { data: walletsData } = await supabase
+            .from("wallets")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: true });
+
+          // Fetch transactions
+          const { data: txData } = await supabase
+            .from("transactions")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false });
+
+          // Fetch tips
+          const { data: tipsData } = await supabase
+            .from("tips")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false });
+
+          // Fetch goals
+          const { data: goalsData } = await supabase
+            .from("goals")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: true });
+
+          set({
+            categories: categoriesData || [],
+            wallets: (walletsData || []).map((w) => ({
+              id: w.id,
+              name: w.name,
+              balance: Number(w.balance),
+              icon: w.icon,
+              color: w.color,
+              is_default: w.is_default,
+            })),
+            transactions: (txData || []).map((tx) => {
+              const dateObj = new Date(tx.created_at);
+              return {
+                id: tx.id,
+                walletId: tx.wallet_id,
+                type: tx.type,
+                amount: Number(tx.amount),
+                category_id: tx.category_id,
+                note: tx.note || "",
+                date: tx.created_at.split("T")[0],
+                time: dateObj.toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                created_at: tx.created_at,
+              };
+            }),
+            tips: (tipsData || []).map((t) => {
+              const dateObj = new Date(t.created_at);
+              return {
+                id: t.id,
+                customerName: t.customer,
+                amount: Number(t.amount),
+                description: t.service || "",
+                status: t.status,
+                walletId: t.wallet_id || undefined,
+                type: "other", // Defaulted or mapped
+                dateGroup: getDateGroup(t.created_at),
+                time: dateObj.toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                created_at: t.created_at,
+              };
+            }),
+            goals: (goalsData || []).map((g) => ({
+              id: g.id,
+              name: g.name,
+              targetAmount: Number(g.target_amount),
+              currentAmount: Number(g.current_amount),
+              deadline: g.target_date || "",
+            })),
+          });
+        } catch (error) {
+          console.error("Lỗi khi tải dữ liệu bắt đầu:", error);
         }
-    )
+      },
+
+      addWallet: async (walletData: Omit<Wallet, "is_default">) => {
+        try {
+          const { error } = await supabase.from("wallets").insert([
+            {
+              id: walletData.id,
+              name: walletData.name,
+              balance: walletData.balance,
+              icon: walletData.icon,
+              color: walletData.color,
+              is_default: get().wallets.length === 0 ? true : false,
+              user_id: get().activeUserId,
+            },
+          ]);
+
+          if (error) {
+            toast.error("Lỗi khi thêm ví! ❌");
+            console.error("Supabase error inserting wallet:", error);
+            return;
+          }
+
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error("Lỗi thêm ví:", error);
+          toast.error("Lỗi thêm ví! ❌");
+        }
+      },
+
+      setPrimaryWallet: async (walletId: string) => {
+        try {
+          // Cập nhật tất cả các ví khác thành false
+          const { error: resetError } = await supabase
+            .from("wallets")
+            .update({ is_default: false })
+            .neq("id", walletId);
+
+          if (resetError) throw resetError;
+
+          // Cập nhật ví được chọn thành true
+          const { error: setError } = await supabase
+            .from("wallets")
+            .update({ is_default: true })
+            .eq("id", walletId);
+
+          if (setError) throw setError;
+
+          set((state) => ({
+            wallets: state.wallets.map((w) => ({
+              ...w,
+              is_default: w.id === walletId,
+            })),
+          }));
+
+          toast.success("Đã đặt làm ví chính! 👑");
+        } catch (error: any) {
+          toast.error("Có lỗi khi cài đặt ví chính ❌");
+          console.error("Lỗi setPrimaryWallet:", error);
+        }
+      },
+
+      updateWallet: async (walletId: string, updatedData: Partial<Wallet>) => {
+        try {
+          const { error } = await supabase
+            .from("wallets")
+            .update(updatedData)
+            .eq("id", walletId);
+
+          if (error) throw error;
+
+          toast.success("Đã làm mới thông tin ví! ✨");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi khi sửa thông tin ví ❌");
+          console.error("Lỗi updateWallet:", error);
+        }
+      },
+
+      deleteWallet: async (walletId: string) => {
+        try {
+          // Check if it's the default wallet
+          const walletObj = get().wallets.find((w) => w.id === walletId);
+          if (walletObj?.is_default) {
+            toast.error(
+              "Không thể xóa ví chính! Hãy set ví khác làm ví chính trước. 👑",
+            );
+            return;
+          }
+
+          // Query transactions
+          const { data: txs, error: txError } = await supabase
+            .from("transactions")
+            .select("id")
+            .eq("wallet_id", walletId);
+
+          if (txError) throw txError;
+
+          // Query tips
+          const { data: tips, error: tipsError } = await supabase
+            .from("tips")
+            .select("id")
+            .eq("wallet_id", walletId);
+
+          if (tipsError) throw tipsError;
+
+          const totalCount = (txs?.length || 0) + (tips?.length || 0);
+
+          if (totalCount > 0) {
+            toast.error(
+              "Không thể xóa! Ví này đang chứa giao dịch/tips. Hãy xóa giao dịch trước. 🛑",
+            );
+            return;
+          }
+
+          // Delete from Supabase
+          const { error: deleteError } = await supabase
+            .from("wallets")
+            .delete()
+            .eq("id", walletId);
+
+          if (deleteError) throw deleteError;
+
+          // Update state
+          set((state) => ({
+            wallets: state.wallets.filter((w) => w.id !== walletId),
+          }));
+
+          toast.success("Đã xóa ví! 🗑️");
+        } catch (error: any) {
+          toast.error("Lỗi khi xóa ví! ❌");
+          console.error("Lỗi deleteWallet:", error);
+        }
+      },
+
+      addCategory: async (categoryData) => {
+        try {
+          const { error } = await supabase.from("categories").insert({
+            name: categoryData.name,
+            icon: categoryData.icon,
+            type: categoryData.type,
+            user_id: get().activeUserId,
+          });
+          if (error) throw error;
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Lỗi khi thêm danh mục:",
+            error?.message || JSON.stringify(error),
+          );
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+        }
+      },
+
+      deleteCategory: async (categoryId) => {
+        try {
+          const { count, error: countError } = await supabase
+            .from("transactions")
+            .select("*", { count: "exact", head: true })
+            .eq("category_id", categoryId);
+
+          if (countError) throw countError;
+
+          if (count && count > 0) {
+            toast.error(
+              "Không thể xóa! Đang có giao dịch sử dụng danh mục này 🛑",
+            );
+            return;
+          }
+
+          const { error } = await supabase
+            .from("categories")
+            .delete()
+            .eq("id", categoryId);
+          if (error) throw error;
+          toast.success("Xóa danh mục thành công! 🗑️");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Lỗi khi xóa danh mục:",
+            error?.message || JSON.stringify(error),
+          );
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+        }
+      },
+
+      addTransaction: async (transactionData) => {
+        try {
+          const state = get();
+          const wallet = state.wallets.find(
+            (w) => w.id === transactionData.walletId,
+          );
+          if (!wallet) {
+            toast.error("Không tìm thấy ví!");
+            throw new Error("Không tìm thấy ví!");
+          }
+
+          if (
+            transactionData.type === "expense" &&
+            transactionData.amount > wallet.balance
+          ) {
+            toast.error("Số dư ví không đủ!");
+            throw new Error("Số dư ví không đủ!");
+          }
+          // 1. Insert into transactions table
+          const dbTransaction: any = {
+            wallet_id: transactionData.walletId,
+            type: transactionData.type,
+            amount: transactionData.amount,
+            category_id: transactionData.category_id,
+            note: transactionData.note,
+            user_id: get().activeUserId,
+          };
+
+          if (transactionData.created_at) {
+            dbTransaction["created_at"] = transactionData.created_at;
+          }
+
+          const { data: newTx, error: txError } = await supabase
+            .from("transactions")
+            .insert(dbTransaction)
+            .select()
+            .single();
+
+          if (txError) throw txError;
+
+          // 2. Update wallet balance
+          if (wallet) {
+            const modifier = transactionData.type === "income" ? 1 : -1;
+            const newBalance =
+              wallet.balance + transactionData.amount * modifier;
+
+            const { error: walletError } = await supabase
+              .from("wallets")
+              .update({ balance: newBalance })
+              .eq("id", wallet.id);
+
+            if (walletError) throw walletError;
+          }
+
+          // 3. Refresh data from cloud
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Chi tiết lỗi:",
+            error?.message || JSON.stringify(error),
+          );
+          throw error;
+        }
+      },
+
+      deleteTransaction: async (transactionId) => {
+        try {
+          const state = get();
+          const tx = state.transactions.find((t) => t.id === transactionId);
+          if (!tx) return;
+
+          const wallet = state.wallets.find((w) => w.id === tx.walletId);
+          if (wallet) {
+            const modifier = tx.type === "expense" ? 1 : -1; // Reverse effect
+            const newBalance = wallet.balance + tx.amount * modifier;
+
+            const { error: walletError } = await supabase
+              .from("wallets")
+              .update({ balance: newBalance })
+              .eq("id", wallet.id);
+
+            if (walletError) throw walletError;
+          }
+
+          const { error } = await supabase
+            .from("transactions")
+            .delete()
+            .eq("id", transactionId);
+
+          if (error) throw error;
+
+          toast.success("Đã xóa và hoàn tiền về ví! ♻️");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+          console.error(
+            "Lỗi khi xóa GD:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      updateTransaction: async (transactionId, updatedData) => {
+        try {
+          const state = get();
+          const oldTx = state.transactions.find((t) => t.id === transactionId);
+          if (!oldTx) return;
+
+          const hasWalletChanged =
+            updatedData.walletId !== undefined &&
+            updatedData.walletId !== oldTx.walletId;
+          const hasAmountOrTypeChanged =
+            (updatedData.amount !== undefined &&
+              updatedData.amount !== oldTx.amount) ||
+            (updatedData.type !== undefined && updatedData.type !== oldTx.type);
+
+          if (hasWalletChanged) {
+            // SCENARIO A: Wallet Changed
+            const oldWallet = state.wallets.find(
+              (w) => w.id === oldTx.walletId,
+            );
+            const newWalletId = updatedData.walletId!;
+            const newWallet = state.wallets.find((w) => w.id === newWalletId);
+
+            // 1. Revert from old wallet
+            if (oldWallet) {
+              const revertModifier = oldTx.type === "expense" ? 1 : -1;
+              const revertedBalance =
+                oldWallet.balance + oldTx.amount * revertModifier;
+              const { error: oldWalletError } = await supabase
+                .from("wallets")
+                .update({ balance: revertedBalance })
+                .eq("id", oldWallet.id);
+              if (oldWalletError) throw oldWalletError;
+
+              // Immediately update local state temporary for new wallet check if needed
+              oldWallet.balance = revertedBalance;
+            }
+
+            // 2. Apply to new wallet
+            if (newWallet) {
+              const newType = updatedData.type || oldTx.type;
+              const newAmount = updatedData.amount ?? oldTx.amount;
+              const applyModifier = newType === "income" ? 1 : -1;
+              const newBalance = newWallet.balance + newAmount * applyModifier;
+
+              if (newType === "expense" && newBalance < 0) {
+                toast.error(
+                  "Ví mới không đủ số dư để chuyển đổi sang chi tiêu!",
+                );
+                throw new Error("Ví mới không đủ số dư!");
+              }
+
+              const { error: newWalletError } = await supabase
+                .from("wallets")
+                .update({ balance: newBalance })
+                .eq("id", newWallet.id);
+              if (newWalletError) throw newWalletError;
+            }
+          } else if (hasAmountOrTypeChanged) {
+            // SCENARIO B: Wallet is the same, but Amount or Type changed
+            const wallet = state.wallets.find((w) => w.id === oldTx.walletId);
+            if (wallet) {
+              // Old impact on wallet: income adds to balance, expense subtracts
+              const oldImpact =
+                oldTx.type === "income" ? oldTx.amount : -oldTx.amount;
+
+              // New impact on wallet
+              const newType = updatedData.type || oldTx.type;
+              const newAmount = updatedData.amount ?? oldTx.amount;
+              const newImpact = newType === "income" ? newAmount : -newAmount;
+
+              // Diff represents how much MORE money the wallet should have compared to right now
+              const diff = newImpact - oldImpact;
+              const newBalance = wallet.balance + diff;
+
+              if (newBalance < 0) {
+                toast.error("Số dư ví không đủ để thực hiện điều chỉnh!");
+                throw new Error("Số dư ví không đủ!");
+              }
+
+              const { error: walletError } = await supabase
+                .from("wallets")
+                .update({ balance: newBalance })
+                .eq("id", wallet.id);
+              if (walletError) throw walletError;
+            }
+          }
+
+          // UPDATE TRANSACTION RECORD
+          const dbUpdate: any = {};
+          if (updatedData.walletId !== undefined)
+            dbUpdate["wallet_id"] = updatedData.walletId;
+          if (updatedData.type !== undefined)
+            dbUpdate["type"] = updatedData.type;
+          if (updatedData.amount !== undefined)
+            dbUpdate["amount"] = updatedData.amount;
+          if (updatedData.category_id !== undefined)
+            dbUpdate["category_id"] = updatedData.category_id;
+          if (updatedData.note !== undefined)
+            dbUpdate["note"] = updatedData.note;
+          if (updatedData.created_at !== undefined)
+            dbUpdate["created_at"] = updatedData.created_at;
+
+          const { error: txError } = await supabase
+            .from("transactions")
+            .update(dbUpdate)
+            .eq("id", transactionId);
+
+          if (txError) throw txError;
+
+          toast.success("Cập nhật thành công! ✨");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi đường truyền hoặc số dư không đủ! 🚧");
+          console.error(
+            "Lỗi khi sửa GD:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      addTip: async (tipData) => {
+        try {
+          const dbTip: any = {
+            amount: tipData.amount,
+            customer: tipData.customerName || "Khách hàng",
+            service: tipData.description || "",
+            status: "pending",
+            wallet_id: tipData.walletId || null,
+            user_id: get().activeUserId,
+          };
+
+          if (tipData.created_at) {
+            dbTip["created_at"] = tipData.created_at;
+          }
+
+          const { error } = await supabase.from("tips").insert(dbTip).select();
+
+          if (error) throw error;
+
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Chi tiết lỗi:",
+            error?.message || JSON.stringify(error),
+          );
+          throw error;
+        }
+      },
+
+      updateTip: async (tipId, updatedData) => {
+        try {
+          const state = get();
+          const oldTip = state.tips.find((t) => t.id === tipId);
+          if (!oldTip) return;
+
+          // If tip is received, we need to reconcile the wallet balance
+          if (oldTip.status === "received" && oldTip.walletId) {
+            const hasWalletChanged =
+              updatedData.walletId !== undefined &&
+              updatedData.walletId !== oldTip.walletId;
+            const hasAmountChanged =
+              updatedData.amount !== undefined &&
+              updatedData.amount !== oldTip.amount;
+            const isChangingToPending = updatedData.status === "pending";
+
+            // Handle un-receiving inherently
+            if (isChangingToPending) {
+              const wallet = state.wallets.find(
+                (w) => w.id === oldTip.walletId,
+              );
+              if (wallet) {
+                const newBalance = wallet.balance - oldTip.amount;
+                const { error: err } = await supabase
+                  .from("wallets")
+                  .update({ balance: newBalance })
+                  .eq("id", wallet.id);
+                if (err) throw err;
+              }
+            } else if (hasWalletChanged) {
+              // SCENARIO A: Wallet Changed for a Received Tip
+              const oldWallet = state.wallets.find(
+                (w) => w.id === oldTip.walletId,
+              );
+              const newWalletId = updatedData.walletId!;
+              const newWallet = state.wallets.find((w) => w.id === newWalletId);
+
+              // Revert from old
+              if (oldWallet) {
+                const { error: er1 } = await supabase
+                  .from("wallets")
+                  .update({ balance: oldWallet.balance - oldTip.amount })
+                  .eq("id", oldWallet.id);
+                if (er1) throw er1;
+              }
+
+              // Apply to new
+              if (newWallet) {
+                const newAmount = updatedData.amount ?? oldTip.amount;
+                const { error: er2 } = await supabase
+                  .from("wallets")
+                  .update({ balance: newWallet.balance + newAmount })
+                  .eq("id", newWallet.id);
+                if (er2) throw er2;
+              }
+            } else if (hasAmountChanged) {
+              // SCENARIO B: Amount Changed on same wallet
+              const wallet = state.wallets.find(
+                (w) => w.id === oldTip.walletId,
+              );
+              if (wallet) {
+                const oldImpact = oldTip.amount;
+                const newImpact = updatedData.amount!;
+                const diff = newImpact - oldImpact;
+
+                const { error: er3 } = await supabase
+                  .from("wallets")
+                  .update({ balance: wallet.balance + diff })
+                  .eq("id", wallet.id);
+                if (er3) throw er3;
+              }
+            }
+          } else if (
+            oldTip.status === "pending" &&
+            updatedData.status === "received" &&
+            updatedData.walletId
+          ) {
+            // Changing from pending to received
+            const walletId = updatedData.walletId;
+            const amount = updatedData.amount ?? oldTip.amount;
+            const wallet = state.wallets.find((w) => w.id === walletId);
+            if (wallet) {
+              const { error: er4 } = await supabase
+                .from("wallets")
+                .update({ balance: wallet.balance + amount })
+                .eq("id", wallet.id);
+              if (er4) throw er4;
+            }
+          }
+
+          const dbUpdate: any = {};
+          if (updatedData.amount !== undefined)
+            dbUpdate["amount"] = updatedData.amount;
+          if (updatedData.customerName !== undefined)
+            dbUpdate["customer"] = updatedData.customerName;
+          if (updatedData.description !== undefined)
+            dbUpdate["service"] = updatedData.description;
+          if (updatedData.status !== undefined)
+            dbUpdate["status"] = updatedData.status;
+          if (updatedData.walletId !== undefined)
+            dbUpdate["wallet_id"] = updatedData.walletId;
+          if (updatedData.created_at !== undefined)
+            dbUpdate["created_at"] = updatedData.created_at;
+
+          const { error: tipError } = await supabase
+            .from("tips")
+            .update(dbUpdate)
+            .eq("id", tipId);
+
+          if (tipError) throw tipError;
+
+          toast.success("Đã cập nhật Tip thành công! ✨");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+          console.error(
+            "Lỗi khi sửa Tip:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      receiveTips: async (tipIds, walletId) => {
+        try {
+          const state = get();
+          const tipsToReceive = state.tips.filter(
+            (t) => tipIds.includes(t.id) && t.status === "pending",
+          );
+          if (tipsToReceive.length === 0) return;
+
+          const totalAmount = tipsToReceive.reduce(
+            (sum, tip) => sum + tip.amount,
+            0,
+          );
+
+          // 1. Update all tips
+          const { error: tipsError } = await supabase
+            .from("tips")
+            .update({ status: "received", wallet_id: walletId })
+            .in("id", tipIds);
+
+          if (tipsError) throw tipsError;
+
+          // 2. Update wallet balance directly instead of creating transactions
+          const wallet = state.wallets.find((w) => w.id === walletId);
+          if (wallet) {
+            const { error: walletError } = await supabase
+              .from("wallets")
+              .update({ balance: wallet.balance + totalAmount })
+              .eq("id", walletId);
+
+            if (walletError) throw walletError;
+          }
+
+          toast.success("Đã nhận tiền Tips! 🎉");
+
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+          console.error(
+            "Chi tiết lỗi:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      undoReceiveTip: async (tipId) => {
+        try {
+          const state = get();
+          const tip = state.tips.find((t) => t.id === tipId);
+
+          if (!tip || tip.status === "pending" || !tip.walletId) return;
+
+          // 1. Revert tip status
+          const { error: tipError } = await supabase
+            .from("tips")
+            .update({ status: "pending", wallet_id: null })
+            .eq("id", tipId);
+
+          if (tipError) throw tipError;
+
+          // 2. Revert wallet balance
+          const wallet = state.wallets.find((w) => w.id === tip.walletId);
+          if (wallet) {
+            const { error: walletError } = await supabase
+              .from("wallets")
+              .update({ balance: wallet.balance - tip.amount })
+              .eq("id", wallet.id);
+
+            if (walletError) throw walletError;
+          }
+
+          // 3. Refresh data
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Chi tiết lỗi:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      deleteTip: async (tipId) => {
+        try {
+          const state = get();
+          const tip = state.tips.find((t) => t.id === tipId);
+          if (!tip) return;
+
+          if (tip.status === "received" && tip.walletId) {
+            const wallet = state.wallets.find((w) => w.id === tip.walletId);
+            if (wallet) {
+              const { error: walletError } = await supabase
+                .from("wallets")
+                .update({ balance: wallet.balance - tip.amount })
+                .eq("id", wallet.id);
+
+              if (walletError) throw walletError;
+            }
+          }
+
+          const { error } = await supabase
+            .from("tips")
+            .delete()
+            .eq("id", tipId);
+
+          if (error) throw error;
+
+          toast.success("Đã xóa Tip! 🗑️");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+          console.error(
+            "Lỗi khi xóa Tip:",
+            error?.message || JSON.stringify(error),
+          );
+        }
+      },
+
+      addGoal: async (goalData) => {
+        try {
+          const { error } = await supabase.from("goals").insert({
+            name: goalData.name,
+            target_amount: goalData.targetAmount,
+            current_amount: 0,
+            target_date: goalData.deadline || null,
+            user_id: get().activeUserId,
+          });
+
+          if (error) throw error;
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error(
+            "Lỗi khi thêm mục tiêu:",
+            error?.message || JSON.stringify(error),
+          );
+          toast.error("Có lỗi đường truyền, em thử lại nha! 🚧");
+          throw error;
+        }
+      },
+
+      deleteGoal: async (goalId: string) => {
+        try {
+          const state = get();
+          const goal = state.goals.find((g) => g.id === goalId);
+          if (!goal) return;
+
+          if (goal.currentAmount > 0) {
+            toast.error("Vui lòng rút hết tiền trong quỹ trước khi xóa!");
+            return;
+          }
+
+          const { error } = await supabase
+            .from("goals")
+            .delete()
+            .eq("id", goalId);
+
+          if (error) throw error;
+
+          toast.success("Đã xóa mục tiêu tiết kiệm! 🗑️");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error("Lỗi xóa mục tiêu:", error);
+          toast.error("Lỗi khi xóa mục tiêu! ❌");
+        }
+      },
+
+      depositGoal: async (goalId: string, walletId: string, amount: number) => {
+        try {
+          const state = get();
+          const wallet = state.wallets.find((w) => w.id === walletId);
+          const goal = state.goals.find((g) => g.id === goalId);
+
+          if (!wallet || !goal) return;
+
+          if (amount > wallet.balance) {
+            toast.error("Số dư ví không đủ!");
+            throw new Error("Số dư ví không đủ!");
+          }
+
+          // 1. Ensure "Gửi tiết kiệm" category exists
+          let category = state.categories.find(
+            (c) => c.name === "Gửi tiết kiệm" && c.type === "expense",
+          );
+          let categoryId = category?.id;
+
+          if (!categoryId) {
+            const { data: newCat, error: catError } = await supabase
+              .from("categories")
+              .insert({
+                name: "Gửi tiết kiệm",
+                icon: "🐷",
+                type: "expense",
+                user_id: get().activeUserId,
+              })
+              .select()
+              .single();
+            if (catError) throw catError;
+            categoryId = newCat.id;
+          }
+
+          // 2. Reduce wallet balance
+          const { error: walletError } = await supabase
+            .from("wallets")
+            .update({ balance: wallet.balance - amount })
+            .eq("id", walletId);
+          if (walletError) throw walletError;
+
+          // 3. Increase goal current_amount
+          const { error: goalError } = await supabase
+            .from("goals")
+            .update({ current_amount: goal.currentAmount + amount })
+            .eq("id", goalId);
+          if (goalError) throw goalError;
+
+          // 4. Create transaction
+          const dbTransaction = {
+            wallet_id: walletId,
+            type: "expense",
+            amount: amount,
+            category_id: categoryId,
+            note: `Góp tiền vào mục tiêu: ${goal.name}`,
+            user_id: get().activeUserId,
+          };
+          const { error: txError } = await supabase
+            .from("transactions")
+            .insert(dbTransaction);
+          if (txError) throw txError;
+
+          toast.success("Góp tiền thành công! 🎉");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error("Lỗi góp tiền:", error);
+          toast.error("Góp tiền thất bại! ❌");
+        }
+      },
+
+      withdrawGoal: async (
+        goalId: string,
+        walletId: string,
+        amount: number,
+      ) => {
+        try {
+          const state = get();
+          const wallet = state.wallets.find((w) => w.id === walletId);
+          const goal = state.goals.find((g) => g.id === goalId);
+
+          if (!wallet || !goal) return;
+
+          if (amount > goal.currentAmount) {
+            toast.error("Số tiền rút vượt quá số dư quỹ!");
+            throw new Error("Số dư quỹ không đủ!");
+          }
+
+          // 1. Ensure "Rút tiết kiệm" category exists
+          let category = state.categories.find(
+            (c) => c.name === "Rút tiết kiệm" && c.type === "income",
+          );
+          let categoryId = category?.id;
+
+          if (!categoryId) {
+            const { data: newCat, error: catError } = await supabase
+              .from("categories")
+              .insert({
+                name: "Rút tiết kiệm",
+                icon: "🏦",
+                type: "income",
+                user_id: get().activeUserId,
+              })
+              .select()
+              .single();
+            if (catError) throw catError;
+            categoryId = newCat.id;
+          }
+
+          // 2. Increase wallet balance
+          const { error: walletError } = await supabase
+            .from("wallets")
+            .update({ balance: wallet.balance + amount })
+            .eq("id", walletId);
+          if (walletError) throw walletError;
+
+          // 3. Decrease goal current_amount
+          const { error: goalError } = await supabase
+            .from("goals")
+            .update({ current_amount: goal.currentAmount - amount })
+            .eq("id", goalId);
+          if (goalError) throw goalError;
+
+          // 4. Create transaction
+          const dbTransaction = {
+            wallet_id: walletId,
+            type: "income",
+            amount: amount,
+            category_id: categoryId,
+            note: `Rút tiền từ mục tiêu: ${goal.name}`,
+            user_id: get().activeUserId,
+          };
+          const { error: txError } = await supabase
+            .from("transactions")
+            .insert(dbTransaction);
+          if (txError) throw txError;
+
+          toast.success("Rút tiền thành công! 💸");
+          await get().fetchInitialData();
+        } catch (error: any) {
+          console.error("Lỗi rút tiền:", error);
+          toast.error("Rút tiền thất bại! ❌");
+        }
+      },
+    }),
+    {
+      name: "honey-money-storage",
+    },
+  ),
 );
